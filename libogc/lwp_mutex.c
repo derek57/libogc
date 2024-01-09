@@ -1,7 +1,7 @@
 #include "asm.h"
 #include "lwp_mutex.h"
 
-void __lwp_mutex_initialize(lwp_mutex *mutex,lwp_mutex_attr *attrs,u32 init_lock)
+void _CORE_mutex_Initialize(lwp_mutex *mutex,lwp_mutex_attr *attrs,u32 init_lock)
 {
 	mutex->atrrs = *attrs;
 	mutex->lock = init_lock;
@@ -10,17 +10,17 @@ void __lwp_mutex_initialize(lwp_mutex *mutex,lwp_mutex_attr *attrs,u32 init_lock
 	if(init_lock==LWP_MUTEX_LOCKED) {
 		mutex->nest_cnt = 1;
 		mutex->holder = _thr_executing;
-		if(__lwp_mutex_isinheritprio(attrs) || __lwp_mutex_isprioceiling(attrs))
+		if(_CORE_mutex_Is_inherit_priority(attrs) || _CORE_mutex_Is_priority_ceiling(attrs))
 			_thr_executing->res_cnt++;
 	} else {
 		mutex->nest_cnt = 0;
 		mutex->holder = NULL;
 	}
 
-	__lwp_threadqueue_init(&mutex->wait_queue,__lwp_mutex_isfifo(attrs)?LWP_THREADQ_MODEFIFO:LWP_THREADQ_MODEPRIORITY,LWP_STATES_WAITING_FOR_MUTEX,LWP_MUTEX_TIMEOUT);
+	_Thread_queue_Initialize(&mutex->wait_queue,_CORE_mutex_Is_fifo(attrs)?LWP_THREADQ_MODEFIFO:LWP_THREADQ_MODEPRIORITY,LWP_STATES_WAITING_FOR_MUTEX,LWP_MUTEX_TIMEOUT);
 }
 
-u32 __lwp_mutex_surrender(lwp_mutex *mutex)
+u32 _CORE_mutex_Surrender(lwp_mutex *mutex)
 {
 	lwp_cntrl *thethread;
 	lwp_cntrl *holder;
@@ -28,7 +28,7 @@ u32 __lwp_mutex_surrender(lwp_mutex *mutex)
 	holder = mutex->holder;
 
 	if(mutex->atrrs.onlyownerrelease) {
-		if(!__lwp_thread_isexec(holder))
+		if(!_Thread_Is_executing(holder))
 			return LWP_MUTEX_NOTOWNER;
 	}
 
@@ -47,19 +47,19 @@ u32 __lwp_mutex_surrender(lwp_mutex *mutex)
 		}
 	}
 
-	if(__lwp_mutex_isinheritprio(&mutex->atrrs) || __lwp_mutex_isprioceiling(&mutex->atrrs))
+	if(_CORE_mutex_Is_inherit_priority(&mutex->atrrs) || _CORE_mutex_Is_priority_ceiling(&mutex->atrrs))
 		holder->res_cnt--;
 
 	mutex->holder = NULL;
-	if(__lwp_mutex_isinheritprio(&mutex->atrrs) || __lwp_mutex_isprioceiling(&mutex->atrrs)) {
+	if(_CORE_mutex_Is_inherit_priority(&mutex->atrrs) || _CORE_mutex_Is_priority_ceiling(&mutex->atrrs)) {
 		if(holder->res_cnt==0 && holder->real_prio!=holder->cur_prio) 
-			__lwp_thread_changepriority(holder,holder->real_prio,TRUE);
+			_Thread_Change_priority(holder,holder->real_prio,TRUE);
 	}
 	
-	if((thethread=__lwp_threadqueue_dequeue(&mutex->wait_queue))) {
+	if((thethread=_Thread_queue_Dequeue(&mutex->wait_queue))) {
 		mutex->nest_cnt = 1;
 		mutex->holder = thethread;
-		if(__lwp_mutex_isinheritprio(&mutex->atrrs) || __lwp_mutex_isprioceiling(&mutex->atrrs))
+		if(_CORE_mutex_Is_inherit_priority(&mutex->atrrs) || _CORE_mutex_Is_priority_ceiling(&mutex->atrrs))
 			thethread->res_cnt++;
 	} else
 		mutex->lock = LWP_MUTEX_UNLOCKED;
@@ -67,29 +67,29 @@ u32 __lwp_mutex_surrender(lwp_mutex *mutex)
 	return LWP_MUTEX_SUCCESSFUL;
 }
 
-void __lwp_mutex_seize_irq_blocking(lwp_mutex *mutex,u64 timeout)
+void _CORE_mutex_Seize_interrupt_blocking(lwp_mutex *mutex,u64 timeout)
 {
 	lwp_cntrl *exec;
 
 	exec = _thr_executing;
-	if(__lwp_mutex_isinheritprio(&mutex->atrrs)){
+	if(_CORE_mutex_Is_inherit_priority(&mutex->atrrs)){
 		if(mutex->holder->cur_prio>exec->cur_prio)
-			__lwp_thread_changepriority(mutex->holder,exec->cur_prio,FALSE);
+			_Thread_Change_priority(mutex->holder,exec->cur_prio,FALSE);
 	}
 
 	mutex->blocked_cnt++;
-	__lwp_threadqueue_enqueue(&mutex->wait_queue,timeout);
+	_Thread_queue_Enqueue(&mutex->wait_queue,timeout);
 
 	if(_thr_executing->wait.ret_code==LWP_MUTEX_SUCCESSFUL) {
-		if(__lwp_mutex_isprioceiling(&mutex->atrrs)) {
+		if(_CORE_mutex_Is_priority_ceiling(&mutex->atrrs)) {
 			if(mutex->atrrs.prioceil<exec->cur_prio) 
-				__lwp_thread_changepriority(exec,mutex->atrrs.prioceil,FALSE);
+				_Thread_Change_priority(exec,mutex->atrrs.prioceil,FALSE);
 		}
 	}
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 }
 
-void __lwp_mutex_flush(lwp_mutex *mutex,u32 status)
+void _CORE_mutex_Flush(lwp_mutex *mutex,u32 status)
 {
-	__lwp_threadqueue_flush(&mutex->wait_queue,status);
+	_Thread_queue_Flush(&mutex->wait_queue,status);
 }

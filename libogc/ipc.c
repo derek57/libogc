@@ -241,10 +241,10 @@ static s32 __ioctlvfmtCB(s32 result,void *userdata)
 	user_data = cbdata->user_data;
 
 	// free buffer list
-	__lwp_wkspace_free(cbdata->bufs);
+	_Workspace_Free(cbdata->bufs);
 
 	// free callback data
-	__lwp_wkspace_free(cbdata);
+	_Workspace_Free(cbdata);
 
 	// call the user callback
 	if(user_cb)
@@ -461,12 +461,12 @@ static s32 __ios_ioctlvformat_parse(const char *format,va_list args,struct _ioct
 	if(maxbufs>=IOS_MAXFMT_PARAMS) return IPC_EINVAL;
 
 	cbdata->hId = hId;
-	cbdata->bufs = __lwp_wkspace_allocate((sizeof(struct _ioctlvfmt_bufent)*(maxbufs+1)));
+	cbdata->bufs = _Workspace_Allocate((sizeof(struct _ioctlvfmt_bufent)*(maxbufs+1)));
 	if(cbdata->bufs==NULL) return IPC_ENOMEM;
 
 	argp = iosAlloc(hId,(sizeof(struct _ioctlv)*(maxbufs+1)));
 	if(argp==NULL) {
-		__lwp_wkspace_free(cbdata->bufs);
+		_Workspace_Free(cbdata->bufs);
 		return IPC_ENOMEM;
 	}
 
@@ -678,7 +678,7 @@ free_and_error:
 	for(i=0;i<cbdata->num_bufs;i++) {
 		if(cbdata->bufs[i].ipc_buf!=NULL) iosFree(hId,cbdata->bufs[i].ipc_buf);
 	}
-	__lwp_wkspace_free(cbdata->bufs);
+	_Workspace_Free(cbdata->bufs);
 	return ret;
 }
 
@@ -746,7 +746,7 @@ s32 iosCreateHeap(s32 size)
 	_ipc_heaps[i].membase = (void*)ipclo;
 	_ipc_heaps[i].size = size;
 
-	ret = __lwp_heap_init(&_ipc_heaps[i].heap,(void*)ipclo,size,PPC_CACHE_ALIGNMENT);
+	ret = _Heap_Initialize(&_ipc_heaps[i].heap,(void*)ipclo,size,PPC_CACHE_ALIGNMENT);
 	if(ret<=0) return IPC_ENOMEM;
 
 	IPC_SetBufferLo((void*)(ipclo+size));
@@ -760,7 +760,7 @@ void* iosAlloc(s32 hid,s32 size)
 	printf("iosAlloc(%d,%d)\n",hid,size);
 #endif
 	if(hid<0 || hid>=IPC_NUMHEAPS || size<=0) return NULL;
-	return __lwp_heap_allocate(&_ipc_heaps[hid].heap,size);
+	return _Heap_Allocate(&_ipc_heaps[hid].heap,size);
 }
 
 void iosFree(s32 hid,void *ptr)
@@ -769,7 +769,7 @@ void iosFree(s32 hid,void *ptr)
 	printf("iosFree(%d,0x%p)\n",hid,ptr);
 #endif
 	if(hid<0 || hid>=IPC_NUMHEAPS || ptr==NULL) return;
-	__lwp_heap_free(&_ipc_heaps[hid].heap,ptr);
+	_Heap_Free(&_ipc_heaps[hid].heap,ptr);
 }
 
 void* IPC_GetBufferLo()
@@ -1193,7 +1193,7 @@ s32 IOS_IoctlvFormat(s32 hId,s32 fd,s32 ioctl,const char *format,...)
 	struct _ioctlv *argv;
 	struct _ioctlvfmt_cbdata *cbdata;
 
-	cbdata = __lwp_wkspace_allocate(sizeof(struct _ioctlvfmt_cbdata));
+	cbdata = _Workspace_Allocate(sizeof(struct _ioctlvfmt_cbdata));
 	if(cbdata==NULL) return IPC_ENOMEM;
 
 	memset(cbdata,0,sizeof(struct _ioctlvfmt_cbdata));
@@ -1202,7 +1202,7 @@ s32 IOS_IoctlvFormat(s32 hId,s32 fd,s32 ioctl,const char *format,...)
 	ret = __ios_ioctlvformat_parse(format,args,cbdata,&cnt_in,&cnt_io,&argv,hId);
 	va_end(args);
 	if(ret<0) {
-		__lwp_wkspace_free(cbdata);
+		_Workspace_Free(cbdata);
 		return ret;
 	}
 
@@ -1220,7 +1220,7 @@ s32 IOS_IoctlvFormatAsync(s32 hId,s32 fd,s32 ioctl,ipccallback usr_cb,void *usr_
 	struct _ioctlv *argv;
 	struct _ioctlvfmt_cbdata *cbdata;
 
-	cbdata = __lwp_wkspace_allocate(sizeof(struct _ioctlvfmt_cbdata));
+	cbdata = _Workspace_Allocate(sizeof(struct _ioctlvfmt_cbdata));
 	if(cbdata==NULL) return IPC_ENOMEM;
 
 	memset(cbdata,0,sizeof(struct _ioctlvfmt_cbdata));
@@ -1229,7 +1229,7 @@ s32 IOS_IoctlvFormatAsync(s32 hId,s32 fd,s32 ioctl,ipccallback usr_cb,void *usr_
 	ret = __ios_ioctlvformat_parse(format,args,cbdata,&cnt_in,&cnt_io,&argv,hId);
 	va_end(args);
 	if(ret<0) {
-		__lwp_wkspace_free(cbdata);
+		_Workspace_Free(cbdata);
 		return ret;
 	}
 

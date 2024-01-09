@@ -56,32 +56,32 @@ lwp_objinfo _lwp_sema_objects;
 
 void __lwp_sema_init()
 {
-	__lwp_objmgr_initinfo(&_lwp_sema_objects,LWP_MAX_SEMAS,sizeof(sema_st));
+	_Objects_Initialize_information(&_lwp_sema_objects,LWP_MAX_SEMAS,sizeof(sema_st));
 }
 
 static __inline__ sema_st* __lwp_sema_open(sem_t sem)
 {
 	LWP_CHECK_SEM(sem);
-	return (sema_st*)__lwp_objmgr_get(&_lwp_sema_objects,LWP_OBJMASKID(sem));
+	return (sema_st*)_Objects_Get(&_lwp_sema_objects,LWP_OBJMASKID(sem));
 }
 
 static __inline__ void __lwp_sema_free(sema_st *sema)
 {
-	__lwp_objmgr_close(&_lwp_sema_objects,&sema->object);
-	__lwp_objmgr_free(&_lwp_sema_objects,&sema->object);
+	_Objects_Close(&_lwp_sema_objects,&sema->object);
+	_Objects_Free(&_lwp_sema_objects,&sema->object);
 }
 
 static sema_st* __lwp_sema_allocate()
 {
 	sema_st *sema;
 
-	__lwp_thread_dispatchdisable();
-	sema = (sema_st*)__lwp_objmgr_allocate(&_lwp_sema_objects);
+	_Thread_Disable_dispatch();
+	sema = (sema_st*)_Objects_Allocate(&_lwp_sema_objects);
 	if(sema) {
-		__lwp_objmgr_open(&_lwp_sema_objects,&sema->object);
+		_Objects_Open(&_lwp_sema_objects,&sema->object);
 		return sema;
 	}
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 	return NULL;
 }
 
@@ -97,10 +97,10 @@ s32 LWP_SemInit(sem_t *sem,u32 start,u32 max)
 
 	attr.max_cnt = max;
 	attr.mode = LWP_SEMA_MODEFIFO;
-	__lwp_sema_initialize(&ret->sema,&attr,start);
+	CORE_semaphore_Initialize(&ret->sema,&attr,start);
 
 	*sem = (sem_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_SEM)|LWP_OBJMASKID(ret->object.id));
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 	return 0;
 }
 
@@ -111,8 +111,8 @@ s32 LWP_SemWait(sem_t sem)
 	lwp_sem = __lwp_sema_open(sem);
 	if(!lwp_sem) return -1;
 
-	__lwp_sema_seize(&lwp_sem->sema,lwp_sem->object.id,TRUE,LWP_THREADQ_NOTIMEOUT);
-	__lwp_thread_dispatchenable();
+	_CORE_semaphore_Seize(&lwp_sem->sema,lwp_sem->object.id,TRUE,LWP_THREADQ_NOTIMEOUT);
+	_Thread_Enable_dispatch();
 
 	switch(_thr_executing->wait.ret_code) {
 		case LWP_SEMA_SUCCESSFUL:
@@ -135,8 +135,8 @@ s32 LWP_SemPost(sem_t sem)
 	lwp_sem = __lwp_sema_open(sem);
 	if(!lwp_sem) return -1;
 
-	__lwp_sema_surrender(&lwp_sem->sema,lwp_sem->object.id);
-	__lwp_thread_dispatchenable();
+	_CORE_semaphore_Surrender(&lwp_sem->sema,lwp_sem->object.id);
+	_Thread_Enable_dispatch();
 
 	return 0;
 }
@@ -148,8 +148,8 @@ s32 LWP_SemDestroy(sem_t sem)
 	lwp_sem = __lwp_sema_open(sem);
 	if(!lwp_sem) return -1;
 
-	__lwp_sema_flush(&lwp_sem->sema,-1);
-	__lwp_thread_dispatchenable();
+	_CORE_semaphore_Flush(&lwp_sem->sema,-1);
+	_Thread_Enable_dispatch();
 
 	__lwp_sema_free(lwp_sem);
 	return 0;

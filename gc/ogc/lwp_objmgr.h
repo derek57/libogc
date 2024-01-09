@@ -31,12 +31,12 @@ struct _lwp_objinfo {
 	u32 inactives_cnt;
 };
 
-void __lwp_objmgr_initinfo(lwp_objinfo *info,u32 max_nodes,u32 node_size);
-void __lwp_objmgr_free(lwp_objinfo *info,lwp_obj *object);
-lwp_obj* __lwp_objmgr_allocate(lwp_objinfo *info);
-lwp_obj* __lwp_objmgr_get(lwp_objinfo *info,u32 id);
-lwp_obj* __lwp_objmgr_getisrdisable(lwp_objinfo *info,u32 id,u32 *p_level);
-lwp_obj* __lwp_objmgr_getnoprotection(lwp_objinfo *info,u32 id);
+void _Objects_Initialize_information(lwp_objinfo *info,u32 max_nodes,u32 node_size);
+void _Objects_Free(lwp_objinfo *info,lwp_obj *object);
+lwp_obj* _Objects_Allocate(lwp_objinfo *info);
+lwp_obj* _Objects_Get(lwp_objinfo *info,u32 id);
+lwp_obj* _Objects_Get_isr_disable(lwp_objinfo *info,u32 id,u32 *p_level);
+lwp_obj* _Objects_Get_no_protection(lwp_objinfo *info,u32 id);
 
 #ifdef LIBOGC_INTERNAL
 #include <libogc/lwp_objmgr.inl>

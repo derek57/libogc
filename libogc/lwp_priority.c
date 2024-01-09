@@ -3,7 +3,7 @@
 vu32 _prio_major_bitmap;
 u32 _prio_bitmap[16] __attribute__((aligned(32)));
 
-void __lwp_priority_init()
+void _Priority_Handler_initialization()
 {
 	u32 index;
 	

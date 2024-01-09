@@ -157,7 +157,7 @@ static s32 __sram_sync(void);
 static s32 __sram_writecallback(s32 chn,s32 dev);
 static s32 __mem_onreset(s32 final);
 
-extern void	__lwp_thread_coreinit(void);
+extern void	_Thread_Handler_initialization(void);
 extern void	__lwp_sysinit(void);
 extern void __heap_init(void);
 extern void __exception_init(void);
@@ -171,10 +171,10 @@ extern void __lwp_sema_init(void);
 extern void __exi_init(void);
 extern void __si_init(void);
 extern void __irq_init(void);
-extern void __lwp_start_multitasking(void);
+extern void _Thread_Start_multitasking(void);
 extern void __timesystem_init(void);
 extern void __memlock_init(void);
-extern void __libc_init(int);
+extern void libc_init(int);
 
 extern void __libogc_malloc_lock( struct _reent *ptr );
 extern void __libogc_malloc_unlock( struct _reent *ptr );
@@ -243,13 +243,13 @@ static const char *__sys_versionbuild;
 static __inline__ alarm_st* __lwp_syswd_open(syswd_t wd)
 {
 	LWP_CHECK_SYSWD(wd);
-	return (alarm_st*)__lwp_objmgr_get(&sys_alarm_objects,LWP_OBJMASKID(wd));
+	return (alarm_st*)_Objects_Get(&sys_alarm_objects,LWP_OBJMASKID(wd));
 }
 
 static __inline__ void __lwp_syswd_free(alarm_st *alarm)
 {
-	__lwp_objmgr_close(&sys_alarm_objects,&alarm->object);
-	__lwp_objmgr_free(&sys_alarm_objects,&alarm->object);
+	_Objects_Close(&sys_alarm_objects,&alarm->object);
+	_Objects_Free(&sys_alarm_objects,&alarm->object);
 }
 
 #ifdef HW_DOL
@@ -259,7 +259,7 @@ void __reload() { SOFTRESET_ADR=0; }
 void __libogc_exit(int status)
 {
 	SYS_ResetSystem(SYS_SHUTDOWN,0,0);
-	__lwp_thread_stopmultitasking(__reload);
+	_Thread_Stop_multitasking(__reload);
 }
 #else
 static void (*reload)() = (void(*)())0x80001800;
@@ -285,7 +285,7 @@ void __libogc_exit(int status)
 {
 	if(__stub_found()) {
 		SYS_ResetSystem(SYS_SHUTDOWN,0,0);
-		__lwp_thread_stopmultitasking(reload);
+		_Thread_Stop_multitasking(reload);
 	}
 	SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 }
@@ -309,13 +309,13 @@ static alarm_st* __lwp_syswd_allocate()
 {
 	alarm_st *alarm;
 
-	__lwp_thread_dispatchdisable();
-	alarm = (alarm_st*)__lwp_objmgr_allocate(&sys_alarm_objects);
+	_Thread_Disable_dispatch();
+	alarm = (alarm_st*)_Objects_Allocate(&sys_alarm_objects);
 	if(alarm) {
-		__lwp_objmgr_open(&sys_alarm_objects,&alarm->object);
+		_Objects_Open(&sys_alarm_objects,&alarm->object);
 		return alarm;
 	}
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 	return NULL;
 }
 
@@ -335,13 +335,13 @@ static void __sys_alarmhandler(void *arg)
 
 	if(thealarm==SYS_WD_NULL || LWP_OBJTYPE(thealarm)!=LWP_OBJTYPE_SYSWD) return;
 
-	__lwp_thread_dispatchdisable();
-	alarm = (alarm_st*)__lwp_objmgr_getnoprotection(&sys_alarm_objects,LWP_OBJMASKID(thealarm));
+	_Thread_Disable_dispatch();
+	alarm = (alarm_st*)_Objects_Get_no_protection(&sys_alarm_objects,LWP_OBJMASKID(thealarm));
 	if(alarm) {
 		if(alarm->alarmhandler) alarm->alarmhandler(thealarm,alarm->cb_arg);
-		if(alarm->periodic) __lwp_wd_insert_ticks(&alarm->alarm,alarm->periodic);
+		if(alarm->periodic) _Watchdog_Insert_ticks(&alarm->alarm,alarm->periodic);
 	}
-	__lwp_thread_dispatchunnest();
+	_Thread_Unnest_dispatch();
 }
 
 #if defined(HW_DOL)
@@ -364,7 +364,7 @@ static s32 __call_resetfuncs(s32 final)
 
 	ret = 1;
 	info = (sys_resetinfo*)header->first;
-	while(info!=(sys_resetinfo*)__lwp_queue_tail(header)) {
+	while(info!=(sys_resetinfo*)_Chain_Tail(header)) {
 		if(info->func && info->func(final)==0) ret |= (ret<<1);
 		info = (sys_resetinfo*)info->node.next;
 	}
@@ -1035,7 +1035,7 @@ void __attribute__((weak)) __SYS_PreInit()
 
 }
 
-void SYS_Init()
+void rtems_initialize_executive_early()
 {
 	u32 level;
 
@@ -1053,12 +1053,12 @@ void SYS_Init()
 #if defined(HW_RVL)
 	__ipcbuffer_init();
 #endif
-	__lwp_wkspace_init(KERNEL_HEAP);
-	__lwp_queue_init_empty(&sys_reset_func_queue);
-	__lwp_objmgr_initinfo(&sys_alarm_objects,LWP_MAX_WATCHDOGS,sizeof(alarm_st));
-	__sys_state_init();
-	__lwp_priority_init();
-	__lwp_watchdog_init();
+	_Workspace_Handler_initialization(KERNEL_HEAP);
+	_Chain_Initialize_empty(&sys_reset_func_queue);
+	_Objects_Initialize_information(&sys_alarm_objects,LWP_MAX_WATCHDOGS,sizeof(alarm_st));
+	_System_state_Handler_initialization();
+	_Priority_Handler_initialization();
+	_Watchdog_Handler_initialization();
 	__exception_init();
 	__systemcall_init();
 	__decrementer_init();
@@ -1066,7 +1066,7 @@ void SYS_Init()
 	__exi_init();
 	__sram_init();
 	__si_init();
-	__lwp_thread_coreinit();
+	_Thread_Handler_initialization();
 	__lwp_sysinit();
 	__memlock_init();
 	__lwp_mqbox_init();
@@ -1090,8 +1090,8 @@ void SYS_Init()
 	IRQ_Request(IRQ_PI_RSW,__RSWHandler,NULL);
 	__MaskIrq(IRQMASK(IRQ_PI_RSW));
 #endif
-	__libc_init(1);
-	__lwp_thread_startmultitasking();
+	libc_init(1);
+	_Thread_Start_multitasking();
 	_CPU_ISR_Restore(level);
 }
 
@@ -1143,12 +1143,12 @@ void SYS_ResetSystem(s32 reset,u32 reset_code,s32 force_menu)
 
 	LCDisable();
 
-	__lwp_thread_dispatchdisable();
+	_Thread_Disable_dispatch();
 	if(reset==SYS_HOTRESET) {
 		__dohotreset(reset_code);
 	} else if(reset==SYS_RESTART) {
 		__lwp_thread_closeall();
-		__lwp_thread_dispatchunnest();
+		_Thread_Unnest_dispatch();
 		__doreboot(reset_code,force_menu);
 	}
 
@@ -1215,7 +1215,7 @@ void SYS_ResetSystem(s32 reset,u32 reset_code,s32 force_menu)
 
 	LCDisable();
 
-	__lwp_thread_dispatchdisable();
+	_Thread_Disable_dispatch();
 	__lwp_thread_closeall();
 
 	memset((void*)0x80000040,0,140);
@@ -1237,7 +1237,7 @@ void SYS_RegisterResetFunc(sys_resetinfo *info)
 
 	_CPU_ISR_Disable(level);
 	for(after=(sys_resetinfo*)header->first;after->node.next!=NULL && info->prio>=after->prio;after=(sys_resetinfo*)after->node.next);
-	__lwp_queue_insertI(after->node.prev,&info->node);
+	_Chain_Insert_unprotected(after->node.prev,&info->node);
 	_CPU_ISR_Restore(level);
 }
 
@@ -1248,7 +1248,7 @@ void SYS_UnregisterResetFunc(sys_resetinfo *info) {
 	_CPU_ISR_Disable(level);
 	for (n = sys_reset_func_queue.first; n->next; n = n->next) {
 		if (n == &info->node) {
-			__lwp_queue_extractI(n);
+			_Chain_Extract_unprotected(n);
 			break;
 		}
 	}
@@ -1533,7 +1533,7 @@ s32 SYS_CreateAlarm(syswd_t *thealarm)
 	alarm->periodic = 0;
 
 	*thealarm = (LWP_OBJMASKTYPE(LWP_OBJTYPE_SYSWD)|LWP_OBJMASKID(alarm->object.id));
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 	return 0;
 }
 
@@ -1546,14 +1546,14 @@ s32 SYS_SetAlarm(syswd_t thealarm,const struct timespec *tp,alarmcallback cb,voi
 
 	alarm->cb_arg = cbarg;
 	alarm->alarmhandler = cb;
-	alarm->ticks = __lwp_wd_calc_ticks(tp);
+	alarm->ticks = _POSIX_Timespec_to_interval(tp);
 
 	alarm->periodic = 0;
 	alarm->start_per = 0;
 
-	__lwp_wd_initialize(&alarm->alarm,__sys_alarmhandler,alarm->object.id,(void*)thealarm);
-	__lwp_wd_insert_ticks(&alarm->alarm,alarm->ticks);
-	__lwp_thread_dispatchenable();
+	_Watchdog_Initialize(&alarm->alarm,__sys_alarmhandler,alarm->object.id,(void*)thealarm);
+	_Watchdog_Insert_ticks(&alarm->alarm,alarm->ticks);
+	_Thread_Enable_dispatch();
 	return 0;
 }
 
@@ -1564,16 +1564,16 @@ s32 SYS_SetPeriodicAlarm(syswd_t thealarm,const struct timespec *tp_start,const 
 	alarm = __lwp_syswd_open(thealarm);
 	if(!alarm) return -1;
 
-	alarm->start_per = __lwp_wd_calc_ticks(tp_start);
-	alarm->periodic = __lwp_wd_calc_ticks(tp_period);
+	alarm->start_per = _POSIX_Timespec_to_interval(tp_start);
+	alarm->periodic = _POSIX_Timespec_to_interval(tp_period);
 	alarm->alarmhandler = cb;
 	alarm->cb_arg = cbarg;
 
 	alarm->ticks = 0;
 
-	__lwp_wd_initialize(&alarm->alarm,__sys_alarmhandler,alarm->object.id,(void*)thealarm);
-	__lwp_wd_insert_ticks(&alarm->alarm,alarm->start_per);
-	__lwp_thread_dispatchenable();
+	_Watchdog_Initialize(&alarm->alarm,__sys_alarmhandler,alarm->object.id,(void*)thealarm);
+	_Watchdog_Insert_ticks(&alarm->alarm,alarm->start_per);
+	_Thread_Enable_dispatch();
 	return 0;
 }
 
@@ -1589,9 +1589,9 @@ s32 SYS_RemoveAlarm(syswd_t thealarm)
 	alarm->periodic = 0;
 	alarm->start_per = 0;
 
-	__lwp_wd_remove_ticks(&alarm->alarm);
+	_Watchdog_Remove_ticks(&alarm->alarm);
 	__lwp_syswd_free(alarm);
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 	return 0;
 }
 
@@ -1607,8 +1607,8 @@ s32 SYS_CancelAlarm(syswd_t thealarm)
 	alarm->periodic = 0;
 	alarm->start_per = 0;
 
-	__lwp_wd_remove_ticks(&alarm->alarm);
-	__lwp_thread_dispatchenable();
+	_Watchdog_Remove_ticks(&alarm->alarm);
+	_Thread_Enable_dispatch();
 	return 0;
 }
 

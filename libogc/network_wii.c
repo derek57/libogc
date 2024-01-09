@@ -268,7 +268,7 @@ static s32 NetCreateHeap()
 		return IPC_ENOMEM;
 	}
 	SYS_SetArena2Hi(net_heap_ptr);
-	__lwp_heap_init(&__net_heap, net_heap_ptr, NET_HEAP_SIZE, 32);
+	_Heap_Initialize(&__net_heap, net_heap_ptr, NET_HEAP_SIZE, 32);
 	__net_heap_inited=1;
 	_CPU_ISR_Restore(level);
 	return IPC_OK;
@@ -276,12 +276,12 @@ static s32 NetCreateHeap()
 
 static void* net_malloc(u32 size)
 {
-	return __lwp_heap_allocate(&__net_heap, size);
+	return _Heap_Allocate(&__net_heap, size);
 }
 
 static BOOL net_free(void *ptr)
 {
-	return __lwp_heap_free(&__net_heap, ptr);
+	return _Heap_Free(&__net_heap, ptr);
 }
 
 static s32 _net_convert_error(s32 ios_retval)

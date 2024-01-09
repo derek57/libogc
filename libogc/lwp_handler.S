@@ -117,8 +117,8 @@
 	.set	PSFP_31, (PSFP_30 + FP_SIZE)
 
 	.align	5
-	.globl _cpu_context_save_fp
-_cpu_context_save_fp:
+	.globl _CPU_Context_save_fp_context
+_CPU_Context_save_fp_context:
 	lhz		r4,STATE(r3)
 	ori		r4,r4,0x0001
 	sth		r4,STATE(r3)
@@ -195,8 +195,8 @@ _cpu_context_save_fp:
 1:	blr
 
 	.align	5
-	.globl _cpu_context_restore_fp
-_cpu_context_restore_fp:
+	.globl _CPU_Context_restore_fp_context
+_CPU_Context_restore_fp_context:
 	lhz		r4,STATE(r3)
 	clrlwi.	r4,r4,31
 	beq		2f
@@ -272,8 +272,8 @@ _cpu_context_restore_fp:
 2:	blr
 
 	.align	5
-	.globl _cpu_context_switch
-_cpu_context_switch:
+	.globl _CPU_Context_switch
+_CPU_Context_switch:
 	sync
 	isync
 
@@ -335,8 +335,8 @@ _cpu_context_switch:
 	blr
 
 	.align	5
-	.globl _cpu_context_save
-_cpu_context_save:
+	.globl _CPU_Context_save
+_CPU_Context_save:
 	sync
 	isync
 
@@ -371,8 +371,8 @@ _cpu_context_save:
 	blr
 
 	.align	5
-	.globl _cpu_context_restore
-_cpu_context_restore:
+	.globl _CPU_Context_restore
+_CPU_Context_restore:
 	lwz sp,GPR1_OFFSET-8(r3)
 	lwz toc,GPR2_OFFSET-8(r3)
 	lmw r13,GPR13_OFFSET-8(r3)
@@ -478,8 +478,8 @@ _cpu_context_switch_ex:
 	blr
 
 	.align	5
-	.globl _cpu_context_save_ex
-_cpu_context_save_ex:
+	.globl _CPU_Context_save_ex
+_CPU_Context_save_ex:
 	sync
 	isync
 

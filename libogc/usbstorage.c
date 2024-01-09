@@ -214,8 +214,8 @@ s32 USBStorage_Initialize()
 		}
 		SYS_SetArena2Hi(arena_ptr);
 	}
-	__lwp_heap_init(&__heap, arena_ptr, HEAP_SIZE, 32);
-	cbw_buffer=(u8*)__lwp_heap_allocate(&__heap, 32);
+	_Heap_Initialize(&__heap, arena_ptr, HEAP_SIZE, 32);
+	cbw_buffer=(u8*)_Heap_Allocate(&__heap, 32);
 	__inited = true;
 	_CPU_ISR_Restore(level);
 	return IPC_OK;
@@ -404,7 +404,7 @@ s32 USBStorage_Open(usbstorage_handle *dev, s32 device_id, u16 vid, u16 pid)
 	usb_interfacedesc *uid;
 	usb_endpointdesc *ued;
 
-	max_lun = __lwp_heap_allocate(&__heap, 1);
+	max_lun = _Heap_Allocate(&__heap, 1);
 	if (!max_lun)
 		return IPC_ENOMEM;
 
@@ -526,7 +526,7 @@ found:
 	//USB_ClearHalt(dev->usb_fd, dev->ep_out);
 
 	if(!dev->buffer)
-		dev->buffer = __lwp_heap_allocate(&__heap, MAX_TRANSFER_SIZE_V5);
+		dev->buffer = _Heap_Allocate(&__heap, MAX_TRANSFER_SIZE_V5);
 
 	if(!dev->buffer) {
 		retval = IPC_ENOMEM;
@@ -537,7 +537,7 @@ found:
 
 free_and_return:
 	if (max_lun)
-		__lwp_heap_free(&__heap, max_lun);
+		_Heap_Free(&__heap, max_lun);
 
 	if (retval < 0) {
 		USBStorage_Close(dev);
@@ -564,7 +564,7 @@ s32 USBStorage_Close(usbstorage_handle *dev)
 		free(dev->sector_size);
 
 	if (dev->buffer)
-		__lwp_heap_free(&__heap, dev->buffer);
+		_Heap_Free(&__heap, dev->buffer);
 
 	memset(dev, 0, sizeof(*dev));
 	dev->usb_fd = -1;
@@ -842,7 +842,7 @@ static bool __usbstorage_IsInserted(void)
 	if(!__inited)
 		return false;
 
-	buffer = (usb_device_entry*)__lwp_heap_allocate(&__heap, DEVLIST_MAXSIZE * sizeof(usb_device_entry));
+	buffer = (usb_device_entry*)_Heap_Allocate(&__heap, DEVLIST_MAXSIZE * sizeof(usb_device_entry));
 	if (!buffer)
 		return false;
 
@@ -853,7 +853,7 @@ static bool __usbstorage_IsInserted(void)
 		if (__vid != 0 || __pid != 0)
 			USBStorage_Close(&__usbfd);
 
-		__lwp_heap_free(&__heap, buffer);
+		_Heap_Free(&__heap, buffer);
 		return false;
 	}
 
@@ -866,14 +866,14 @@ static bool __usbstorage_IsInserted(void)
 			if(vid != 0 || pid != 0) {
 				if((vid == __vid) && (pid == __pid)) {
 					__mounted = true;
-					__lwp_heap_free(&__heap,buffer);
+					_Heap_Free(&__heap,buffer);
 					usleep(50); // I don't know why I have to wait but it's needed
 					return true;
 				}
 			}
 		}
 		USBStorage_Close(&__usbfd); // device changed or unplugged, return false the first time to notify to the client that he must unmount devices
-		__lwp_heap_free(&__heap,buffer);
+		_Heap_Free(&__heap,buffer);
 		return false;
 	}
 	for (i = 0; i < device_count; i++) {
@@ -915,7 +915,7 @@ static bool __usbstorage_IsInserted(void)
 
 		USBStorage_Close(&__usbfd);
 	}
-	__lwp_heap_free(&__heap, buffer);
+	_Heap_Free(&__heap, buffer);
 
 	return __mounted;
 }

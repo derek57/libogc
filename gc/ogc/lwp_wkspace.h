@@ -10,7 +10,7 @@ extern "C" {
 
 extern heap_cntrl __wkspace_heap;
 
-void __lwp_wkspace_init(u32 size);
+void _Workspace_Handler_initialization(u32 size);
 
 #ifdef LIBOGC_INTERNAL
 #include <libogc/lwp_wkspace.inl>

@@ -139,7 +139,7 @@ void timespec_subtract(const struct timespec *tp_start,const struct timespec *tp
 
 unsigned long long timespec_to_ticks(const struct timespec *tp)
 {
-	return __lwp_wd_calc_ticks(tp);
+	return _POSIX_Timespec_to_interval(tp);
 }
 
 int clock_gettime(struct timespec *tp)
@@ -187,14 +187,14 @@ unsigned int _DEFUN(nanosleep,(tb),
 {
 	u64 timeout;
 
-	__lwp_thread_dispatchdisable();
+	_Thread_Disable_dispatch();
 
-	timeout = __lwp_wd_calc_ticks(tb);
-	__lwp_thread_setstate(_thr_executing,LWP_STATES_DELAYING|LWP_STATES_INTERRUPTIBLE_BY_SIGNAL);
-	__lwp_wd_initialize(&_thr_executing->timer,__lwp_thread_delayended,_thr_executing->object.id,_thr_executing);
-	__lwp_wd_insert_ticks(&_thr_executing->timer,timeout);
+	timeout = _POSIX_Timespec_to_interval(tb);
+	_Thread_Set_state(_thr_executing,LWP_STATES_DELAYING|LWP_STATES_INTERRUPTIBLE_BY_SIGNAL);
+	_Watchdog_Initialize(&_thr_executing->timer,_Thread_Delay_ended,_thr_executing->object.id,_thr_executing);
+	_Watchdog_Insert_ticks(&_thr_executing->timer,timeout);
 
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 	return TB_SUCCESSFUL;
 }
 

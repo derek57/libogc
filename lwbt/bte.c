@@ -132,9 +132,9 @@ static void bte_reset_all()
 
 static void bt_alarmhandler(syswd_t alarm,void *cbarg)
 {
-	__lwp_thread_dispatchdisable();
+	_Thread_Disable_dispatch();
 	SYS_SwitchFiber(0,0,0,0,(u32)l2cap_tmr,(u32)(&ppc_stack[STACKSIZE]));
-	__lwp_thread_dispatchunnest();
+	_Thread_Unnest_dispatch();
 }
 
 static inline s32 __bte_waitcmdfinish(struct bt_state *state)

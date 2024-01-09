@@ -83,7 +83,7 @@ static s32 _mouse_addEvent(const mouse_event *event) {
 	_node *n = malloc(sizeof(_node));
 	n->event = *event;
 
-	__lwp_queue_append(&_queue, (lwp_node*) n);
+	_Chain_Append(&_queue, (lwp_node*) n);
 
 	return 1;
 }
@@ -348,7 +348,7 @@ s32 MOUSE_Init(void)
 		_mouse_thread_running = true;
 	}
 
-	__lwp_queue_init_empty(&_queue);
+	_Chain_Initialize_empty(&_queue);
 	_mouse_is_inited = true;
 	return 0;
 }
@@ -380,7 +380,7 @@ s32 MOUSE_Deinit(void)
 //Get the first event of the event queue
 s32 MOUSE_GetEvent(mouse_event *event)
 {
-	_node *n = (_node *) __lwp_queue_get(&_queue);
+	_node *n = (_node *) _Chain_Get(&_queue);
 
 	if (!n)
 		return 0;

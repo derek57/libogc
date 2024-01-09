@@ -7,12 +7,12 @@
 #include "lwp_heap.h"
 
 
-u32 __lwp_heap_init(heap_cntrl *theheap,void *start_addr,u32 size,u32 pg_size)
+u32 _Heap_Initialize(heap_cntrl *theheap,void *start_addr,u32 size,u32 pg_size)
 {
 	u32 dsize,level;
 	heap_block *block;
 
-	if(!__lwp_heap_pgsize_valid(pg_size) || size<HEAP_MIN_SIZE) return 0;
+	if(!_Heap_Is_page_size_valid(pg_size) || size<HEAP_MIN_SIZE) return 0;
 
 	_CPU_ISR_Disable(level);
 	theheap->pg_size = pg_size;
@@ -21,15 +21,15 @@ u32 __lwp_heap_init(heap_cntrl *theheap,void *start_addr,u32 size,u32 pg_size)
 	block = (heap_block*)start_addr;
 	block->back_flag = HEAP_DUMMY_FLAG;
 	block->front_flag = dsize;
-	block->next	= __lwp_heap_tail(theheap);
-	block->prev = __lwp_heap_head(theheap);
+	block->next	= _Heap_Tail(theheap);
+	block->prev = _Heap_Head(theheap);
 	
 	theheap->start = block;
 	theheap->first = block;
 	theheap->perm_null = NULL;
 	theheap->last = block;
 	
-	block = __lwp_heap_nextblock(block);
+	block = _Heap_Next_block(block);
 	block->back_flag = dsize;
 	block->front_flag = HEAP_DUMMY_FLAG;
 	theheap->final = block;
@@ -38,7 +38,7 @@ u32 __lwp_heap_init(heap_cntrl *theheap,void *start_addr,u32 size,u32 pg_size)
 	return (dsize - HEAP_BLOCK_USED_OVERHEAD);
 }
 
-void* __lwp_heap_allocate(heap_cntrl *theheap,u32 size)
+void* _Heap_Allocate(heap_cntrl *theheap,u32 size)
 {
 	u32 excess;
 	u32 dsize;
@@ -61,7 +61,7 @@ void* __lwp_heap_allocate(heap_cntrl *theheap,u32 size)
 	if(dsize<sizeof(heap_block)) dsize = sizeof(heap_block);
 	
 	for(block=theheap->first;;block=block->next) {
-		if(block==__lwp_heap_tail(theheap)) {
+		if(block==_Heap_Tail(theheap)) {
 			_CPU_ISR_Restore(level);
 			return NULL;
 		}
@@ -70,22 +70,22 @@ void* __lwp_heap_allocate(heap_cntrl *theheap,u32 size)
 	
 	if((block->front_flag-dsize)>(theheap->pg_size+HEAP_BLOCK_USED_OVERHEAD)) {
 		block->front_flag -= dsize;
-		next_block = __lwp_heap_nextblock(block);
+		next_block = _Heap_Next_block(block);
 		next_block->back_flag = block->front_flag;
 		
-		tmp_block = __lwp_heap_blockat(next_block,dsize);
-		tmp_block->back_flag = next_block->front_flag = __lwp_heap_buildflag(dsize,HEAP_BLOCK_USED);
+		tmp_block = _Heap_Block_at(next_block,dsize);
+		tmp_block->back_flag = next_block->front_flag = _Heap_Build_flag(dsize,HEAP_BLOCK_USED);
 
-		ptr = __lwp_heap_startuser(next_block);
+		ptr = _Heap_Start_of_user_area(next_block);
 	} else {
-		next_block = __lwp_heap_nextblock(block);
-		next_block->back_flag = __lwp_heap_buildflag(block->front_flag,HEAP_BLOCK_USED);
+		next_block = _Heap_Next_block(block);
+		next_block->back_flag = _Heap_Build_flag(block->front_flag,HEAP_BLOCK_USED);
 		
 		block->front_flag = next_block->back_flag;
 		block->next->prev = block->prev;
 		block->prev->next = block->next;
 		
-		ptr = __lwp_heap_startuser(block);
+		ptr = _Heap_Start_of_user_area(block);
 	}
 
 	offset = (theheap->pg_size - ((u32)ptr&(theheap->pg_size-1)));
@@ -96,7 +96,7 @@ void* __lwp_heap_allocate(heap_cntrl *theheap,u32 size)
 	return ptr;
 }
 
-BOOL __lwp_heap_free(heap_cntrl *theheap,void *ptr)
+BOOL _Heap_Free(heap_cntrl *theheap,void *ptr)
 {
 	heap_block *block;
 	heap_block *next_block;
@@ -107,39 +107,39 @@ BOOL __lwp_heap_free(heap_cntrl *theheap,void *ptr)
 
 	_CPU_ISR_Disable(level);
 
-	block = __lwp_heap_usrblockat(ptr);
-	if(!__lwp_heap_blockin(theheap,block) || __lwp_heap_blockfree(block)) {
+	block = _Heap_User_block_at(ptr);
+	if(!_Heap_Is_block_in(theheap,block) || _Heap_Is_block_free(block)) {
 		_CPU_ISR_Restore(level);
 		return FALSE;
 	}
 
-	dsize = __lwp_heap_blocksize(block);
-	next_block = __lwp_heap_blockat(block,dsize);
+	dsize = _Heap_Block_size(block);
+	next_block = _Heap_Block_at(block,dsize);
 	
-	if(!__lwp_heap_blockin(theheap,next_block) || (block->front_flag!=next_block->back_flag)) {
+	if(!_Heap_Is_block_in(theheap,next_block) || (block->front_flag!=next_block->back_flag)) {
 		_CPU_ISR_Restore(level);
 		return FALSE;
 	}
 	
-	if(__lwp_heap_prev_blockfree(block)) {
-		prev_block = __lwp_heap_prevblock(block);
-		if(!__lwp_heap_blockin(theheap,prev_block)) {
+	if(_Heap_Is_previous_block_free(block)) {
+		prev_block = _Heap_Previous_block(block);
+		if(!_Heap_Is_block_in(theheap,prev_block)) {
 			_CPU_ISR_Restore(level);
 			return FALSE;
 		}
 		
-		if(__lwp_heap_blockfree(next_block)) {
+		if(_Heap_Is_block_free(next_block)) {
 			prev_block->front_flag += next_block->front_flag+dsize;
-			tmp_block = __lwp_heap_nextblock(prev_block);
+			tmp_block = _Heap_Next_block(prev_block);
 			tmp_block->back_flag = prev_block->front_flag;
 			next_block->next->prev = next_block->prev;
 			next_block->prev->next = next_block->next;
 		} else {
 			prev_block->front_flag = next_block->back_flag = prev_block->front_flag+dsize;
 		}
-	} else if(__lwp_heap_blockfree(next_block)) {
+	} else if(_Heap_Is_block_free(next_block)) {
 		block->front_flag = dsize+next_block->front_flag;
-		new_next = __lwp_heap_nextblock(block);
+		new_next = _Heap_Next_block(block);
 		new_next->back_flag = block->front_flag;
 		block->next = next_block->next;
 		block->prev = next_block->prev;
@@ -149,7 +149,7 @@ BOOL __lwp_heap_free(heap_cntrl *theheap,void *ptr)
 		if(theheap->first==next_block) theheap->first = block;
 	} else {
 		next_block->back_flag = block->front_flag = dsize;
-		block->prev = __lwp_heap_head(theheap);
+		block->prev = _Heap_Head(theheap);
 		block->next = theheap->first;
 		theheap->first = block;
 		block->next->prev = block;
@@ -159,7 +159,7 @@ BOOL __lwp_heap_free(heap_cntrl *theheap,void *ptr)
 	return TRUE;
 }
 
-u32 __lwp_heap_getinfo(heap_cntrl *theheap,heap_iblock *theinfo)
+u32 _Heap_Get_information(heap_cntrl *theheap,heap_iblock *theinfo)
 {
 	u32 not_done = 1;
 	heap_block *theblock = NULL;
@@ -170,22 +170,22 @@ u32 __lwp_heap_getinfo(heap_cntrl *theheap,heap_iblock *theinfo)
 	theinfo->used_blocks = 0;
 	theinfo->used_size = 0;
 	
-	if(!__sys_state_up(__sys_state_get())) return 1;
+	if(!_System_state_Is_up(_System_state_Get())) return 1;
 
 	theblock = theheap->start;
 	if(theblock->back_flag!=HEAP_DUMMY_FLAG) return 2;
 
 	while(not_done) {
-		if(__lwp_heap_blockfree(theblock)) {
+		if(_Heap_Is_block_free(theblock)) {
 			theinfo->free_blocks++;
-			theinfo->free_size += __lwp_heap_blocksize(theblock);
+			theinfo->free_size += _Heap_Block_size(theblock);
 		} else {
 			theinfo->used_blocks++;
-			theinfo->used_size += __lwp_heap_blocksize(theblock);
+			theinfo->used_size += _Heap_Block_size(theblock);
 		}
 
 		if(theblock->front_flag!=HEAP_DUMMY_FLAG) {
-			nextblock = __lwp_heap_nextblock(theblock);
+			nextblock = _Heap_Next_block(theblock);
 			if(theblock->front_flag!=nextblock->back_flag) return 2;
 		}
 

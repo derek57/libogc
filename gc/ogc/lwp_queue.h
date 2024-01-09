@@ -24,11 +24,11 @@ typedef struct _lwpqueue {
 	lwp_node *last;
 } lwp_queue;
 
-void __lwp_queue_initialize(lwp_queue *,void *,u32,u32);
-lwp_node* __lwp_queue_get(lwp_queue *);
-void __lwp_queue_append(lwp_queue *,lwp_node *);
-void __lwp_queue_extract(lwp_node *);
-void __lwp_queue_insert(lwp_node *,lwp_node *);
+void _Chain_Initialize(lwp_queue *,void *,u32,u32);
+lwp_node* _Chain_Get(lwp_queue *);
+void _Chain_Append(lwp_queue *,lwp_node *);
+void _Chain_Extract(lwp_node *);
+void _Chain_Insert(lwp_node *,lwp_node *);
 
 #ifdef LIBOGC_INTERNAL
 #include <libogc/lwp_queue.inl>

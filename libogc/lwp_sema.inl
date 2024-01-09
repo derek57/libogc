@@ -1,12 +1,12 @@
 #ifndef __LWP_SEMA_INL__
 #define __LWP_SEMA_INL__
 
-static __inline__ u32 __lwp_sema_ispriority(lwp_semattr *attr)
+static __inline__ u32 _CORE_semaphore_Is_priority(lwp_semattr *attr)
 {
 	return (attr->mode==LWP_SEMA_MODEPRIORITY);
 }
 
-static __inline__ void __lwp_sema_seize_isrdisable(lwp_sema *sema,u32 id,u32 wait,u32 *isrlevel)
+static __inline__ void _CORE_semaphore_Seize_isr_disable(lwp_sema *sema,u32 id,u32 wait,u32 *isrlevel)
 {
 	lwp_cntrl *exec;
 	u32 level = *isrlevel;
@@ -25,14 +25,14 @@ static __inline__ void __lwp_sema_seize_isrdisable(lwp_sema *sema,u32 id,u32 wai
 		return;
 	}
 
-	__lwp_thread_dispatchdisable();
-	__lwp_threadqueue_csenter(&sema->wait_queue);
+	_Thread_Disable_dispatch();
+	_Thread_queue_Enter_critical_section(&sema->wait_queue);
 	exec->wait.queue = &sema->wait_queue;
 	exec->wait.id = id;
 	_CPU_ISR_Restore(level);
 
-	__lwp_threadqueue_enqueue(&sema->wait_queue,0);
-	__lwp_thread_dispatchenable();
+	_Thread_queue_Enqueue(&sema->wait_queue,0);
+	_Thread_Enable_dispatch();
 }
 
 #endif

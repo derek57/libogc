@@ -41,26 +41,26 @@ typedef struct _lwpmutex {
 	lwp_cntrl *holder;
 } lwp_mutex;
 
-void __lwp_mutex_initialize(lwp_mutex *mutex,lwp_mutex_attr *attrs,u32 init_lock);
-u32 __lwp_mutex_surrender(lwp_mutex *mutex);
-void __lwp_mutex_seize_irq_blocking(lwp_mutex *mutex,u64 timeout);
-void __lwp_mutex_flush(lwp_mutex *mutex,u32 status);
+void _CORE_mutex_Initialize(lwp_mutex *mutex,lwp_mutex_attr *attrs,u32 init_lock);
+u32 _CORE_mutex_Surrender(lwp_mutex *mutex);
+void _CORE_mutex_Seize_interrupt_blocking(lwp_mutex *mutex,u64 timeout);
+void _CORE_mutex_Flush(lwp_mutex *mutex,u32 status);
 
-static __inline__ u32 __lwp_mutex_seize_irq_trylock(lwp_mutex *mutex,u32 *isr_level);
+static __inline__ u32 _CORE_mutex_Seize_interrupt_trylock(lwp_mutex *mutex,u32 *isr_level);
 
-#define __lwp_mutex_seize(_mutex_t,_id,_wait,_timeout,_level) \
+#define _CORE_mutex_Seize(_mutex_t,_id,_wait,_timeout,_level) \
 	do { \
-		if(__lwp_mutex_seize_irq_trylock(_mutex_t,&_level)) { \
+		if(_CORE_mutex_Seize_interrupt_trylock(_mutex_t,&_level)) { \
 			if(!_wait) {	\
 				_CPU_ISR_Restore(_level); \
 				_thr_executing->wait.ret_code = LWP_MUTEX_UNSATISFIED_NOWAIT; \
 			} else { \
-				__lwp_threadqueue_csenter(&(_mutex_t)->wait_queue); \
+				_Thread_queue_Enter_critical_section(&(_mutex_t)->wait_queue); \
 				_thr_executing->wait.queue = &(_mutex_t)->wait_queue; \
 				_thr_executing->wait.id = _id; \
-				__lwp_thread_dispatchdisable(); \
+				_Thread_Disable_dispatch(); \
 				_CPU_ISR_Restore(_level); \
-				__lwp_mutex_seize_irq_blocking(_mutex_t,(u64)_timeout); \
+				_CORE_mutex_Seize_interrupt_blocking(_mutex_t,(u64)_timeout); \
 			} \
 		} \
 	} while(0)

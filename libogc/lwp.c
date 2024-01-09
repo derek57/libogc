@@ -74,26 +74,26 @@ static __inline__ u32 __lwp_priotocore(u32 prio)
 static __inline__ lwp_cntrl* __lwp_cntrl_open(lwp_t thr_id)
 {
 	LWP_CHECK_THREAD(thr_id);
-	return (lwp_cntrl*)__lwp_objmgr_get(&_lwp_thr_objects,LWP_OBJMASKID(thr_id));
+	return (lwp_cntrl*)_Objects_Get(&_lwp_thr_objects,LWP_OBJMASKID(thr_id));
 }
 
 static __inline__ tqueue_st* __lwp_tqueue_open(lwpq_t tqueue)
 {
 	LWP_CHECK_TQUEUE(tqueue);
-	return (tqueue_st*)__lwp_objmgr_get(&_lwp_tqueue_objects,LWP_OBJMASKID(tqueue));
+	return (tqueue_st*)_Objects_Get(&_lwp_tqueue_objects,LWP_OBJMASKID(tqueue));
 }
 
 static lwp_cntrl* __lwp_cntrl_allocate()
 {
 	lwp_cntrl *thethread;
 	
-	__lwp_thread_dispatchdisable();
-	thethread = (lwp_cntrl*)__lwp_objmgr_allocate(&_lwp_thr_objects);
+	_Thread_Disable_dispatch();
+	thethread = (lwp_cntrl*)_Objects_Allocate(&_lwp_thr_objects);
 	if(thethread) {
-		__lwp_objmgr_open(&_lwp_thr_objects,&thethread->object);
+		_Objects_Open(&_lwp_thr_objects,&thethread->object);
 		return thethread;
 	}
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 	return NULL;
 }
 
@@ -101,29 +101,29 @@ static tqueue_st* __lwp_tqueue_allocate()
 {
 	tqueue_st *tqueue;
 
-	__lwp_thread_dispatchdisable();
-	tqueue = (tqueue_st*)__lwp_objmgr_allocate(&_lwp_tqueue_objects);
+	_Thread_Disable_dispatch();
+	tqueue = (tqueue_st*)_Objects_Allocate(&_lwp_tqueue_objects);
 	if(tqueue) {
-		__lwp_objmgr_open(&_lwp_tqueue_objects,&tqueue->object);
+		_Objects_Open(&_lwp_tqueue_objects,&tqueue->object);
 		return tqueue;
 	}
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 	return NULL;
 }
 
 static __inline__ void __lwp_cntrl_free(lwp_cntrl *thethread)
 {
-	__lwp_objmgr_close(&_lwp_thr_objects,&thethread->object);
-	__lwp_objmgr_free(&_lwp_thr_objects,&thethread->object);
+	_Objects_Close(&_lwp_thr_objects,&thethread->object);
+	_Objects_Free(&_lwp_thr_objects,&thethread->object);
 }
 
 static __inline__ void __lwp_tqueue_free(tqueue_st *tq)
 {
-	__lwp_objmgr_close(&_lwp_tqueue_objects,&tq->object);
-	__lwp_objmgr_free(&_lwp_tqueue_objects,&tq->object);
+	_Objects_Close(&_lwp_tqueue_objects,&tq->object);
+	_Objects_Free(&_lwp_tqueue_objects,&tq->object);
 }
 
-static void* idle_func(void *arg)
+static void* _Thread_Idle_body(void *arg)
 {
 	while(1);
 	return 0;
@@ -131,40 +131,40 @@ static void* idle_func(void *arg)
 
 void __lwp_sysinit()
 {
-	__lwp_objmgr_initinfo(&_lwp_thr_objects,LWP_MAX_THREADS,sizeof(lwp_cntrl));
-	__lwp_objmgr_initinfo(&_lwp_tqueue_objects,LWP_MAX_TQUEUES,sizeof(tqueue_st));
+	_Objects_Initialize_information(&_lwp_thr_objects,LWP_MAX_THREADS,sizeof(lwp_cntrl));
+	_Objects_Initialize_information(&_lwp_tqueue_objects,LWP_MAX_TQUEUES,sizeof(tqueue_st));
 
 	// create idle thread, is needed iff all threads are locked on a queue
-	_thr_idle = (lwp_cntrl*)__lwp_objmgr_allocate(&_lwp_thr_objects);
-	__lwp_thread_init(_thr_idle,NULL,0,255,0,TRUE);
+	_thr_idle = (lwp_cntrl*)_Objects_Allocate(&_lwp_thr_objects);
+	_Thread_Initialize(_thr_idle,NULL,0,255,0,TRUE);
 	_thr_executing = _thr_heir = _thr_idle;
-	__lwp_thread_start(_thr_idle,idle_func,NULL);
-	__lwp_objmgr_open(&_lwp_thr_objects,&_thr_idle->object);
+	_Thread_Start(_thr_idle,_Thread_Idle_body,NULL);
+	_Objects_Open(&_lwp_thr_objects,&_thr_idle->object);
 
 	// create main thread, as this is our entry point
 	// for every GC application.
-	_thr_main = (lwp_cntrl*)__lwp_objmgr_allocate(&_lwp_thr_objects);
-	__lwp_thread_init(_thr_main,__stack_end,((u32)__stack_addr-(u32)__stack_end),191,0,TRUE);
-	__lwp_thread_start(_thr_main,(void*)__crtmain,NULL);
-	__lwp_objmgr_open(&_lwp_thr_objects,&_thr_main->object);
+	_thr_main = (lwp_cntrl*)_Objects_Allocate(&_lwp_thr_objects);
+	_Thread_Initialize(_thr_main,__stack_end,((u32)__stack_addr-(u32)__stack_end),191,0,TRUE);
+	_Thread_Start(_thr_main,(void*)__crtmain,NULL);
+	_Objects_Open(&_lwp_thr_objects,&_thr_main->object);
 }
 
 BOOL __lwp_thread_isalive(lwp_t thr_id)
 {
 	if(thr_id==LWP_THREAD_NULL || LWP_OBJTYPE(thr_id)!=LWP_OBJTYPE_THREAD) return FALSE;
 
-	lwp_cntrl *thethread = (lwp_cntrl*)__lwp_objmgr_getnoprotection(&_lwp_thr_objects,LWP_OBJMASKID(thr_id));
+	lwp_cntrl *thethread = (lwp_cntrl*)_Objects_Get_no_protection(&_lwp_thr_objects,LWP_OBJMASKID(thr_id));
 	
 	if(thethread) {  
 		u32 *stackbase = thethread->stack;
-		if(stackbase[0]==0xDEADBABE && !__lwp_statedormant(thethread->cur_state) && !__lwp_statetransient(thethread->cur_state))
+		if(stackbase[0]==0xDEADBABE && !_States_Is_dormant(thethread->cur_state) && !_States_Is_Transient(thethread->cur_state))
 			return TRUE;
 	}
 	
 	return FALSE;
 }
 
-lwp_t __lwp_thread_currentid()
+lwp_t pthread_self()
 {
 	return _thr_executing->object.id;
 }
@@ -172,7 +172,7 @@ lwp_t __lwp_thread_currentid()
 BOOL __lwp_thread_exists(lwp_t thr_id)
 {
 	if(thr_id==LWP_THREAD_NULL || LWP_OBJTYPE(thr_id)!=LWP_OBJTYPE_THREAD) return FALSE;
-	return (__lwp_objmgr_getnoprotection(&_lwp_thr_objects,LWP_OBJMASKID(thr_id))!=NULL);
+	return (_Objects_Get_no_protection(&_lwp_thr_objects,LWP_OBJMASKID(thr_id))!=NULL);
 }
 
 frame_context* __lwp_thread_context(lwp_t thr_id)
@@ -181,7 +181,7 @@ frame_context* __lwp_thread_context(lwp_t thr_id)
 	frame_context *pctx = NULL;
 
 	LWP_CHECK_THREAD(thr_id);
-	thethread = (lwp_cntrl*)__lwp_objmgr_getnoprotection(&_lwp_thr_objects,LWP_OBJMASKID(thr_id));
+	thethread = (lwp_cntrl*)_Objects_Get_no_protection(&_lwp_thr_objects,LWP_OBJMASKID(thr_id));
 	if(thethread) pctx = &thethread->context;
 
 	return pctx;
@@ -197,22 +197,22 @@ s32 LWP_CreateThread(lwp_t *thethread,void* (*entry)(void *),void *arg,void *sta
 	lwp_thread = __lwp_cntrl_allocate();
 	if(!lwp_thread) return -1;
 
-	status = __lwp_thread_init(lwp_thread,stackbase,stack_size,__lwp_priotocore(prio),0,TRUE);
+	status = _Thread_Initialize(lwp_thread,stackbase,stack_size,__lwp_priotocore(prio),0,TRUE);
 	if(!status) {
 		__lwp_cntrl_free(lwp_thread);
-		__lwp_thread_dispatchenable();
+		_Thread_Enable_dispatch();
 		return -1;
 	}
 	
-	status = __lwp_thread_start(lwp_thread,entry,arg);
+	status = _Thread_Start(lwp_thread,entry,arg);
 	if(!status) {
 		__lwp_cntrl_free(lwp_thread);
-		__lwp_thread_dispatchenable();
+		_Thread_Enable_dispatch();
 		return -1;
 	}
 
 	*thethread = (lwp_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_THREAD)|LWP_OBJMASKID(lwp_thread->object.id));
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 
 	return 0;
 }
@@ -224,12 +224,12 @@ s32 LWP_SuspendThread(lwp_t thethread)
 	lwp_thread = __lwp_cntrl_open(thethread);
 	if(!lwp_thread) return -1;
 
-	if(!__lwp_statesuspended(lwp_thread->cur_state)) {
-		__lwp_thread_suspend(lwp_thread);
-		__lwp_thread_dispatchenable();
+	if(!_States_Is_suspended(lwp_thread->cur_state)) {
+		_Thread_Suspend(lwp_thread);
+		_Thread_Enable_dispatch();
 		return LWP_SUCCESSFUL;
 	}
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 	return LWP_ALREADY_SUSPENDED;
 }
 
@@ -240,12 +240,12 @@ s32 LWP_ResumeThread(lwp_t thethread)
 	lwp_thread = __lwp_cntrl_open(thethread);
 	if(!lwp_thread) return -1;
 
-	if(__lwp_statesuspended(lwp_thread->cur_state)) {
-		__lwp_thread_resume(lwp_thread,TRUE);
-		__lwp_thread_dispatchenable();
+	if(_States_Is_suspended(lwp_thread->cur_state)) {
+		_Thread_Resume(lwp_thread,TRUE);
+		_Thread_Enable_dispatch();
 		return LWP_SUCCESSFUL;
 	}
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 	return LWP_NOT_SUSPENDED;
 }
 
@@ -253,9 +253,9 @@ lwp_t LWP_GetSelf()
 {
 	lwp_t ret;
 
-	__lwp_thread_dispatchdisable();
+	_Thread_Disable_dispatch();
 	ret = (lwp_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_THREAD)|LWP_OBJMASKID(_thr_executing->object.id));
-	__lwp_thread_dispatchunnest();
+	_Thread_Unnest_dispatch();
 
 	return ret;
 }
@@ -269,22 +269,22 @@ void LWP_SetThreadPriority(lwp_t thethread,u32 prio)
 	lwp_thread = __lwp_cntrl_open(thethread);
 	if(!lwp_thread) return;
 
-	__lwp_thread_changepriority(lwp_thread,__lwp_priotocore(prio),TRUE);
-	__lwp_thread_dispatchenable();
+	_Thread_Change_priority(lwp_thread,__lwp_priotocore(prio),TRUE);
+	_Thread_Enable_dispatch();
 }
 
 void LWP_YieldThread()
 {
-	__lwp_thread_dispatchdisable();
-	__lwp_thread_yield();
-	__lwp_thread_dispatchenable();
+	_Thread_Disable_dispatch();
+	_Thread_Yield_processor();
+	_Thread_Enable_dispatch();
 }
 
 void LWP_Reschedule(u32 prio)
 {
-	__lwp_thread_dispatchdisable();
-	__lwp_rotate_readyqueue(prio);
-	__lwp_thread_dispatchenable();
+	_Thread_Disable_dispatch();
+	_Thread_Rotate_Ready_Queue(prio);
+	_Thread_Enable_dispatch();
 }
 
 BOOL LWP_ThreadIsSuspended(lwp_t thethread)
@@ -295,9 +295,9 @@ BOOL LWP_ThreadIsSuspended(lwp_t thethread)
 	lwp_thread = __lwp_cntrl_open(thethread);
   	if(!lwp_thread) return FALSE;
 	
-	state = (__lwp_statesuspended(lwp_thread->cur_state) ? TRUE : FALSE);
+	state = (_States_Is_suspended(lwp_thread->cur_state) ? TRUE : FALSE);
 
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 	return state;
 }
 
@@ -311,22 +311,22 @@ s32 LWP_JoinThread(lwp_t thethread,void **value_ptr)
 	lwp_thread = __lwp_cntrl_open(thethread);
 	if(!lwp_thread) return 0;
 
-	if(__lwp_thread_isexec(lwp_thread)) {
-		__lwp_thread_dispatchenable();
+	if(_Thread_Is_executing(lwp_thread)) {
+		_Thread_Enable_dispatch();
 		return EDEADLK;			//EDEADLK
 	}
 
 	exec = _thr_executing;
 	_CPU_ISR_Disable(level);
-	__lwp_threadqueue_csenter(&lwp_thread->join_list);
+	_Thread_queue_Enter_critical_section(&lwp_thread->join_list);
 	exec->wait.ret_code = 0;
 	exec->wait.ret_arg_1 = NULL;
 	exec->wait.ret_arg = (void*)&return_ptr;
 	exec->wait.queue = &lwp_thread->join_list;
 	exec->wait.id = thethread;
 	_CPU_ISR_Restore(level);
-	__lwp_threadqueue_enqueue(&lwp_thread->join_list,LWP_WD_NOTIMEOUT);
-	__lwp_thread_dispatchenable();
+	_Thread_queue_Enqueue(&lwp_thread->join_list,LWP_WD_NOTIMEOUT);
+	_Thread_Enable_dispatch();
 
 	if(value_ptr) *value_ptr = return_ptr;
 	return 0;
@@ -341,10 +341,10 @@ s32 LWP_InitQueue(lwpq_t *thequeue)
 	tq = __lwp_tqueue_allocate();
 	if(!tq) return -1;
 
-	__lwp_threadqueue_init(&tq->tqueue,LWP_THREADQ_MODEFIFO,LWP_STATES_WAITING_ON_THREADQ,0);
+	_Thread_queue_Initialize(&tq->tqueue,LWP_THREADQ_MODEFIFO,LWP_STATES_WAITING_ON_THREADQ,0);
 
 	*thequeue = (lwpq_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_TQUEUE)|LWP_OBJMASKID(tq->object.id));
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 
 	return 0;
 }
@@ -358,9 +358,9 @@ void LWP_CloseQueue(lwpq_t thequeue)
 	if(!tq) return;
 	
 	do {
-		thethread = __lwp_threadqueue_dequeue(&tq->tqueue);
+		thethread = _Thread_queue_Dequeue(&tq->tqueue);
 	} while(thethread);
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 
 	__lwp_tqueue_free(tq);
 	return;
@@ -377,15 +377,15 @@ s32 LWP_ThreadSleep(lwpq_t thequeue)
 
 	exec = _thr_executing;
 	_CPU_ISR_Disable(level);
-	__lwp_threadqueue_csenter(&tq->tqueue);
+	_Thread_queue_Enter_critical_section(&tq->tqueue);
 	exec->wait.ret_code = 0;
 	exec->wait.ret_arg = NULL;
 	exec->wait.ret_arg_1 = NULL;
 	exec->wait.queue = &tq->tqueue;
 	exec->wait.id = thequeue;
 	_CPU_ISR_Restore(level);
-	__lwp_threadqueue_enqueue(&tq->tqueue,LWP_THREADQ_NOTIMEOUT);
-	__lwp_thread_dispatchenable();
+	_Thread_queue_Enqueue(&tq->tqueue,LWP_THREADQ_NOTIMEOUT);
+	_Thread_Enable_dispatch();
 	return 0;
 }
 
@@ -398,9 +398,9 @@ void LWP_ThreadBroadcast(lwpq_t thequeue)
 	if(!tq) return;
 	
 	do {
-		thethread = __lwp_threadqueue_dequeue(&tq->tqueue);
+		thethread = _Thread_queue_Dequeue(&tq->tqueue);
 	} while(thethread);
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 }
 
 void LWP_ThreadSignal(lwpq_t thequeue)
@@ -410,6 +410,6 @@ void LWP_ThreadSignal(lwpq_t thequeue)
 	tq = __lwp_tqueue_open(thequeue);
 	if(!tq) return;
 
-	__lwp_threadqueue_dequeue(&tq->tqueue);
-	__lwp_thread_dispatchenable();
+	_Thread_queue_Dequeue(&tq->tqueue);
+	_Thread_Enable_dispatch();
 }

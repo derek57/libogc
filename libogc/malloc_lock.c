@@ -18,7 +18,7 @@ static lwp_mutex mem_lock;
 
 void __memlock_init()
 {
-	__lwp_thread_dispatchdisable();
+	_Thread_Disable_dispatch();
 	if(!initialized) {
 		lwp_mutex_attr attr;
 
@@ -28,9 +28,9 @@ void __memlock_init()
 		attr.nest_behavior = LWP_MUTEX_NEST_ACQUIRE;
 		attr.onlyownerrelease = TRUE;
 		attr.prioceil = 1;
-		__lwp_mutex_initialize(&mem_lock,&attr,LWP_MUTEX_UNLOCKED);
+		_CORE_mutex_Initialize(&mem_lock,&attr,LWP_MUTEX_UNLOCKED);
 	}
-	__lwp_thread_dispatchunnest();
+	_Thread_Unnest_dispatch();
 }
 
 #ifndef REENTRANT_SYSCALLS_PROVIDED
@@ -42,7 +42,7 @@ void _DEFUN(__libogc_malloc_lock,(r),
 	if(!initialized) return;
 
 	_CPU_ISR_Disable(level);
-	__lwp_mutex_seize(&mem_lock,MEMLOCK_MUTEX_ID,TRUE,LWP_THREADQ_NOTIMEOUT,level);
+	_CORE_mutex_Seize(&mem_lock,MEMLOCK_MUTEX_ID,TRUE,LWP_THREADQ_NOTIMEOUT,level);
 }
 
 void _DEFUN(__libogc_malloc_unlock,(r),
@@ -50,9 +50,9 @@ void _DEFUN(__libogc_malloc_unlock,(r),
 {
 	if(!initialized) return;
 
-	__lwp_thread_dispatchdisable();
-	__lwp_mutex_surrender(&mem_lock);
-	__lwp_thread_dispatchenable();
+	_Thread_Disable_dispatch();
+	_CORE_mutex_Surrender(&mem_lock);
+	_Thread_Enable_dispatch();
 }
 
 #else
@@ -64,7 +64,7 @@ void _DEFUN(__libogc_malloc_lock,(ptr),
 	if(!initialized) return;
 
 	_CPU_ISR_Disable(level);
-	__lwp_mutex_seize(&mem_lock,MEMLOCK_MUTEX_ID,TRUE,LWP_THREADQ_NOTIMEOUT,level);
+	_CORE_mutex_Seize(&mem_lock,MEMLOCK_MUTEX_ID,TRUE,LWP_THREADQ_NOTIMEOUT,level);
 	ptr->_errno = _thr_executing->wait.ret_code;
 }
 
@@ -73,9 +73,9 @@ void _DEFUN(__libogc_malloc_unlock,(ptr),
 {
 	if(!initialized) return;
 
-	__lwp_thread_dispatchdisable();
-	ptr->_errno = __lwp_mutex_surrender(&mem_lock);
-	__lwp_thread_dispatchenable();
+	_Thread_Disable_dispatch();
+	ptr->_errno = _CORE_mutex_Surrender(&mem_lock);
+	_Thread_Enable_dispatch();
 }
 
 #endif

@@ -437,7 +437,7 @@ static void __dvd_clearwaitingqueue()
 	u32 i;
 
 	for(i=0;i<4;i++)
-		__lwp_queue_init_empty(&__dvd_waitingqueue[i]);
+		_Chain_Initialize_empty(&__dvd_waitingqueue[i]);
 }
 
 static s32 __dvd_checkwaitingqueue()
@@ -447,7 +447,7 @@ static s32 __dvd_checkwaitingqueue()
 
 	_CPU_ISR_Disable(level);
 	for(i=0;i<4;i++) {
-		if(!__lwp_queue_isempty(&__dvd_waitingqueue[i])) break;
+		if(!_Chain_Is_empty(&__dvd_waitingqueue[i])) break;
 	}
 	_CPU_ISR_Restore(level);
 	return (i<4);
@@ -460,7 +460,7 @@ static s32 __dvd_pushwaitingqueue(s32 prio,dvdcmdblk *block)
 	printf("__dvd_pushwaitingqueue(%d,%p,%p)\n",prio,block,block->cb);
 #endif
 	_CPU_ISR_Disable(level);
-	__lwp_queue_appendI(&__dvd_waitingqueue[prio],&block->node);
+	_Chain_Append_unprotected(&__dvd_waitingqueue[prio],&block->node);
 	_CPU_ISR_Restore(level);
 	return 1;
 }
@@ -473,7 +473,7 @@ static dvdcmdblk* __dvd_popwaitingqueueprio(s32 prio)
 	printf("__dvd_popwaitingqueueprio(%d)\n",prio);
 #endif
 	_CPU_ISR_Disable(level);
-	ret = (dvdcmdblk*)__lwp_queue_firstnodeI(&__dvd_waitingqueue[prio]);
+	ret = (dvdcmdblk*)_Chain_Get_first_unprotected(&__dvd_waitingqueue[prio]);
 	_CPU_ISR_Restore(level);
 #ifdef _DVD_DEBUG
 	printf("__dvd_popwaitingqueueprio(%p,%p)\n",ret,ret->cb);
@@ -490,7 +490,7 @@ static dvdcmdblk* __dvd_popwaitingqueue()
 #endif
 	_CPU_ISR_Disable(level);
 	for(i=0;i<4;i++) {
-		if(!__lwp_queue_isempty(&__dvd_waitingqueue[i])) {
+		if(!_Chain_Is_empty(&__dvd_waitingqueue[i])) {
 			_CPU_ISR_Restore(level);
 			ret = __dvd_popwaitingqueueprio(i);
 			return ret;

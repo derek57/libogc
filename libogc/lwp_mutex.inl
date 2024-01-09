@@ -1,45 +1,45 @@
 #ifndef __LWP_MUTEX_INL__
 #define __LWP_MUTEX_INL__
 
-static __inline__ u32 __lwp_mutex_locked(lwp_mutex *mutex)
+static __inline__ u32 _CORE_mutex_Is_locked(lwp_mutex *mutex)
 {
 	return (mutex->lock==LWP_MUTEX_LOCKED);
 }
 
-static __inline__ u32 __lwp_mutex_ispriority(lwp_mutex_attr *attrs)
+static __inline__ u32 _CORE_mutex_Is_priority(lwp_mutex_attr *attrs)
 {
 	return (attrs->mode==LWP_MUTEX_PRIORITY);
 }
 
-static __inline__ u32 __lwp_mutex_isfifo(lwp_mutex_attr *attrs)
+static __inline__ u32 _CORE_mutex_Is_fifo(lwp_mutex_attr *attrs)
 {
 	return (attrs->mode==LWP_MUTEX_FIFO);
 }
 
-static __inline__ u32 __lwp_mutex_isinheritprio(lwp_mutex_attr *attrs)
+static __inline__ u32 _CORE_mutex_Is_inherit_priority(lwp_mutex_attr *attrs)
 {
 	return (attrs->mode==LWP_MUTEX_INHERITPRIO);
 }
 
-static __inline__ u32 __lwp_mutex_isprioceiling(lwp_mutex_attr *attrs)
+static __inline__ u32 _CORE_mutex_Is_priority_ceiling(lwp_mutex_attr *attrs)
 {
 	return (attrs->mode==LWP_MUTEX_PRIORITYCEIL);
 }
 
-static __inline__ u32 __lwp_mutex_seize_irq_trylock(lwp_mutex *mutex,u32 *isr_level)
+static __inline__ u32 _CORE_mutex_Seize_interrupt_trylock(lwp_mutex *mutex,u32 *isr_level)
 {
 	lwp_cntrl *exec;
 	u32 level = *isr_level;
 
 	exec = _thr_executing;
 	exec->wait.ret_code = LWP_MUTEX_SUCCESSFUL;
-	if(!__lwp_mutex_locked(mutex)) {
+	if(!_CORE_mutex_Is_locked(mutex)) {
 		mutex->lock = LWP_MUTEX_LOCKED;
 		mutex->holder = exec;
 		mutex->nest_cnt = 1;
-		if(__lwp_mutex_isinheritprio(&mutex->atrrs) || __lwp_mutex_isprioceiling(&mutex->atrrs))
+		if(_CORE_mutex_Is_inherit_priority(&mutex->atrrs) || _CORE_mutex_Is_priority_ceiling(&mutex->atrrs))
 			exec->res_cnt++;
-		if(!__lwp_mutex_isprioceiling(&mutex->atrrs)) {
+		if(!_CORE_mutex_Is_priority_ceiling(&mutex->atrrs)) {
 			_CPU_ISR_Restore(level);
 			return 0;
 		}
@@ -53,10 +53,10 @@ static __inline__ u32 __lwp_mutex_seize_irq_trylock(lwp_mutex *mutex,u32 *isr_le
 				return 0;
 			}
 			if(priocurr>prioceiling) {
-				__lwp_thread_dispatchdisable();
+				_Thread_Disable_dispatch();
 				_CPU_ISR_Restore(level);
-				__lwp_thread_changepriority(mutex->holder,mutex->atrrs.prioceil,FALSE);
-				__lwp_thread_dispatchenable();
+				_Thread_Change_priority(mutex->holder,mutex->atrrs.prioceil,FALSE);
+				_Thread_Enable_dispatch();
 				return 0;
 			}
 			exec->wait.ret_code = LWP_MUTEX_CEILINGVIOL;
@@ -68,7 +68,7 @@ static __inline__ u32 __lwp_mutex_seize_irq_trylock(lwp_mutex *mutex,u32 *isr_le
 		return 0;
 	}
 
-	if(__lwp_thread_isexec(mutex->holder)) {
+	if(_Thread_Is_executing(mutex->holder)) {
 		switch(mutex->atrrs.nest_behavior) {
 			case LWP_MUTEX_NEST_ACQUIRE:
 				mutex->nest_cnt++;

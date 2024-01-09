@@ -133,7 +133,7 @@ nested:
 	beq		easy_exit
 
 switch:
-	bl		__thread_dispatch
+	bl		_Thread_Dispatch
 
 easy_exit:
 	lwz		r4,CR_OFFSET(sp)

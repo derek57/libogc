@@ -49,33 +49,33 @@ static void __lwp_wd_settimer(wd_cntrl *wd)
 	}
 }
 
-void __lwp_watchdog_init()
+void _Watchdog_Handler_initialization()
 {
 	_wd_sync_level = 0;
 	_wd_sync_count = 0;
 	_wd_ticks_since_boot = 0;
 
-	__lwp_queue_init_empty(&_wd_ticks_queue);
+	_Chain_Initialize_empty(&_wd_ticks_queue);
 }
 
-void __lwp_wd_insert(lwp_queue *header,wd_cntrl *wd)
+void _Watchdog_Insert(lwp_queue *header,wd_cntrl *wd)
 {
 	u32 level;
 	u64 fire;
 	u32 isr_nest_level;
 	wd_cntrl *after;
 #ifdef _LWPWD_DEBUG
-	printf("__lwp_wd_insert(%p,%llu,%llu)\n",wd,wd->start,wd->fire);
+	printf("_Watchdog_Insert(%p,%llu,%llu)\n",wd,wd->start,wd->fire);
 #endif
-	isr_nest_level = __lwp_isr_in_progress();
+	isr_nest_level = _ISR_Is_in_progress();
 	wd->state = LWP_WD_INSERTED;
 
 	_wd_sync_count++;
 restart:
 	_CPU_ISR_Disable(level);
 	fire = wd->fire;
-	for(after=__lwp_wd_first(header);;after=__lwp_wd_next(after)) {
-		if(fire==0 || !__lwp_wd_next(after)) break;
+	for(after=_Watchdog_First(header);;after=_Watchdog_Next(after)) {
+		if(fire==0 || !_Watchdog_Next(after)) break;
 		if(fire<after->fire) break;
 
 		_CPU_ISR_Flash(level);
@@ -86,10 +86,10 @@ restart:
 			goto restart;
 		}
 	}
-	__lwp_wd_activate(wd);
+	_Watchdog_Activate(wd);
 	wd->fire = fire;
-	__lwp_queue_insertI(after->node.prev,&wd->node);
-	if(__lwp_wd_first(header)==wd) __lwp_wd_settimer(wd);
+	_Chain_Insert_unprotected(after->node.prev,&wd->node);
+	if(_Watchdog_First(header)==wd) __lwp_wd_settimer(wd);
 
 exit_insert:
 	_wd_sync_level = isr_nest_level;
@@ -98,13 +98,13 @@ exit_insert:
 	return;
 }
 
-u32 __lwp_wd_remove(lwp_queue *header,wd_cntrl *wd)
+u32 _Watchdog_Remove(lwp_queue *header,wd_cntrl *wd)
 {
 	u32 level;
 	u32 prev_state;
 	wd_cntrl *next;
 #ifdef _LWPWD_DEBUG
-	printf("__lwp_wd_remove(%p)\n",wd);
+	printf("_Watchdog_Remove(%p)\n",wd);
 #endif
 	_CPU_ISR_Disable(level);
 	prev_state = wd->state;
@@ -117,33 +117,33 @@ u32 __lwp_wd_remove(lwp_queue *header,wd_cntrl *wd)
 		case LWP_WD_ACTIVE:
 		case LWP_WD_REMOVE:
 			wd->state = LWP_WD_INACTIVE;
-			next = __lwp_wd_next(wd);
-			if(_wd_sync_count) _wd_sync_level = __lwp_isr_in_progress();
-			__lwp_queue_extractI(&wd->node);
-			if(!__lwp_queue_isempty(header) && __lwp_wd_first(header)==next) __lwp_wd_settimer(next);
+			next = _Watchdog_Next(wd);
+			if(_wd_sync_count) _wd_sync_level = _ISR_Is_in_progress();
+			_Chain_Extract_unprotected(&wd->node);
+			if(!_Chain_Is_empty(header) && _Watchdog_First(header)==next) __lwp_wd_settimer(next);
 			break;
 	}
 	_CPU_ISR_Restore(level);
 	return prev_state;
 }
 
-void __lwp_wd_tickle(lwp_queue *queue)
+void _Watchdog_Tickle(lwp_queue *queue)
 {
 	wd_cntrl *wd;
 	u64 now;
 	s64 diff;
 
-	if(__lwp_queue_isempty(queue)) return;
+	if(_Chain_Is_empty(queue)) return;
 
-	wd = __lwp_wd_first(queue);
+	wd = _Watchdog_First(queue);
 	now = gettime();
 	diff = diff_ticks(now,wd->fire);
 #ifdef _LWPWD_DEBUG
-	printf("__lwp_wd_tickle(%p,%08x%08x,%08x%08x,%08x%08x,%08x%08x)\n",wd,(u32)(now>>32),(u32)now,(u32)(wd->start>>32),(u32)wd->start,(u32)(wd->fire>>32),(u32)wd->fire,(u32)(diff>>32),(u32)diff);
+	printf("_Watchdog_Tickle(%p,%08x%08x,%08x%08x,%08x%08x,%08x%08x)\n",wd,(u32)(now>>32),(u32)now,(u32)(wd->start>>32),(u32)wd->start,(u32)(wd->fire>>32),(u32)wd->fire,(u32)(diff>>32),(u32)diff);
 #endif
 	if(diff<=0) {
 		do {
-			switch(__lwp_wd_remove(queue,wd)) {
+			switch(_Watchdog_Remove(queue,wd)) {
 				case LWP_WD_ACTIVE:	
 					wd->routine(wd->usr_data);
 					break;
@@ -154,35 +154,35 @@ void __lwp_wd_tickle(lwp_queue *queue)
 				case LWP_WD_REMOVE:
 					break;
 			}
-			wd = __lwp_wd_first(queue);
-		} while(!__lwp_queue_isempty(queue) && wd->fire==0);
+			wd = _Watchdog_First(queue);
+		} while(!_Chain_Is_empty(queue) && wd->fire==0);
 	} else {
-		__lwp_wd_reset(wd);
+		_Watchdog_Reset(wd);
 	}
 }
 
-void __lwp_wd_adjust(lwp_queue *queue,u32 dir,s64 interval)
+void _Watchdog_Adjust(lwp_queue *queue,u32 dir,s64 interval)
 {
 	u32 level;
 	u64 abs_int;
 
 	_CPU_ISR_Disable(level);
 	abs_int = gettime()+LWP_WD_ABS(interval);
-	if(!__lwp_queue_isempty(queue)) {
+	if(!_Chain_Is_empty(queue)) {
 		switch(dir) {
 			case LWP_WD_BACKWARD:
-				__lwp_wd_first(queue)->fire += LWP_WD_ABS(interval);
+				_Watchdog_First(queue)->fire += LWP_WD_ABS(interval);
 				break;
 			case LWP_WD_FORWARD:
 				while(abs_int) {
-					if(abs_int<__lwp_wd_first(queue)->fire) {
-						__lwp_wd_first(queue)->fire -= LWP_WD_ABS(interval);
+					if(abs_int<_Watchdog_First(queue)->fire) {
+						_Watchdog_First(queue)->fire -= LWP_WD_ABS(interval);
 						break;
 					} else {
-						abs_int -= __lwp_wd_first(queue)->fire;
-						__lwp_wd_first(queue)->fire = gettime();
-						__lwp_wd_tickle(queue);
-						if(__lwp_queue_isempty(queue)) break;
+						abs_int -= _Watchdog_First(queue)->fire;
+						_Watchdog_First(queue)->fire = gettime();
+						_Watchdog_Tickle(queue);
+						if(_Chain_Is_empty(queue)) break;
 					}
 				}
 				break;

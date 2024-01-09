@@ -69,32 +69,32 @@ extern wd_cntrl _lwp_wd_timeslice;
 extern void **__lwp_thr_libc_reent;
 extern lwp_queue _lwp_thr_ready[];
 
-void __thread_dispatch();
-void __lwp_thread_yield();
+void _Thread_Dispatch();
+void _Thread_Yield_processor();
 void __lwp_thread_closeall();
-void __lwp_thread_setstate(lwp_cntrl *,u32);
-void __lwp_thread_clearstate(lwp_cntrl *,u32);
-void __lwp_thread_changepriority(lwp_cntrl *,u32,u32);
-void __lwp_thread_setpriority(lwp_cntrl *,u32);
-void __lwp_thread_settransient(lwp_cntrl *);
-void __lwp_thread_suspend(lwp_cntrl *);
-void __lwp_thread_resume(lwp_cntrl *,u32);
-void __lwp_thread_loadenv(lwp_cntrl *);
-void __lwp_thread_ready(lwp_cntrl *);
-u32 __lwp_thread_init(lwp_cntrl *,void *,u32,u32,u32,bool);
-u32 __lwp_thread_start(lwp_cntrl *,void* (*)(void*),void *);
-void __lwp_thread_exit(void *);
-void __lwp_thread_close(lwp_cntrl *);
-void __lwp_thread_startmultitasking();
-void __lwp_thread_stopmultitasking(void (*exitfunc)());
-lwp_obj* __lwp_thread_getobject(lwp_cntrl *);
-u32 __lwp_evaluatemode();
+void _Thread_Set_state(lwp_cntrl *,u32);
+void _Thread_Clear_state(lwp_cntrl *,u32);
+void _Thread_Change_priority(lwp_cntrl *,u32,u32);
+void _Thread_Set_priority(lwp_cntrl *,u32);
+void _Thread_Set_transient(lwp_cntrl *);
+void _Thread_Suspend(lwp_cntrl *);
+void _Thread_Resume(lwp_cntrl *,u32);
+void _Thread_Load_environment(lwp_cntrl *);
+void _Thread_Ready(lwp_cntrl *);
+u32 _Thread_Initialize(lwp_cntrl *,void *,u32,u32,u32,bool);
+u32 _Thread_Start(lwp_cntrl *,void* (*)(void*),void *);
+void pthread_exit(void *);
+void _Thread_Close(lwp_cntrl *);
+void _Thread_Start_multitasking();
+void _Thread_Stop_multitasking(void (*exitfunc)());
+lwp_obj* _Thread_Get(lwp_cntrl *);
+u32 _Thread_Evaluate_mode();
 
-u32 __lwp_isr_in_progress();
-void __lwp_thread_resettimeslice();
-void __lwp_rotate_readyqueue(u32);
-void __lwp_thread_delayended(void *);
-void __lwp_thread_tickle_timeslice(void *);
+u32 _ISR_Is_in_progress();
+void _Thread_Reset_timeslice();
+void _Thread_Rotate_Ready_Queue(u32);
+void _Thread_Delay_ended(void *);
+void _Thread_Tickle_timeslice(void *);
 
 #ifdef LIBOGC_INTERNAL
 #include <libogc/lwp_threads.inl>

@@ -49,7 +49,7 @@ static void event_data_read(struct wiimote_t *wm,ubyte *msg)
 		cmd->state = CMD_DONE;
 		if(cmd->cb!=NULL) cmd->cb(wm,op->buffer,(op->readdata.size - op->wait));
 
-		__lwp_queue_append(&wm->cmdq,&cmd->node);
+		_Chain_Append(&wm->cmdq,&cmd->node);
 		wiiuse_send_next_command(wm);
 		return;
 	}
@@ -71,7 +71,7 @@ static void event_data_read(struct wiimote_t *wm,ubyte *msg)
 		cmd->state = CMD_DONE;
 		if(cmd->cb!=NULL) cmd->cb(wm,op->buffer,op->readdata.size);
 
-		__lwp_queue_append(&wm->cmdq,&cmd->node);
+		_Chain_Append(&wm->cmdq,&cmd->node);
 		wiiuse_send_next_command(wm);
 	}
 }
@@ -100,7 +100,7 @@ static void event_ack(struct wiimote_t *wm,ubyte *msg)
 	cmd->state = CMD_DONE;
 	if(cmd->cb) cmd->cb(wm,NULL,0);
 
-	__lwp_queue_append(&wm->cmdq,&cmd->node);
+	_Chain_Append(&wm->cmdq,&cmd->node);
 	wiiuse_send_next_command(wm);
 }
 
@@ -165,7 +165,7 @@ done:
 	cmd->state = CMD_DONE;
 	if(cmd->cb!=NULL) cmd->cb(wm,msg,6);
 	
-	__lwp_queue_append(&wm->cmdq,&cmd->node);
+	_Chain_Append(&wm->cmdq,&cmd->node);
 	wiiuse_send_next_command(wm);
 }
 

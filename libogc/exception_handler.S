@@ -179,7 +179,7 @@ default_exceptionhandler:
 	addi		sp,sp,EXCEPTION_FRAME_END
 	rfi
 
-	.extern _cpu_context_save_fp,_cpu_context_restore_fp
+	.extern _CPU_Context_save_fp_context,_CPU_Context_restore_fp_context
 	.globl fpu_exceptionhandler
 fpu_exceptionhandler:
 	stwu		sp,-EXCEPTION_FRAME_END(sp)		//now we're able to adjust the stackpointer with it's cached address

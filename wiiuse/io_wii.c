@@ -45,7 +45,7 @@ static s32 __wiiuse_disconnected(void *arg,struct bte_pcb *pcb,u8 err)
 	WIIMOTE_DISABLE_STATE(wm,(WIIMOTE_STATE_CONNECTED|WIIMOTE_STATE_HANDSHAKE|WIIMOTE_STATE_HANDSHAKE_COMPLETE));
 
 	while(wm->cmd_head) {
-		__lwp_queue_append(&wm->cmdq,&wm->cmd_head->node);
+		_Chain_Append(&wm->cmdq,&wm->cmd_head->node);
 		wm->cmd_head = wm->cmd_head->next;
 	}
 	wm->cmd_tail = NULL;
@@ -157,11 +157,11 @@ void wiiuse_init_cmd_queue(struct wiimote_t *wm)
 
 	if (!__queue_buffer[wm->unid]) {
 		size = (MAX_COMMANDS*sizeof(struct cmd_blk_t));
-		__queue_buffer[wm->unid] = __lwp_wkspace_allocate(size);
+		__queue_buffer[wm->unid] = _Workspace_Allocate(size);
 		if(!__queue_buffer[wm->unid]) return;
 	}
 
-	__lwp_queue_initialize(&wm->cmdq,__queue_buffer[wm->unid],MAX_COMMANDS,sizeof(struct cmd_blk_t));
+	_Chain_Initialize(&wm->cmdq,__queue_buffer[wm->unid],MAX_COMMANDS,sizeof(struct cmd_blk_t));
 }
 
 int wiiuse_io_write(struct wiimote_t *wm,ubyte *buf,int len)

@@ -89,12 +89,12 @@ typedef struct _wdcntrl {
 	void *usr_data;
 } wd_cntrl;
 
-void __lwp_watchdog_init();
+void _Watchdog_Handler_initialization();
 void __lwp_watchdog_settimer(wd_cntrl *wd);
-void __lwp_wd_insert(lwp_queue *header,wd_cntrl *wd);
-u32 __lwp_wd_remove(lwp_queue *header,wd_cntrl *wd);
-void __lwp_wd_tickle(lwp_queue *queue);
-void __lwp_wd_adjust(lwp_queue *queue,u32 dir,s64 interval);
+void _Watchdog_Insert(lwp_queue *header,wd_cntrl *wd);
+u32 _Watchdog_Remove(lwp_queue *header,wd_cntrl *wd);
+void _Watchdog_Tickle(lwp_queue *queue);
+void _Watchdog_Adjust(lwp_queue *queue,u32 dir,s64 interval);
 
 #ifdef LIBOGC_INTERNAL
 #include <libogc/lwp_watchdog.inl>

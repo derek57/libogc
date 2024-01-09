@@ -1,14 +1,14 @@
 #ifndef __LWP_WKSPACE_INL__
 #define __LWP_WKSPACE_INL__
 
-static __inline__ void* __lwp_wkspace_allocate(u32 size)
+static __inline__ void* _Workspace_Allocate(u32 size)
 {
-	return __lwp_heap_allocate(&__wkspace_heap,size);
+	return _Heap_Allocate(&__wkspace_heap,size);
 }
 
-static __inline__ BOOL __lwp_wkspace_free(void *ptr)
+static __inline__ BOOL _Workspace_Free(void *ptr)
 {
-	return __lwp_heap_free(&__wkspace_heap,ptr);
+	return _Heap_Free(&__wkspace_heap,ptr);
 }
 
 #endif

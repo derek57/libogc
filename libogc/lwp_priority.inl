@@ -1,7 +1,7 @@
 #ifndef __LWP_PRIORITY_INL__
 #define __LWP_PRIORITY_INL__
 
-static __inline__ void __lwp_priomap_init(prio_cntrl *theprio,u32 prio)
+static __inline__ void _Priority_Initialize_information(prio_cntrl *theprio,u32 prio)
 {
 	u32 major,minor,mask;
 	
@@ -18,30 +18,30 @@ static __inline__ void __lwp_priomap_init(prio_cntrl *theprio,u32 prio)
 	theprio->ready_minor = mask;
 	theprio->block_minor = ~mask;
 #ifdef _LWPPRIO_DEBUG
-	printf("__lwp_priomap_init(%p,%d,%p,%d,%d,%d,%d)\n",theprio,prio,theprio->minor,theprio->ready_major,theprio->ready_minor,theprio->block_major,theprio->block_minor);
+	printf("_Priority_Initialize_information(%p,%d,%p,%d,%d,%d,%d)\n",theprio,prio,theprio->minor,theprio->ready_major,theprio->ready_minor,theprio->block_major,theprio->block_minor);
 #endif
 }
 
-static __inline__ void __lwp_priomap_addto(prio_cntrl *theprio)
+static __inline__ void _Priority_Add_to_bit_map(prio_cntrl *theprio)
 {
 	*theprio->minor |= theprio->ready_minor;
 	_prio_major_bitmap |= theprio->ready_major;
 }
 
-static __inline__ void __lwp_priomap_removefrom(prio_cntrl *theprio)
+static __inline__ void _Priority_Remove_from_bit_map(prio_cntrl *theprio)
 {
 	*theprio->minor &= theprio->block_minor;
 	if(*theprio->minor==0)
 		_prio_major_bitmap &= theprio->block_major;
 }
 
-static __inline__ u32 __lwp_priomap_highest()
+static __inline__ u32 _Priority_Get_highest()
 {
 	u32 major,minor;
 	major = cntlzw(_prio_major_bitmap);
 	minor = cntlzw(_prio_bitmap[major]);
 #ifdef _LWPPRIO_DEBUG
-	printf("__lwp_priomap_highest(%d)\n",((major<<4)+minor));
+	printf("_Priority_Get_highest(%d)\n",((major<<4)+minor));
 #endif
 	return ((major<<4)+minor);
 }

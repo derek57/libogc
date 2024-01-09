@@ -10,13 +10,13 @@ struct _reent libc_globl_reent;
 extern void _wrapup_reent(struct _reent *);
 extern void _reclaim_reent(struct _reent *);
 
-int __libc_create_hook(lwp_cntrl *curr_thr,lwp_cntrl *create_thr)
+int libc_create_hook(lwp_cntrl *curr_thr,lwp_cntrl *create_thr)
 {
 	create_thr->libc_reent = NULL;
 	return 1;
 }
 
-int __libc_start_hook(lwp_cntrl *curr_thr,lwp_cntrl *start_thr)
+int libc_start_hook(lwp_cntrl *curr_thr,lwp_cntrl *start_thr)
 {
 	struct _reent *ptr;
 
@@ -31,7 +31,7 @@ int __libc_start_hook(lwp_cntrl *curr_thr,lwp_cntrl *start_thr)
 	return 1;
 }
 
-int __libc_delete_hook(lwp_cntrl *curr_thr, lwp_cntrl *delete_thr)
+int libc_delete_hook(lwp_cntrl *curr_thr, lwp_cntrl *delete_thr)
 {
 	struct _reent *ptr;
 
@@ -52,20 +52,20 @@ int __libc_delete_hook(lwp_cntrl *curr_thr, lwp_cntrl *delete_thr)
 	return 1;
 }
 
-void __libc_init(int reentrant)
+void libc_init(int reentrant)
 {
 	libc_globl_reent = (struct _reent)_REENT_INIT((libc_globl_reent));
 	_REENT = &libc_globl_reent;
 
 	if(reentrant) {
-		__lwp_thread_setlibcreent((void*)&_REENT);
+		_Thread_Set_libc_reent((void*)&_REENT);
 		libc_reentrant = reentrant;
 	}
 }
 
-void __libc_wrapup()
+void libc_wrapup()
 {
-	if(!__sys_state_up(__sys_state_get())) return;
+	if(!_System_state_Is_up(_System_state_Get())) return;
 	if(_REENT!=&libc_globl_reent) {
 		_wrapup_reent(&libc_globl_reent);
 		_REENT = &libc_globl_reent;

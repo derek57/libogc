@@ -67,7 +67,7 @@ startup:
 	bl		_memset
 
 1:
-	b      SYS_Init # Branch to the user code!
+	b      rtems_initialize_executive_early # Branch to the user code!
 
 __InitGPRS:
 	# Clear all of the GPR's to 0

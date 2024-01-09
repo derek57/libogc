@@ -58,32 +58,32 @@ extern void timespec_subtract(const struct timespec *tp_start,const struct times
 
 void __lwp_cond_init()
 {
-	__lwp_objmgr_initinfo(&_lwp_cond_objects,LWP_MAX_CONDVARS,sizeof(cond_st));
+	_Objects_Initialize_information(&_lwp_cond_objects,LWP_MAX_CONDVARS,sizeof(cond_st));
 }
 
 static __inline__ cond_st* __lwp_cond_open(cond_t cond)
 {
 	LWP_CHECK_COND(cond);
-	return (cond_st*)__lwp_objmgr_get(&_lwp_cond_objects,LWP_OBJMASKID(cond));
+	return (cond_st*)_Objects_Get(&_lwp_cond_objects,LWP_OBJMASKID(cond));
 }
 
 static __inline__ void __lwp_cond_free(cond_st *cond)
 {
-	__lwp_objmgr_close(&_lwp_cond_objects,&cond->object);
-	__lwp_objmgr_free(&_lwp_cond_objects,&cond->object);
+	_Objects_Close(&_lwp_cond_objects,&cond->object);
+	_Objects_Free(&_lwp_cond_objects,&cond->object);
 }
 
 static cond_st* __lwp_cond_allocate()
 {
 	cond_st *cond;
 
-	__lwp_thread_dispatchdisable();
-	cond = (cond_st*)__lwp_objmgr_allocate(&_lwp_cond_objects);
+	_Thread_Disable_dispatch();
+	cond = (cond_st*)_Objects_Allocate(&_lwp_cond_objects);
 	if(cond) {
-		__lwp_objmgr_open(&_lwp_cond_objects,&cond->object);
+		_Objects_Open(&_lwp_cond_objects,&cond->object);
 		return cond;
 	}
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 	return NULL;
 }
 
@@ -96,7 +96,7 @@ static s32 __lwp_cond_waitsupp(cond_t cond,mutex_t mutex,u64 timeout,u8 timedout
 	if(!thecond) return -1;
 		
 	if(thecond->lock!=LWP_MUTEX_NULL && thecond->lock!=mutex) {
-		__lwp_thread_dispatchenable();
+		_Thread_Enable_dispatch();
 		return EINVAL;
 	}
 
@@ -105,19 +105,19 @@ static s32 __lwp_cond_waitsupp(cond_t cond,mutex_t mutex,u64 timeout,u8 timedout
 	if(!timedout) {
 		thecond->lock = mutex;
 		_CPU_ISR_Disable(level);
-		__lwp_threadqueue_csenter(&thecond->wait_queue);
+		_Thread_queue_Enter_critical_section(&thecond->wait_queue);
 		_thr_executing->wait.ret_code = 0;
 		_thr_executing->wait.queue = &thecond->wait_queue;
 		_thr_executing->wait.id = cond;
 		_CPU_ISR_Restore(level);
-		__lwp_threadqueue_enqueue(&thecond->wait_queue,timeout);
-		__lwp_thread_dispatchenable();
+		_Thread_queue_Enqueue(&thecond->wait_queue,timeout);
+		_Thread_Enable_dispatch();
 		
 		status = _thr_executing->wait.ret_code;
 		if(status && status!=ETIMEDOUT)
 			return status;
 	} else {
-		__lwp_thread_dispatchenable();
+		_Thread_Enable_dispatch();
 		status = ETIMEDOUT;
 	}
 
@@ -137,10 +137,10 @@ static s32 __lwp_cond_signalsupp(cond_t cond,u8 isbroadcast)
 	if(!thecond) return -1;
 
 	do {
-		thethread = __lwp_threadqueue_dequeue(&thecond->wait_queue);
+		thethread = _Thread_queue_Dequeue(&thecond->wait_queue);
 		if(!thethread) thecond->lock = LWP_MUTEX_NULL;
 	} while(isbroadcast && thethread);
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 	return 0;
 }
 
@@ -154,10 +154,10 @@ s32 LWP_CondInit(cond_t *cond)
 	if(!ret) return ENOMEM;
 
 	ret->lock = LWP_MUTEX_NULL;
-	__lwp_threadqueue_init(&ret->wait_queue,LWP_THREADQ_MODEFIFO,LWP_STATES_WAITING_FOR_CONDVAR,ETIMEDOUT);
+	_Thread_queue_Initialize(&ret->wait_queue,LWP_THREADQ_MODEFIFO,LWP_STATES_WAITING_FOR_CONDVAR,ETIMEDOUT);
 
 	*cond = (cond_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_COND)|LWP_OBJMASKID(ret->object.id));
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 
 	return 0;
 }
@@ -182,7 +182,7 @@ s32 LWP_CondTimedWait(cond_t cond,mutex_t mutex,const struct timespec *abstime)
 	u64 timeout = LWP_THREADQ_NOTIMEOUT;
 	bool timedout = FALSE;
 
-	if(abstime) timeout = __lwp_wd_calc_ticks(abstime);
+	if(abstime) timeout = _POSIX_Timespec_to_interval(abstime);
 	return __lwp_cond_waitsupp(cond,mutex,timeout,timedout);
 }
 
@@ -193,11 +193,11 @@ s32 LWP_CondDestroy(cond_t cond)
 	ptr = __lwp_cond_open(cond);
 	if(!ptr) return -1;
 
-	if(__lwp_threadqueue_first(&ptr->wait_queue)) {
-		__lwp_thread_dispatchenable();
+	if(_Thread_queue_First(&ptr->wait_queue)) {
+		_Thread_Enable_dispatch();
 		return EBUSY;
 	}
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 
 	__lwp_cond_free(ptr);
 	return 0;

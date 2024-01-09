@@ -43,10 +43,10 @@ typedef struct _heap_cntrl_st {
 	u32 reserved;
 } heap_cntrl;
 
-u32 __lwp_heap_init(heap_cntrl *theheap,void *start_addr,u32 size,u32 pg_size);
-void* __lwp_heap_allocate(heap_cntrl *theheap,u32 size);
-BOOL __lwp_heap_free(heap_cntrl *theheap,void *ptr);
-u32 __lwp_heap_getinfo(heap_cntrl *theheap,heap_iblock *theinfo);
+u32 _Heap_Initialize(heap_cntrl *theheap,void *start_addr,u32 size,u32 pg_size);
+void* _Heap_Allocate(heap_cntrl *theheap,u32 size);
+BOOL _Heap_Free(heap_cntrl *theheap,void *ptr);
+u32 _Heap_Get_information(heap_cntrl *theheap,heap_iblock *theinfo);
 
 #ifdef LIBOGC_INTERNAL
 #include <libogc/lwp_heap.inl>

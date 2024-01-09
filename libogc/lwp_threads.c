@@ -31,16 +31,16 @@ lwp_queue _lwp_thr_ready[LWP_MAXPRIORITIES];
 
 static void (*_lwp_exitfunc)(void);
 
-extern void _cpu_context_switch(void *,void *);
+extern void _CPU_Context_switch(void *,void *);
 extern void _cpu_context_switch_ex(void *,void *);
-extern void _cpu_context_save(void *);
-extern void _cpu_context_restore(void *);
-extern void _cpu_context_save_fp(void *);
-extern void _cpu_context_restore_fp(void *);
+extern void _CPU_Context_save(void *);
+extern void _CPU_Context_restore(void *);
+extern void _CPU_Context_save_fp_context(void *);
+extern void _CPU_Context_restore_fp_context(void *);
 
-extern int __libc_create_hook(lwp_cntrl *,lwp_cntrl *);
-extern int __libc_start_hook(lwp_cntrl *,lwp_cntrl *);
-extern int __libc_delete_hook(lwp_cntrl *, lwp_cntrl *);
+extern int libc_create_hook(lwp_cntrl *,lwp_cntrl *);
+extern int libc_start_hook(lwp_cntrl *,lwp_cntrl *);
+extern int libc_delete_hook(lwp_cntrl *, lwp_cntrl *);
 
 extern void kprintf(const char *str, ...);
 
@@ -58,33 +58,20 @@ static void __lwp_dumpcontext(frame_context *ctx)
 	kprintf("LR %08x SRR0 %08x SRR1 %08x MSR %08x\n\n", ctx->LR, ctx->SRR0, ctx->SRR1,ctx->MSR);
 }
 
-void __lwp_showmsr()
-{
-	register u32 msr;
-	_CPU_MSR_GET(msr);
-	kprintf("msr: %08x\n",msr);
-}
-
 void __lwp_dumpcontext_fp(lwp_cntrl *thrA,lwp_cntrl *thrB)
 {
 	kprintf("_cpu_contextfp_dump(%p,%p)\n",thrA,thrB);
 }
 #endif
 
-/*
-void __lwp_getthreadlist(lwp_obj **thrs)
-{
-	*thrs = _lwp_objects;
-}
-*/
-u32 __lwp_isr_in_progress()
+u32 _ISR_Is_in_progress()
 {
 	register u32 isr_nest_level;
 	isr_nest_level = mfspr(272);
 	return isr_nest_level;
 }
 
-static inline void __lwp_msr_setlevel(u32 level)
+static inline void _CPU_ISR_Set_level(u32 level)
 {
 	register u32 msr;
 	_CPU_MSR_GET(msr);
@@ -95,7 +82,7 @@ static inline void __lwp_msr_setlevel(u32 level)
 	_CPU_MSR_SET(msr);
 }
 
-static inline u32 __lwp_msr_getlevel()
+static inline u32 _CPU_ISR_Get_level()
 {
 	register u32 msr;
 	_CPU_MSR_GET(msr);
@@ -103,20 +90,20 @@ static inline u32 __lwp_msr_getlevel()
 	else return 1;
 }
 
-void __lwp_thread_delayended(void *arg)
+void _Thread_Delay_ended(void *arg)
 {
 	lwp_cntrl *thethread = (lwp_cntrl*)arg;
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("__lwp_thread_delayended(%p)\n",thethread);
+	kprintf("_Thread_Delay_ended(%p)\n",thethread);
 #endif
 	if(!thethread) return;
 	
-	__lwp_thread_dispatchdisable();
-	__lwp_thread_unblock(thethread);
-	__lwp_thread_dispatchunnest();
+	_Thread_Disable_dispatch();
+	_Thread_Unblock(thethread);
+	_Thread_Unnest_dispatch();
 }
 
-void __lwp_thread_tickle_timeslice(void *arg)
+void _Thread_Tickle_timeslice(void *arg)
 {
 	s64 ticks;
 	lwp_cntrl *exec;
@@ -124,16 +111,16 @@ void __lwp_thread_tickle_timeslice(void *arg)
 	exec = _thr_executing;
 	ticks = millisecs_to_ticks(1);
 	
-	__lwp_thread_dispatchdisable();
+	_Thread_Disable_dispatch();
 
 	if(!exec->is_preemptible) {
-		__lwp_wd_insert_ticks(&_lwp_wd_timeslice,ticks);
-		__lwp_thread_dispatchunnest();
+		_Watchdog_Insert_ticks(&_lwp_wd_timeslice,ticks);
+		_Thread_Unnest_dispatch();
 		return;
 	}
-	if(!__lwp_stateready(exec->cur_state)) {
-		__lwp_wd_insert_ticks(&_lwp_wd_timeslice,ticks);
-		__lwp_thread_dispatchunnest();
+	if(!_States_Is_ready(exec->cur_state)) {
+		_Watchdog_Insert_ticks(&_lwp_wd_timeslice,ticks);
+		_Thread_Unnest_dispatch();
 		return;
 	}
 
@@ -142,14 +129,14 @@ void __lwp_thread_tickle_timeslice(void *arg)
 			break;
 		case LWP_CPU_BUDGET_ALGO_TIMESLICE:
 			if((--exec->cpu_time_budget)==0) {
-				__lwp_thread_resettimeslice();
+				_Thread_Reset_timeslice();
 				exec->cpu_time_budget = _lwp_ticks_per_timeslice;
 			}
 			break;
 	}
 
-	__lwp_wd_insert_ticks(&_lwp_wd_timeslice,ticks);
-	__lwp_thread_dispatchunnest();
+	_Watchdog_Insert_ticks(&_lwp_wd_timeslice,ticks);
+	_Thread_Unnest_dispatch();
 }
 
 void __thread_dispatch_fp()
@@ -162,15 +149,15 @@ void __thread_dispatch_fp()
 #ifdef _LWPTHREADS_DEBUG
 	__lwp_dumpcontext_fp(exec,_thr_allocated_fp);
 #endif
-	if(!__lwp_thread_isallocatedfp(exec)) {
-		if(_thr_allocated_fp) _cpu_context_save_fp(&_thr_allocated_fp->context);
-		_cpu_context_restore_fp(&exec->context);
+	if(!_Thread_Is_allocated_fp(exec)) {
+		if(_thr_allocated_fp) _CPU_Context_save_fp_context(&_thr_allocated_fp->context);
+		_CPU_Context_restore_fp_context(&exec->context);
 		_thr_allocated_fp = exec;
 	}
 	_CPU_ISR_Restore(level);
 }
 
-void __thread_dispatch()
+void _Thread_Dispatch()
 {
 	u32 level;
 	lwp_cntrl *exec,*heir;
@@ -191,7 +178,7 @@ void __thread_dispatch()
 #ifdef _DEBUG
 		_cpu_context_switch_ex((void*)&exec->context,(void*)&heir->context);
 #else
-		_cpu_context_switch((void*)&exec->context,(void*)&heir->context);
+		_CPU_Context_switch((void*)&exec->context,(void*)&heir->context);
 #endif
 		exec = _thr_executing;
 		_CPU_ISR_Disable(level);
@@ -200,27 +187,27 @@ void __thread_dispatch()
 	_CPU_ISR_Restore(level);
 }
 
-static void __lwp_thread_handler()
+static void _Thread_Handler()
 {
 	u32 level;
 	lwp_cntrl *exec;
 
 	exec = _thr_executing;
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("__lwp_thread_handler(%p,%d)\n",exec,_thread_dispatch_disable_level);
+	kprintf("_Thread_Handler(%p,%d)\n",exec,_thread_dispatch_disable_level);
 #endif
 	level = exec->isr_level;
-	__lwp_msr_setlevel(level);
-	__lwp_thread_dispatchenable();
+	_CPU_ISR_Set_level(level);
+	_Thread_Enable_dispatch();
 	exec->wait.ret_arg = exec->entry(exec->arg);
 
-	__lwp_thread_exit(exec->wait.ret_arg);
+	pthread_exit(exec->wait.ret_arg);
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("__lwp_thread_handler(%p): thread returned(%p)\n",exec,exec->wait.ret_arg);
+	kprintf("_Thread_Handler(%p): thread returned(%p)\n",exec,exec->wait.ret_arg);
 #endif
 }
 
-void __lwp_rotate_readyqueue(u32 prio)
+void _Thread_Rotate_Ready_Queue(u32 prio)
 {
 	u32 level;
 	lwp_cntrl *exec;
@@ -231,14 +218,14 @@ void __lwp_rotate_readyqueue(u32 prio)
 	exec = _thr_executing;
 	
 	if(ready==exec->ready) {
-		__lwp_thread_yield();
+		_Thread_Yield_processor();
 		return;
 	}
 
 	_CPU_ISR_Disable(level);
-	if(!__lwp_queue_isempty(ready) && !__lwp_queue_onenode(ready)) {
-		node = __lwp_queue_firstnodeI(ready);
-		__lwp_queue_appendI(ready,node);
+	if(!_Chain_Is_empty(ready) && !_Chain_Has_only_one_node(ready)) {
+		node = _Chain_Get_first_unprotected(ready);
+		_Chain_Append_unprotected(ready,node);
 	}
 	_CPU_ISR_Flash(level);
 	
@@ -249,12 +236,12 @@ void __lwp_rotate_readyqueue(u32 prio)
 		_context_switch_want = TRUE;
 
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("__lwp_rotate_readyqueue(%d,%p,%p)\n",prio,exec,_thr_heir);
+	kprintf("_Thread_Rotate_Ready_Queue(%d,%p,%p)\n",prio,exec,_thr_heir);
 #endif
 	_CPU_ISR_Restore(level);
 }
 
-void __lwp_thread_yield()
+void _Thread_Yield_processor()
 {
 	u32 level;
 	lwp_cntrl *exec;
@@ -264,19 +251,19 @@ void __lwp_thread_yield()
 	ready = exec->ready;
 	
 	_CPU_ISR_Disable(level);
-	if(!__lwp_queue_onenode(ready)) {
-		__lwp_queue_extractI(&exec->object.node);
-		__lwp_queue_appendI(ready,&exec->object.node);
+	if(!_Chain_Has_only_one_node(ready)) {
+		_Chain_Extract_unprotected(&exec->object.node);
+		_Chain_Append_unprotected(ready,&exec->object.node);
 		_CPU_ISR_Flash(level);
-		if(__lwp_thread_isheir(exec))
+		if(_Thread_Is_heir(exec))
 			_thr_heir = (lwp_cntrl*)ready->first;
 		_context_switch_want = TRUE;
-	} else if(!__lwp_thread_isheir(exec))
+	} else if(!_Thread_Is_heir(exec))
 		_context_switch_want = TRUE;
 	_CPU_ISR_Restore(level);
 }
 
-void __lwp_thread_resettimeslice()
+void _Thread_Reset_timeslice()
 {
 	u32 level;
 	lwp_cntrl *exec;
@@ -286,58 +273,58 @@ void __lwp_thread_resettimeslice()
 	ready = exec->ready;
 
 	_CPU_ISR_Disable(level);
-	if(__lwp_queue_onenode(ready)) {
+	if(_Chain_Has_only_one_node(ready)) {
 		_CPU_ISR_Restore(level);
 		return;
 	}
 
-	__lwp_queue_extractI(&exec->object.node);
-	__lwp_queue_appendI(ready,&exec->object.node);
+	_Chain_Extract_unprotected(&exec->object.node);
+	_Chain_Append_unprotected(ready,&exec->object.node);
 
 	_CPU_ISR_Flash(level);
 
-	if(__lwp_thread_isheir(exec))
+	if(_Thread_Is_heir(exec))
 		_thr_heir = (lwp_cntrl*)ready->first;
 
 	_context_switch_want = TRUE;
 	_CPU_ISR_Restore(level);
 }
 
-void __lwp_thread_setstate(lwp_cntrl *thethread,u32 state)
+void _Thread_Set_state(lwp_cntrl *thethread,u32 state)
 {
 	u32 level;
 	lwp_queue *ready;
 
 	ready = thethread->ready;
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("__lwp_thread_setstate(%d,%p,%p,%08x)\n",_context_switch_want,_thr_heir,thethread,thethread->cur_state);
+	kprintf("_Thread_Set_state(%d,%p,%p,%08x)\n",_context_switch_want,_thr_heir,thethread,thethread->cur_state);
 #endif
 	_CPU_ISR_Disable(level);
-	if(!__lwp_stateready(thethread->cur_state)) {
-		thethread->cur_state = __lwp_clearstate(thethread->cur_state,state);
+	if(!_States_Is_ready(thethread->cur_state)) {
+		thethread->cur_state = _States_Clear(thethread->cur_state,state);
 		_CPU_ISR_Restore(level);
 		return;
 	}
 
 	thethread->cur_state = state;
-	if(__lwp_queue_onenode(ready)) {
-		__lwp_queue_init_empty(ready);
-		__lwp_priomap_removefrom(&thethread->priomap);
+	if(_Chain_Has_only_one_node(ready)) {
+		_Chain_Initialize_empty(ready);
+		_Priority_Remove_from_bit_map(&thethread->priomap);
 	} else 
-		__lwp_queue_extractI(&thethread->object.node);
+		_Chain_Extract_unprotected(&thethread->object.node);
 	_CPU_ISR_Flash(level);
 
-	if(__lwp_thread_isheir(thethread))
-		__lwp_thread_calcheir();
-	if(__lwp_thread_isexec(thethread))
+	if(_Thread_Is_heir(thethread))
+		_Thread_Calculate_heir();
+	if(_Thread_Is_executing(thethread))
 		_context_switch_want = TRUE;
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("__lwp_thread_setstate(%d,%p,%p,%08x)\n",_context_switch_want,_thr_heir,thethread,thethread->cur_state);
+	kprintf("_Thread_Set_state(%d,%p,%p,%08x)\n",_context_switch_want,_thr_heir,thethread,thethread->cur_state);
 #endif
 	_CPU_ISR_Restore(level);
 }
 
-void __lwp_thread_clearstate(lwp_cntrl *thethread,u32 state)
+void _Thread_Clear_state(lwp_cntrl *thethread,u32 state)
 {
 	u32 level,cur_state;
 	
@@ -345,10 +332,10 @@ void __lwp_thread_clearstate(lwp_cntrl *thethread,u32 state)
 
 	cur_state = thethread->cur_state;
 	if(cur_state&state) {
-		cur_state = thethread->cur_state = __lwp_clearstate(cur_state,state);
-		if(__lwp_stateready(cur_state)) {
-			__lwp_priomap_addto(&thethread->priomap);
-			__lwp_queue_appendI(thethread->ready,&thethread->object.node);
+		cur_state = thethread->cur_state = _States_Clear(cur_state,state);
+		if(_States_Is_ready(cur_state)) {
+			_Priority_Add_to_bit_map(&thethread->priomap);
+			_Chain_Append_unprotected(thethread->ready,&thethread->object.node);
 			_CPU_ISR_Flash(level);
 			
 			if(thethread->cur_prio<_thr_heir->cur_prio) {
@@ -363,45 +350,45 @@ void __lwp_thread_clearstate(lwp_cntrl *thethread,u32 state)
 	_CPU_ISR_Restore(level);
 }
 
-u32 __lwp_evaluatemode()
+u32 _Thread_Evaluate_mode()
 {
 	lwp_cntrl *exec;
 	
 	exec = _thr_executing;
-	if(!__lwp_stateready(exec->cur_state)
-		|| (!__lwp_thread_isheir(exec) && exec->is_preemptible)){
+	if(!_States_Is_ready(exec->cur_state)
+		|| (!_Thread_Is_heir(exec) && exec->is_preemptible)){
 		_context_switch_want = TRUE;
 		return TRUE;
 	}
 	return FALSE;
 }
 
-void __lwp_thread_changepriority(lwp_cntrl *thethread,u32 prio,u32 prependit)
+void _Thread_Change_priority(lwp_cntrl *thethread,u32 prio,u32 prependit)
 {
 	u32 level;
 	
-	__lwp_thread_settransient(thethread);
+	_Thread_Set_transient(thethread);
 	
 	if(thethread->cur_prio!=prio) 
-		__lwp_thread_setpriority(thethread,prio);
+		_Thread_Set_priority(thethread,prio);
 
 	_CPU_ISR_Disable(level);
 
-	thethread->cur_state = __lwp_clearstate(thethread->cur_state,LWP_STATES_TRANSIENT);
-	if(!__lwp_stateready(thethread->cur_state)) {
+	thethread->cur_state = _States_Clear(thethread->cur_state,LWP_STATES_TRANSIENT);
+	if(!_States_Is_ready(thethread->cur_state)) {
 		_CPU_ISR_Restore(level);
 		return;
 	}
 
-	__lwp_priomap_addto(&thethread->priomap);
+	_Priority_Add_to_bit_map(&thethread->priomap);
 	if(prependit)
-		__lwp_queue_prependI(thethread->ready,&thethread->object.node);
+		_Chain_Prepend_unprotected(thethread->ready,&thethread->object.node);
 	else
-		__lwp_queue_appendI(thethread->ready,&thethread->object.node);
+		_Chain_Append_unprotected(thethread->ready,&thethread->object.node);
 
 	_CPU_ISR_Flash(level);
 
-	__lwp_thread_calcheir();
+	_Thread_Calculate_heir();
 	
 	if(!(_thr_executing==_thr_heir)
 		&& _thr_executing->is_preemptible)
@@ -410,17 +397,17 @@ void __lwp_thread_changepriority(lwp_cntrl *thethread,u32 prio,u32 prependit)
 	_CPU_ISR_Restore(level);
 }
 
-void __lwp_thread_setpriority(lwp_cntrl *thethread,u32 prio)
+void _Thread_Set_priority(lwp_cntrl *thethread,u32 prio)
 {
 	thethread->cur_prio = prio;
 	thethread->ready = &_lwp_thr_ready[prio];
-	__lwp_priomap_init(&thethread->priomap,prio);
+	_Priority_Initialize_information(&thethread->priomap,prio);
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("__lwp_thread_setpriority(%p,%d,%p)\n",thethread,prio,thethread->ready);
+	kprintf("_Thread_Set_priority(%p,%d,%p)\n",thethread,prio,thethread->ready);
 #endif
 }
 
-void __lwp_thread_suspend(lwp_cntrl *thethread)
+void _Thread_Suspend(lwp_cntrl *thethread)
 {
 	u32 level;
 	lwp_queue *ready;
@@ -429,31 +416,31 @@ void __lwp_thread_suspend(lwp_cntrl *thethread)
 	
 	_CPU_ISR_Disable(level);
 	thethread->suspendcnt++;
-	if(!__lwp_stateready(thethread->cur_state)) {
-		thethread->cur_state = __lwp_setstate(thethread->cur_state,LWP_STATES_SUSPENDED);
+	if(!_States_Is_ready(thethread->cur_state)) {
+		thethread->cur_state = _States_Set(thethread->cur_state,LWP_STATES_SUSPENDED);
 		_CPU_ISR_Restore(level);
 		return;
 	}
 	
 	thethread->cur_state = LWP_STATES_SUSPENDED;
-	if(__lwp_queue_onenode(ready)) {
-		__lwp_queue_init_empty(ready);
-		__lwp_priomap_removefrom(&thethread->priomap);
+	if(_Chain_Has_only_one_node(ready)) {
+		_Chain_Initialize_empty(ready);
+		_Priority_Remove_from_bit_map(&thethread->priomap);
 	} else {
-		__lwp_queue_extractI(&thethread->object.node);
+		_Chain_Extract_unprotected(&thethread->object.node);
 	}
 	_CPU_ISR_Flash(level);
 	
-	if(__lwp_thread_isheir(thethread))
-		__lwp_thread_calcheir();
+	if(_Thread_Is_heir(thethread))
+		_Thread_Calculate_heir();
 	
-	if(__lwp_thread_isexec(thethread))
+	if(_Thread_Is_executing(thethread))
 		_context_switch_want = TRUE;
 
 	_CPU_ISR_Restore(level);
 }
 
-void __lwp_thread_settransient(lwp_cntrl *thethread)
+void _Thread_Set_transient(lwp_cntrl *thethread)
 {
 	u32 level,oldstates;
 	lwp_queue *ready;
@@ -463,21 +450,21 @@ void __lwp_thread_settransient(lwp_cntrl *thethread)
 	_CPU_ISR_Disable(level);
 	
 	oldstates = thethread->cur_state;
-	thethread->cur_state = __lwp_setstate(oldstates,LWP_STATES_TRANSIENT);
+	thethread->cur_state = _States_Set(oldstates,LWP_STATES_TRANSIENT);
 
-	if(__lwp_stateready(oldstates)) {
-		if(__lwp_queue_onenode(ready)) {
-			__lwp_queue_init_empty(ready);
-			__lwp_priomap_removefrom(&thethread->priomap);
+	if(_States_Is_ready(oldstates)) {
+		if(_Chain_Has_only_one_node(ready)) {
+			_Chain_Initialize_empty(ready);
+			_Priority_Remove_from_bit_map(&thethread->priomap);
 		} else {
-			__lwp_queue_extractI(&thethread->object.node);
+			_Chain_Extract_unprotected(&thethread->object.node);
 		}
 	}
 
 	_CPU_ISR_Restore(level);
 }
 
-void __lwp_thread_resume(lwp_cntrl *thethread,u32 force)
+void _Thread_Resume(lwp_cntrl *thethread,u32 force)
 {
 	u32 level,state;
 	
@@ -495,10 +482,10 @@ void __lwp_thread_resume(lwp_cntrl *thethread,u32 force)
 
 	state = thethread->cur_state;
 	if(state&LWP_STATES_SUSPENDED) {
-		state = thethread->cur_state = __lwp_clearstate(thethread->cur_state,LWP_STATES_SUSPENDED);
-		if(__lwp_stateready(state)) {
-			__lwp_priomap_addto(&thethread->priomap);
-			__lwp_queue_appendI(thethread->ready,&thethread->object.node);
+		state = thethread->cur_state = _States_Clear(thethread->cur_state,LWP_STATES_SUSPENDED);
+		if(_States_Is_ready(state)) {
+			_Priority_Add_to_bit_map(&thethread->priomap);
+			_Chain_Append_unprotected(thethread->ready,&thethread->object.node);
 			_CPU_ISR_Flash(level);
 			if(thethread->cur_prio<_thr_heir->cur_prio) {
 				_thr_heir = thethread;
@@ -511,7 +498,7 @@ void __lwp_thread_resume(lwp_cntrl *thethread,u32 force)
 	_CPU_ISR_Restore(level);
 }
 
-void __lwp_thread_loadenv(lwp_cntrl *thethread)
+void _Thread_Load_environment(lwp_cntrl *thethread)
 {
 	u32 stackbase,sp,size;
 	u32 r2,r13,msr_value;
@@ -534,55 +521,55 @@ void __lwp_thread_loadenv(lwp_cntrl *thethread)
 		msr_value |= MSR_EE;
 	
 	thethread->context.MSR = msr_value;
-	thethread->context.LR = (u32)__lwp_thread_handler;
+	thethread->context.LR = (u32)_Thread_Handler;
 
 	__asm__ __volatile__ ("mr %0,2; mr %1,13" : "=r" ((r2)), "=r" ((r13)));
 	thethread->context.GPR[2] = r2;
 	thethread->context.GPR[13] = r13;
 
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("__lwp_thread_loadenv(%p,%p,%d,%p)\n",thethread,(void*)stackbase,size,(void*)sp);
+	kprintf("_Thread_Load_environment(%p,%p,%d,%p)\n",thethread,(void*)stackbase,size,(void*)sp);
 #endif
 
 }
 
-void __lwp_thread_ready(lwp_cntrl *thethread)
+void _Thread_Ready(lwp_cntrl *thethread)
 {
 	u32 level;
 	lwp_cntrl *heir;
 
 	_CPU_ISR_Disable(level);
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("__lwp_thread_ready(%p)\n",thethread);
+	kprintf("_Thread_Ready(%p)\n",thethread);
 #endif
 	thethread->cur_state = LWP_STATES_READY;
-	__lwp_priomap_addto(&thethread->priomap);
-	__lwp_queue_appendI(thethread->ready,&thethread->object.node);
+	_Priority_Add_to_bit_map(&thethread->priomap);
+	_Chain_Append_unprotected(thethread->ready,&thethread->object.node);
 	_CPU_ISR_Flash(level);
 
-	__lwp_thread_calcheir();
+	_Thread_Calculate_heir();
 	heir = _thr_heir;
-	if(!(__lwp_thread_isexec(heir)) && _thr_executing->is_preemptible)
+	if(!(_Thread_Is_executing(heir)) && _thr_executing->is_preemptible)
 		_context_switch_want = TRUE;
 	
 	_CPU_ISR_Restore(level);
 }
 
-u32 __lwp_thread_init(lwp_cntrl *thethread,void *stack_area,u32 stack_size,u32 prio,u32 isr_level,bool is_preemtible)
+u32 _Thread_Initialize(lwp_cntrl *thethread,void *stack_area,u32 stack_size,u32 prio,u32 isr_level,bool is_preemtible)
 {
 	u32 act_stack_size = 0;
 
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("__lwp_thread_init(%p,%p,%d,%d,%d)\n",thethread,stack_area,stack_size,prio,isr_level);
+	kprintf("_Thread_Initialize(%p,%p,%d,%d,%d)\n",thethread,stack_area,stack_size,prio,isr_level);
 #endif
 
 	if(!stack_area) {
-		if(!__lwp_stack_isenough(stack_size))
+		if(!_Stack_Is_enough(stack_size))
 			act_stack_size = CPU_MINIMUM_STACK_SIZE;
 		else
 			act_stack_size = stack_size;
 
-		act_stack_size = __lwp_stack_allocate(thethread,act_stack_size);
+		act_stack_size = _Thread_Stack_Allocate(thethread,act_stack_size);
 		if(!act_stack_size) return 0;
 
 		thethread->stack_allocated = TRUE;
@@ -593,7 +580,7 @@ u32 __lwp_thread_init(lwp_cntrl *thethread,void *stack_area,u32 stack_size,u32 p
 	}
 	thethread->stack_size = act_stack_size;
 
-	__lwp_threadqueue_init(&thethread->join_list,LWP_THREADQ_MODEFIFO,LWP_STATES_WAITING_FOR_JOINATEXIT,0);
+	_Thread_queue_Initialize(&thethread->join_list,LWP_THREADQ_MODEFIFO,LWP_STATES_WAITING_FOR_JOINATEXIT,0);
 
 	memset(&thethread->context,0,sizeof(thethread->context));
 	memset(&thethread->wait,0,sizeof(thethread->wait));
@@ -606,44 +593,44 @@ u32 __lwp_thread_init(lwp_cntrl *thethread,void *stack_area,u32 stack_size,u32 p
 	thethread->cpu_time_budget = _lwp_ticks_per_timeslice;
 	thethread->suspendcnt = 0;
 	thethread->res_cnt = 0;
-	__lwp_thread_setpriority(thethread,prio);
+	_Thread_Set_priority(thethread,prio);
 
-	__libc_create_hook(_thr_executing,thethread);
+	libc_create_hook(_thr_executing,thethread);
 
 	return 1;
 }
 
-void __lwp_thread_close(lwp_cntrl *thethread)
+void _Thread_Close(lwp_cntrl *thethread)
 {
 	u32 level;
 	void **value_ptr;
 	lwp_cntrl *p;
 
-	__lwp_thread_setstate(thethread,LWP_STATES_TRANSIENT);
+	_Thread_Set_state(thethread,LWP_STATES_TRANSIENT);
 	
-	if(!__lwp_threadqueue_extractproxy(thethread)) {
-		if(__lwp_wd_isactive(&thethread->timer))
-			__lwp_wd_remove_ticks(&thethread->timer);
+	if(!_Thread_queue_Extract_with_proxy(thethread)) {
+		if(_Watchdog_Is_active(&thethread->timer))
+			_Watchdog_Remove_ticks(&thethread->timer);
 	}
 	
 	_CPU_ISR_Disable(level);
 	value_ptr = (void**)thethread->wait.ret_arg;
-	while((p=__lwp_threadqueue_dequeue(&thethread->join_list))!=NULL) {
+	while((p=_Thread_queue_Dequeue(&thethread->join_list))!=NULL) {
 		*(void**)p->wait.ret_arg = value_ptr;
 	}
 	thethread->cpu_time_budget = 0;
 	thethread->budget_algo = LWP_CPU_BUDGET_ALGO_NONE;
 	_CPU_ISR_Restore(level);
 
-	__libc_delete_hook(_thr_executing,thethread);
+	libc_delete_hook(_thr_executing,thethread);
 
-	if(__lwp_thread_isallocatedfp(thethread))
-		__lwp_thread_deallocatefp();
+	if(_Thread_Is_allocated_fp(thethread))
+		_Thread_Deallocate_fp();
 
-	__lwp_stack_free(thethread);
+	_Thread_Stack_Free(thethread);
 
-	__lwp_objmgr_close(thethread->object.information,&thethread->object);
-	__lwp_objmgr_free(thethread->object.information,&thethread->object);
+	_Objects_Close(thethread->object.information,&thethread->object);
+	_Objects_Free(thethread->object.information,&thethread->object);
 }
 
 void __lwp_thread_closeall()
@@ -658,10 +645,10 @@ void __lwp_thread_closeall()
 	for(i=0;i<LWP_MAXPRIORITIES;i++) {
 		header = &_lwp_thr_ready[i];
 		ptr = (lwp_cntrl*)header->first;
-		while(ptr!=(lwp_cntrl*)__lwp_queue_tail(&_lwp_thr_ready[i])) {
+		while(ptr!=(lwp_cntrl*)_Chain_Tail(&_lwp_thr_ready[i])) {
 			next = (lwp_cntrl*)ptr->object.node.next;
 			if(ptr!=_thr_executing)
-				__lwp_thread_close(ptr);
+				_Thread_Close(ptr);
 
 			ptr = next;
 		}
@@ -672,67 +659,67 @@ void __lwp_thread_closeall()
 #endif
 }
 
-void __lwp_thread_exit(void *value_ptr)
+void pthread_exit(void *value_ptr)
 {
-	__lwp_thread_dispatchdisable();
+	_Thread_Disable_dispatch();
 	_thr_executing->wait.ret_arg = (u32*)value_ptr;
-	__lwp_thread_close(_thr_executing);
-	__lwp_thread_dispatchenable();
+	_Thread_Close(_thr_executing);
+	_Thread_Enable_dispatch();
 }
 
-u32 __lwp_thread_start(lwp_cntrl *thethread,void* (*entry)(void*),void *arg)
+u32 _Thread_Start(lwp_cntrl *thethread,void* (*entry)(void*),void *arg)
 {
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("__lwp_thread_start(%p,%p,%p,%d)\n",thethread,entry,arg,thethread->cur_state);
+	kprintf("_Thread_Start(%p,%p,%p,%d)\n",thethread,entry,arg,thethread->cur_state);
 #endif
-	if(__lwp_statedormant(thethread->cur_state)) {
+	if(_States_Is_dormant(thethread->cur_state)) {
 		thethread->entry = entry;
 		thethread->arg = arg;
-		__lwp_thread_loadenv(thethread);
-		__lwp_thread_ready(thethread);
-		__libc_start_hook(_thr_executing,thethread);
+		_Thread_Load_environment(thethread);
+		_Thread_Ready(thethread);
+		libc_start_hook(_thr_executing,thethread);
 		return 1;
 	}
 	return 0;
 }
 
-void __lwp_thread_startmultitasking()
+void _Thread_Start_multitasking()
 {
 	_lwp_exitfunc = NULL;
 
-	__sys_state_set(SYS_STATE_BEGIN_MT);
-	__sys_state_set(SYS_STATE_UP);
+	_System_state_Set(SYS_STATE_BEGIN_MT);
+	_System_state_Set(SYS_STATE_UP);
 
 	_context_switch_want = FALSE;
 	_thr_executing = _thr_heir;
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("__lwp_start_multitasking(%p,%p)\n",_thr_executing,_thr_heir);
+	kprintf("_Thread_Start_multitasking(%p,%p)\n",_thr_executing,_thr_heir);
 #endif
-	__lwp_thread_starttimeslice();
-	_cpu_context_switch((void*)&core_context,(void*)&_thr_heir->context);
+	_Watchdog_Insert_ticks(&_lwp_wd_timeslice,millisecs_to_ticks(1));
+	_CPU_Context_switch((void*)&core_context,(void*)&_thr_heir->context);
 
 	if(_lwp_exitfunc) _lwp_exitfunc();
 }
 
-void __lwp_thread_stopmultitasking(void (*exitfunc)())
+void _Thread_Stop_multitasking(void (*exitfunc)())
 {
 	_lwp_exitfunc = exitfunc;
-	if(__sys_state_get()!=SYS_STATE_SHUTDOWN) {
-		__lwp_thread_stoptimeslice();
-		__sys_state_set(SYS_STATE_SHUTDOWN);
-		_cpu_context_switch((void*)&_thr_executing->context,(void*)&core_context);
+	if(_System_state_Get()!=SYS_STATE_SHUTDOWN) {
+		_Watchdog_Remove_ticks(&_lwp_wd_timeslice);
+		_System_state_Set(SYS_STATE_SHUTDOWN);
+		_CPU_Context_switch((void*)&_thr_executing->context,(void*)&core_context);
 	}
 }
 
-void __lwp_thread_coreinit()
+void _Thread_Handler_initialization()
 {
 	u32 index;
 
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("__lwp_sys_init()\n\n");
+	kprintf("_Thread_Handler_initialization()\n\n");
 #endif
-	__lwp_thread_dispatchinitialize();
-	__lwp_thread_inittimeslice();
+	_Thread_Dispatch_initialization();
+	_Watchdog_Initialize(&_lwp_wd_timeslice,_Thread_Tickle_timeslice,LWP_TIMESLICE_TIMER_ID,NULL);
 	
 	_context_switch_want = FALSE;
 	_thr_executing = NULL;
@@ -743,8 +730,8 @@ void __lwp_thread_coreinit()
 	memset(&core_context,0,sizeof(core_context));
 
 	for(index=0;index<=LWP_PRIO_MAX;index++)
-		__lwp_queue_init_empty(&_lwp_thr_ready[index]);
+		_Chain_Initialize_empty(&_lwp_thr_ready[index]);
 	
-	__sys_state_set(SYS_STATE_BEFORE_MT);
+	_System_state_Set(SYS_STATE_BEFORE_MT);
 }
 

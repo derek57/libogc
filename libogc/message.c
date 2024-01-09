@@ -54,32 +54,32 @@ lwp_objinfo _lwp_mqbox_objects;
 
 void __lwp_mqbox_init()
 {
-	__lwp_objmgr_initinfo(&_lwp_mqbox_objects,LWP_MAX_MQUEUES,sizeof(mqbox_st));
+	_Objects_Initialize_information(&_lwp_mqbox_objects,LWP_MAX_MQUEUES,sizeof(mqbox_st));
 }
 
 static __inline__ mqbox_st* __lwp_mqbox_open(mqbox_t mbox)
 {
 	LWP_CHECK_MBOX(mbox);
-	return (mqbox_st*)__lwp_objmgr_get(&_lwp_mqbox_objects,LWP_OBJMASKID(mbox));
+	return (mqbox_st*)_Objects_Get(&_lwp_mqbox_objects,LWP_OBJMASKID(mbox));
 }
 
 static __inline__ void __lwp_mqbox_free(mqbox_st *mqbox)
 {
-	__lwp_objmgr_close(&_lwp_mqbox_objects,&mqbox->object);
-	__lwp_objmgr_free(&_lwp_mqbox_objects,&mqbox->object);
+	_Objects_Close(&_lwp_mqbox_objects,&mqbox->object);
+	_Objects_Free(&_lwp_mqbox_objects,&mqbox->object);
 }
 
 static mqbox_st* __lwp_mqbox_allocate()
 {
 	mqbox_st *mqbox;
 
-	__lwp_thread_dispatchdisable();
-	mqbox = (mqbox_st*)__lwp_objmgr_allocate(&_lwp_mqbox_objects);
+	_Thread_Disable_dispatch();
+	mqbox = (mqbox_st*)_Objects_Allocate(&_lwp_mqbox_objects);
 	if(mqbox) {
-		__lwp_objmgr_open(&_lwp_mqbox_objects,&mqbox->object);
+		_Objects_Open(&_lwp_mqbox_objects,&mqbox->object);
 		return mqbox;
 	}
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 	return NULL;
 }
 
@@ -94,14 +94,14 @@ s32 MQ_Init(mqbox_t *mqbox,u32 count)
 	if(!ret) return MQ_ERROR_TOOMANY;
 
 	attr.mode = LWP_MQ_FIFO;
-	if(!__lwpmq_initialize(&ret->mqueue,&attr,count,sizeof(mqmsg_t))) {
+	if(!_CORE_message_queue_Initialize(&ret->mqueue,&attr,count,sizeof(mqmsg_t))) {
 		__lwp_mqbox_free(ret);
-		__lwp_thread_dispatchenable();
+		_Thread_Enable_dispatch();
 		return MQ_ERROR_TOOMANY;
 	}
 
 	*mqbox = (mqbox_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_MBOX)|LWP_OBJMASKID(ret->object.id));
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 	return MQ_ERROR_SUCCESSFUL;
 }
 
@@ -112,8 +112,8 @@ void MQ_Close(mqbox_t mqbox)
 	mbox = __lwp_mqbox_open(mqbox);
 	if(!mbox) return;
 
-	__lwpmq_close(&mbox->mqueue,0);
-	__lwp_thread_dispatchenable();
+	_CORE_message_queue_Close(&mbox->mqueue,0);
+	_Thread_Enable_dispatch();
 
 	__lwp_mqbox_free(mbox);
 }
@@ -128,8 +128,8 @@ BOOL MQ_Send(mqbox_t mqbox,mqmsg_t msg,u32 flags)
 	if(!mbox) return FALSE;
 
 	ret = FALSE;
-	if(__lwpmq_submit(&mbox->mqueue,mbox->object.id,(void*)&msg,sizeof(mqmsg_t),LWP_MQ_SEND_REQUEST,wait,LWP_THREADQ_NOTIMEOUT)==LWP_MQ_STATUS_SUCCESSFUL) ret = TRUE;
-	__lwp_thread_dispatchenable();
+	if(_CORE_message_queue_Submit(&mbox->mqueue,mbox->object.id,(void*)&msg,sizeof(mqmsg_t),LWP_MQ_SEND_REQUEST,wait,LWP_THREADQ_NOTIMEOUT)==LWP_MQ_STATUS_SUCCESSFUL) ret = TRUE;
+	_Thread_Enable_dispatch();
 
 	return ret;
 }
@@ -144,8 +144,8 @@ BOOL MQ_Receive(mqbox_t mqbox,mqmsg_t *msg,u32 flags)
 	if(!mbox) return FALSE;
 
 	ret = FALSE;
-	if(__lwpmq_seize(&mbox->mqueue,mbox->object.id,(void*)msg,&tmp,wait,LWP_THREADQ_NOTIMEOUT)==LWP_MQ_STATUS_SUCCESSFUL) ret = TRUE;
-	__lwp_thread_dispatchenable();
+	if(_CORE_message_queue_Seize(&mbox->mqueue,mbox->object.id,(void*)msg,&tmp,wait,LWP_THREADQ_NOTIMEOUT)==LWP_MQ_STATUS_SUCCESSFUL) ret = TRUE;
+	_Thread_Enable_dispatch();
 
 	return ret;
 }
@@ -160,8 +160,8 @@ BOOL MQ_Jam(mqbox_t mqbox,mqmsg_t msg,u32 flags)
 	if(!mbox) return FALSE;
 
 	ret = FALSE;
-	if(__lwpmq_submit(&mbox->mqueue,mbox->object.id,(void*)&msg,sizeof(mqmsg_t),LWP_MQ_SEND_URGENT,wait,LWP_THREADQ_NOTIMEOUT)==LWP_MQ_STATUS_SUCCESSFUL) ret = TRUE;
-	__lwp_thread_dispatchenable();
+	if(_CORE_message_queue_Submit(&mbox->mqueue,mbox->object.id,(void*)&msg,sizeof(mqmsg_t),LWP_MQ_SEND_URGENT,wait,LWP_THREADQ_NOTIMEOUT)==LWP_MQ_STATUS_SUCCESSFUL) ret = TRUE;
+	_Thread_Enable_dispatch();
 
 	return ret;
 }

@@ -62,14 +62,14 @@ struct wiimote_t** wiiuse_init(int wiimotes, wii_event_cb event_cb) {
 		return NULL;
 
 	if (!__wm) {
-		__wm = __lwp_wkspace_allocate(sizeof(struct wiimote_t*) * wiimotes);
+		__wm = _Workspace_Allocate(sizeof(struct wiimote_t*) * wiimotes);
 		if(!__wm) return NULL;
 		memset(__wm, 0, sizeof(struct wiimote_t*) * wiimotes);
 	}
 
 	for (i = 0; i < wiimotes; ++i) {
 		if(!__wm[i])
-			__wm[i] = __lwp_wkspace_allocate(sizeof(struct wiimote_t));
+			__wm[i] = _Workspace_Allocate(sizeof(struct wiimote_t));
 
 		memset(__wm[i], 0, sizeof(struct wiimote_t));
 		__wm[i]->unid = i;
@@ -244,7 +244,7 @@ int wiiuse_read_data(struct wiimote_t *wm,ubyte *buffer,uint addr,uword len,cmd_
 	if(!wm || !WIIMOTE_IS_CONNECTED(wm)) return 0;
 	if(!buffer || !len) return 0;
 	
-	cmd = (struct cmd_blk_t*)__lwp_queue_get(&wm->cmdq);
+	cmd = (struct cmd_blk_t*)_Chain_Get(&wm->cmdq);
 	if(!cmd) return 0;
 
 	cmd->cb = cb;
@@ -269,7 +269,7 @@ int wiiuse_write_data(struct wiimote_t *wm,uint addr,ubyte *data,ubyte len,cmd_b
 	if(!wm || !WIIMOTE_IS_CONNECTED(wm)) return 0;
 	if(!data || !len) return 0;
 	
-	cmd = (struct cmd_blk_t*)__lwp_queue_get(&wm->cmdq);
+	cmd = (struct cmd_blk_t*)_Chain_Get(&wm->cmdq);
 	if(!cmd) return 0;
 
 	cmd->cb = cb;
@@ -295,7 +295,7 @@ int wiiuse_write_streamdata(struct wiimote_t *wm,ubyte *data,ubyte len,cmd_blk_c
 	if(!wm || !WIIMOTE_IS_CONNECTED(wm)) return 0;
 	if(!data || !len || len>20) return 0;
 
-	cmd = (struct cmd_blk_t*)__lwp_queue_get(&wm->cmdq);
+	cmd = (struct cmd_blk_t*)_Chain_Get(&wm->cmdq);
 	if(!cmd) return 0;
 
 	cmd->cb = cb;
@@ -312,7 +312,7 @@ int wiiuse_sendcmd(struct wiimote_t *wm,ubyte report_type,ubyte *msg,int len,cmd
 {
 	struct cmd_blk_t *cmd;
 
-	cmd = (struct cmd_blk_t*)__lwp_queue_get(&wm->cmdq);
+	cmd = (struct cmd_blk_t*)_Chain_Get(&wm->cmdq);
 	if(!cmd) return 0;
 
 	cmd->cb = cb;

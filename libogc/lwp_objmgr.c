@@ -11,12 +11,7 @@
 static u32 _lwp_objmgr_memsize = 0;
 static lwp_obj *null_local_table = NULL;
 
-u32 __lwp_objmgr_memsize()
-{
-	return _lwp_objmgr_memsize;
-}
-
-void __lwp_objmgr_initinfo(lwp_objinfo *info,u32 max_nodes,u32 node_size)
+void _Objects_Initialize_information(lwp_objinfo *info,u32 max_nodes,u32 node_size)
 {
 	u32 idx,i,size;
 	lwp_obj *object;
@@ -31,10 +26,10 @@ void __lwp_objmgr_initinfo(lwp_objinfo *info,u32 max_nodes,u32 node_size)
 	info->obj_blocks = NULL;
 	info->local_table = &null_local_table;
 
-	__lwp_queue_init_empty(&info->inactives);
+	_Chain_Initialize_empty(&info->inactives);
 
 	size = ((info->max_nodes*sizeof(lwp_obj*))+(info->max_nodes*info->node_size));
-	local_table = (void**)__lwp_wkspace_allocate(info->max_nodes*sizeof(lwp_obj*));
+	local_table = (void**)_Workspace_Allocate(info->max_nodes*sizeof(lwp_obj*));
 	if(!local_table) return;
 
 	info->local_table = (lwp_obj**)local_table;
@@ -42,19 +37,19 @@ void __lwp_objmgr_initinfo(lwp_objinfo *info,u32 max_nodes,u32 node_size)
 		local_table[i] = NULL;
 	}
 
-	info->obj_blocks = __lwp_wkspace_allocate(info->max_nodes*info->node_size);
+	info->obj_blocks = _Workspace_Allocate(info->max_nodes*info->node_size);
 	if(!info->obj_blocks) {
-		__lwp_wkspace_free(local_table);
+		_Workspace_Free(local_table);
 		return;
 	}
 
-	__lwp_queue_initialize(&inactives,info->obj_blocks,info->max_nodes,info->node_size);
+	_Chain_Initialize(&inactives,info->obj_blocks,info->max_nodes,info->node_size);
 
 	idx = info->min_id;
-	while((object=(lwp_obj*)__lwp_queue_get(&inactives))!=NULL) {
+	while((object=(lwp_obj*)_Chain_Get(&inactives))!=NULL) {
 		object->id = idx;
 		object->information = NULL;
-		__lwp_queue_append(&info->inactives,&object->node);
+		_Chain_Append(&info->inactives,&object->node);
 		idx++;
 	}
 
@@ -63,7 +58,7 @@ void __lwp_objmgr_initinfo(lwp_objinfo *info,u32 max_nodes,u32 node_size)
 	_lwp_objmgr_memsize += size;
 }
 
-lwp_obj* __lwp_objmgr_getisrdisable(lwp_objinfo *info,u32 id,u32 *p_level)
+lwp_obj* _Objects_Get_isr_disable(lwp_objinfo *info,u32 id,u32 *p_level)
 {
 	u32 level;
 	lwp_obj *object = NULL;
@@ -79,7 +74,7 @@ lwp_obj* __lwp_objmgr_getisrdisable(lwp_objinfo *info,u32 id,u32 *p_level)
 	return NULL;
 }
 
-lwp_obj* __lwp_objmgr_getnoprotection(lwp_objinfo *info,u32 id)
+lwp_obj* _Objects_Get_no_protection(lwp_objinfo *info,u32 id)
 {
 	lwp_obj *object = NULL;
 
@@ -89,25 +84,25 @@ lwp_obj* __lwp_objmgr_getnoprotection(lwp_objinfo *info,u32 id)
 	return NULL;
 }
 
-lwp_obj* __lwp_objmgr_get(lwp_objinfo *info,u32 id)
+lwp_obj* _Objects_Get(lwp_objinfo *info,u32 id)
 {
 	lwp_obj *object = NULL;
 
 	if(info->max_id>=id) {
-		__lwp_thread_dispatchdisable();
+		_Thread_Disable_dispatch();
 		if((object=info->local_table[id])!=NULL) return object;
-		__lwp_thread_dispatchenable();
+		_Thread_Enable_dispatch();
 	}
 	return NULL;
 }
 
-lwp_obj* __lwp_objmgr_allocate(lwp_objinfo *info)
+lwp_obj* _Objects_Allocate(lwp_objinfo *info)
 {
 	u32 level;
 	lwp_obj* object;
 
 	_CPU_ISR_Disable(level);
-	 object = (lwp_obj*)__lwp_queue_getI(&info->inactives);
+	 object = (lwp_obj*)_Chain_Get_unprotected(&info->inactives);
 	 if(object) {
 		 object->information = info;
 		 info->inactives_cnt--;
@@ -117,12 +112,12 @@ lwp_obj* __lwp_objmgr_allocate(lwp_objinfo *info)
 	return object;
 }
 
-void __lwp_objmgr_free(lwp_objinfo *info,lwp_obj *object)
+void _Objects_Free(lwp_objinfo *info,lwp_obj *object)
 {
 	u32 level;
 
 	_CPU_ISR_Disable(level);
-	__lwp_queue_appendI(&info->inactives,&object->node);
+	_Chain_Append_unprotected(&info->inactives,&object->node);
 	object->information	= NULL;
 	info->inactives_cnt++;
 	_CPU_ISR_Restore(level);
