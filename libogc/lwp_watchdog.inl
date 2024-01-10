@@ -1,12 +1,12 @@
 #ifndef __LWP_WATCHDOG_INL__
 #define __LWP_WATCHDOG_INL__
 
-static __inline__ void _Watchdog_Initialize(Watchdog_Control *wd,wd_service_routine routine,u32 id,void *usr_data)
+static __inline__ void _Watchdog_Initialize(Watchdog_Control *wd,Watchdog_Service_routine_entry routine,u32 id,void *usr_data)
 {
 	wd->state = LWP_WD_INACTIVE;
 	wd->id = id;
 	wd->routine = routine;
-	wd->usr_data = usr_data;
+	wd->user_data = usr_data;
 }
 
 static __inline__ Watchdog_Control* _Watchdog_First(Chain_Control *queue)
@@ -61,8 +61,8 @@ static __inline__ void _Watchdog_Tickle_ticks()
 
 static __inline__ void _Watchdog_Insert_ticks(Watchdog_Control *wd,s64 interval)
 {
-	wd->start = gettime();
-	wd->fire = (wd->start+LWP_WD_ABS(interval));
+	wd->initial = gettime();
+	wd->delta_interval = (wd->initial+LWP_WD_ABS(interval));
 	_Watchdog_Insert(&_wd_ticks_queue,wd);
 }
 

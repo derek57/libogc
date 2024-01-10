@@ -77,16 +77,16 @@ u32 diff_msec(u64 start,u64 end);
 u32 diff_usec(u64 start,u64 end);
 u32 diff_nsec(u64 start,u64 end);
 
-typedef void (*wd_service_routine)(void *);
+typedef void (*Watchdog_Service_routine_entry)(void *);
 
 typedef struct {
 	Chain_Node node;
-	u64 start;
+	u64 initial;
 	u32 id;
 	u32 state;
-	u64 fire;
-	wd_service_routine routine;
-	void *usr_data;
+	u64 delta_interval;
+	Watchdog_Service_routine_entry routine;
+	void *user_data;
 } Watchdog_Control;
 
 void _Watchdog_Handler_initialization();

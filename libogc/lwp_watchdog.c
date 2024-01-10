@@ -26,7 +26,7 @@ static void __lwp_wd_settimer(Watchdog_Control *wd)
 	} v;
 
 	now = gettime();
-	v.ull = diff = diff_ticks(now,wd->fire);
+	v.ull = diff = diff_ticks(now,wd->delta_interval);
 #ifdef _LWPWD_DEBUG
 	printf("__lwp_wd_settimer(%p,%llu,%lld)\n",wd,wd->fire,diff);
 #endif
@@ -34,7 +34,7 @@ static void __lwp_wd_settimer(Watchdog_Control *wd)
 #ifdef _LWPWD_DEBUG
 		printf(" __lwp_wd_settimer(0): %lld<=0\n",diff);
 #endif
-		wd->fire = 0;
+		wd->delta_interval = 0;
 		mtdec(0);
 	} else if(diff<0x0000000080000000LL) {
 #ifdef _LWPWD_DEBUG
@@ -73,10 +73,10 @@ void _Watchdog_Insert(Chain_Control *header,Watchdog_Control *wd)
 	_wd_sync_count++;
 restart:
 	_CPU_ISR_Disable(level);
-	fire = wd->fire;
+	fire = wd->delta_interval;
 	for(after=_Watchdog_First(header);;after=_Watchdog_Next(after)) {
 		if(fire==0 || !_Watchdog_Next(after)) break;
-		if(fire<after->fire) break;
+		if(fire<after->delta_interval) break;
 
 		_CPU_ISR_Flash(level);
 		if(wd->state!=LWP_WD_INSERTED) goto exit_insert;
@@ -87,7 +87,7 @@ restart:
 		}
 	}
 	_Watchdog_Activate(wd);
-	wd->fire = fire;
+	wd->delta_interval = fire;
 	_Chain_Insert_unprotected(after->node.prev,&wd->node);
 	if(_Watchdog_First(header)==wd) __lwp_wd_settimer(wd);
 
@@ -137,7 +137,7 @@ void _Watchdog_Tickle(Chain_Control *queue)
 
 	wd = _Watchdog_First(queue);
 	now = gettime();
-	diff = diff_ticks(now,wd->fire);
+	diff = diff_ticks(now,wd->delta_interval);
 #ifdef _LWPWD_DEBUG
 	printf("_Watchdog_Tickle(%p,%08x%08x,%08x%08x,%08x%08x,%08x%08x)\n",wd,(u32)(now>>32),(u32)now,(u32)(wd->start>>32),(u32)wd->start,(u32)(wd->fire>>32),(u32)wd->fire,(u32)(diff>>32),(u32)diff);
 #endif
@@ -145,7 +145,7 @@ void _Watchdog_Tickle(Chain_Control *queue)
 		do {
 			switch(_Watchdog_Remove(queue,wd)) {
 				case LWP_WD_ACTIVE:	
-					wd->routine(wd->usr_data);
+					wd->routine(wd->user_data);
 					break;
 				case LWP_WD_INACTIVE:
 					break;
@@ -155,7 +155,7 @@ void _Watchdog_Tickle(Chain_Control *queue)
 					break;
 			}
 			wd = _Watchdog_First(queue);
-		} while(!_Chain_Is_empty(queue) && wd->fire==0);
+		} while(!_Chain_Is_empty(queue) && wd->delta_interval==0);
 	} else {
 		_Watchdog_Reset(wd);
 	}
@@ -171,16 +171,16 @@ void _Watchdog_Adjust(Chain_Control *queue,u32 dir,s64 interval)
 	if(!_Chain_Is_empty(queue)) {
 		switch(dir) {
 			case LWP_WD_BACKWARD:
-				_Watchdog_First(queue)->fire += LWP_WD_ABS(interval);
+				_Watchdog_First(queue)->delta_interval += LWP_WD_ABS(interval);
 				break;
 			case LWP_WD_FORWARD:
 				while(abs_int) {
-					if(abs_int<_Watchdog_First(queue)->fire) {
-						_Watchdog_First(queue)->fire -= LWP_WD_ABS(interval);
+					if(abs_int<_Watchdog_First(queue)->delta_interval) {
+						_Watchdog_First(queue)->delta_interval -= LWP_WD_ABS(interval);
 						break;
 					} else {
-						abs_int -= _Watchdog_First(queue)->fire;
-						_Watchdog_First(queue)->fire = gettime();
+						abs_int -= _Watchdog_First(queue)->delta_interval;
+						_Watchdog_First(queue)->delta_interval = gettime();
 						_Watchdog_Tickle(queue);
 						if(_Chain_Is_empty(queue)) break;
 					}
