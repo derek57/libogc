@@ -56,7 +56,7 @@ void _Thread_queue_Enqueue_fifo(Thread_queue_Control *queue,Thread_Control *thet
 		case LWP_THREADQ_SYNCHRONIZED:
 			break;
 		case LWP_THREADQ_NOTHINGHAPPEND:
-			_Chain_Append_unprotected(&queue->queues.fifo,&thethread->object.node);
+			_Chain_Append_unprotected(&queue->queues.fifo,&thethread->object.Node);
 			_CPU_ISR_Restore(level);
 			return;
 		case LWP_THREADQ_TIMEOUT:
@@ -147,7 +147,7 @@ forward_search:
 			_CPU_ISR_Restore(level);
 			goto forward_search;
 		}
-		search_thread = (Thread_Control*)search_thread->object.node.next;
+		search_thread = (Thread_Control*)search_thread->object.Node.next;
 	}
 	if(queue->sync_state!=LWP_THREADQ_NOTHINGHAPPEND) goto synchronize;
 	queue->sync_state = LWP_THREADQ_SYNCHRONIZED;
@@ -177,7 +177,7 @@ reverse_search:
 			_CPU_ISR_Restore(level);
 			goto reverse_search;
 		}
-		search_thread = (Thread_Control*)search_thread->object.node.prev;
+		search_thread = (Thread_Control*)search_thread->object.Node.prev;
 	}
 	if(queue->sync_state!=LWP_THREADQ_NOTHINGHAPPEND) goto synchronize;
 	queue->sync_state = LWP_THREADQ_SYNCHRONIZED;
@@ -272,8 +272,8 @@ dequeue:
 #endif
 	newfirstnode = ret->wait.Block2n.first;
 	newfirstthr = (Thread_Control*)newfirstnode;
-	next_node = ret->object.node.next;
-	prev_node = ret->object.node.prev;
+	next_node = ret->object.Node.next;
+	prev_node = ret->object.Node.prev;
 	if(!_Chain_Is_empty(&ret->wait.Block2n)) {
 		last_node = ret->wait.Block2n.last;
 		newsecnode = newfirstnode->next;
@@ -426,7 +426,7 @@ void _Thread_queue_Extract_fifo(Thread_queue_Control *queue,Thread_Control *thet
 		return;
 	}
 	
-	_Chain_Extract_unprotected(&thethread->object.node);
+	_Chain_Extract_unprotected(&thethread->object.Node);
 	if(!_Watchdog_Is_active(&thethread->timer)) {
 		_CPU_ISR_Restore(level);
 	} else {

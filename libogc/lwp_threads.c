@@ -252,8 +252,8 @@ void _Thread_Yield_processor()
 	
 	_CPU_ISR_Disable(level);
 	if(!_Chain_Has_only_one_node(ready)) {
-		_Chain_Extract_unprotected(&exec->object.node);
-		_Chain_Append_unprotected(ready,&exec->object.node);
+		_Chain_Extract_unprotected(&exec->object.Node);
+		_Chain_Append_unprotected(ready,&exec->object.Node);
 		_CPU_ISR_Flash(level);
 		if(_Thread_Is_heir(exec))
 			_thr_heir = (Thread_Control*)ready->first;
@@ -278,8 +278,8 @@ void _Thread_Reset_timeslice()
 		return;
 	}
 
-	_Chain_Extract_unprotected(&exec->object.node);
-	_Chain_Append_unprotected(ready,&exec->object.node);
+	_Chain_Extract_unprotected(&exec->object.Node);
+	_Chain_Append_unprotected(ready,&exec->object.Node);
 
 	_CPU_ISR_Flash(level);
 
@@ -311,7 +311,7 @@ void _Thread_Set_state(Thread_Control *thethread,u32 state)
 		_Chain_Initialize_empty(ready);
 		_Priority_Remove_from_bit_map(&thethread->priomap);
 	} else 
-		_Chain_Extract_unprotected(&thethread->object.node);
+		_Chain_Extract_unprotected(&thethread->object.Node);
 	_CPU_ISR_Flash(level);
 
 	if(_Thread_Is_heir(thethread))
@@ -335,7 +335,7 @@ void _Thread_Clear_state(Thread_Control *thethread,u32 state)
 		cur_state = thethread->cur_state = _States_Clear(cur_state,state);
 		if(_States_Is_ready(cur_state)) {
 			_Priority_Add_to_bit_map(&thethread->priomap);
-			_Chain_Append_unprotected(thethread->ready,&thethread->object.node);
+			_Chain_Append_unprotected(thethread->ready,&thethread->object.Node);
 			_CPU_ISR_Flash(level);
 			
 			if(thethread->cur_prio<_thr_heir->cur_prio) {
@@ -382,9 +382,9 @@ void _Thread_Change_priority(Thread_Control *thethread,u32 prio,u32 prependit)
 
 	_Priority_Add_to_bit_map(&thethread->priomap);
 	if(prependit)
-		_Chain_Prepend_unprotected(thethread->ready,&thethread->object.node);
+		_Chain_Prepend_unprotected(thethread->ready,&thethread->object.Node);
 	else
-		_Chain_Append_unprotected(thethread->ready,&thethread->object.node);
+		_Chain_Append_unprotected(thethread->ready,&thethread->object.Node);
 
 	_CPU_ISR_Flash(level);
 
@@ -427,7 +427,7 @@ void _Thread_Suspend(Thread_Control *thethread)
 		_Chain_Initialize_empty(ready);
 		_Priority_Remove_from_bit_map(&thethread->priomap);
 	} else {
-		_Chain_Extract_unprotected(&thethread->object.node);
+		_Chain_Extract_unprotected(&thethread->object.Node);
 	}
 	_CPU_ISR_Flash(level);
 	
@@ -457,7 +457,7 @@ void _Thread_Set_transient(Thread_Control *thethread)
 			_Chain_Initialize_empty(ready);
 			_Priority_Remove_from_bit_map(&thethread->priomap);
 		} else {
-			_Chain_Extract_unprotected(&thethread->object.node);
+			_Chain_Extract_unprotected(&thethread->object.Node);
 		}
 	}
 
@@ -485,7 +485,7 @@ void _Thread_Resume(Thread_Control *thethread,u32 force)
 		state = thethread->cur_state = _States_Clear(thethread->cur_state,LWP_STATES_SUSPENDED);
 		if(_States_Is_ready(state)) {
 			_Priority_Add_to_bit_map(&thethread->priomap);
-			_Chain_Append_unprotected(thethread->ready,&thethread->object.node);
+			_Chain_Append_unprotected(thethread->ready,&thethread->object.Node);
 			_CPU_ISR_Flash(level);
 			if(thethread->cur_prio<_thr_heir->cur_prio) {
 				_thr_heir = thethread;
@@ -544,7 +544,7 @@ void _Thread_Ready(Thread_Control *thethread)
 #endif
 	thethread->cur_state = LWP_STATES_READY;
 	_Priority_Add_to_bit_map(&thethread->priomap);
-	_Chain_Append_unprotected(thethread->ready,&thethread->object.node);
+	_Chain_Append_unprotected(thethread->ready,&thethread->object.Node);
 	_CPU_ISR_Flash(level);
 
 	_Thread_Calculate_heir();
@@ -646,7 +646,7 @@ void __lwp_thread_closeall()
 		header = &_lwp_thr_ready[i];
 		ptr = (Thread_Control*)header->first;
 		while(ptr!=(Thread_Control*)_Chain_Tail(&_lwp_thr_ready[i])) {
-			next = (Thread_Control*)ptr->object.node.next;
+			next = (Thread_Control*)ptr->object.Node.next;
 			if(ptr!=_thr_executing)
 				_Thread_Close(ptr);
 

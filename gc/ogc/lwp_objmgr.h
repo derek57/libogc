@@ -15,20 +15,20 @@ extern "C" {
 typedef struct _Objects_Control Objects_Information;
 
 typedef struct {
-	Chain_Node node;
+	Chain_Node Node;
 	s32 id;
 	Objects_Information *information;
 } Objects_Control;
 
 struct _Objects_Control {
-	u32 min_id;
-	u32 max_id;
-	u32 max_nodes;
-	u32 node_size;
+	u32 minimum_id;
+	u32 maximum_id;
+	u32 maximum;
+	u32 size;
 	Objects_Control **local_table;
-	void *obj_blocks;
-	Chain_Control inactives;
-	u32 inactives_cnt;
+	void *object_blocks;
+	Chain_Control Inactive;
+	u32 inactive;
 };
 
 void _Objects_Initialize_information(Objects_Information *info,u32 max_nodes,u32 node_size);

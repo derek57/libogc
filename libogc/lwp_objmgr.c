@@ -18,43 +18,43 @@ void _Objects_Initialize_information(Objects_Information *info,u32 max_nodes,u32
 	Chain_Control inactives;
 	void **local_table;
 	
-	info->min_id = 0;
-	info->max_id = 0;
-	info->inactives_cnt = 0;
-	info->node_size = node_size;
-	info->max_nodes = max_nodes;
-	info->obj_blocks = NULL;
+	info->minimum_id = 0;
+	info->maximum_id = 0;
+	info->inactive = 0;
+	info->size = node_size;
+	info->maximum = max_nodes;
+	info->object_blocks = NULL;
 	info->local_table = &null_local_table;
 
-	_Chain_Initialize_empty(&info->inactives);
+	_Chain_Initialize_empty(&info->Inactive);
 
-	size = ((info->max_nodes*sizeof(Objects_Control*))+(info->max_nodes*info->node_size));
-	local_table = (void**)_Workspace_Allocate(info->max_nodes*sizeof(Objects_Control*));
+	size = ((info->maximum*sizeof(Objects_Control*))+(info->maximum*info->size));
+	local_table = (void**)_Workspace_Allocate(info->maximum*sizeof(Objects_Control*));
 	if(!local_table) return;
 
 	info->local_table = (Objects_Control**)local_table;
-	for(i=0;i<info->max_nodes;i++) {
+	for(i=0;i<info->maximum;i++) {
 		local_table[i] = NULL;
 	}
 
-	info->obj_blocks = _Workspace_Allocate(info->max_nodes*info->node_size);
-	if(!info->obj_blocks) {
+	info->object_blocks = _Workspace_Allocate(info->maximum*info->size);
+	if(!info->object_blocks) {
 		_Workspace_Free(local_table);
 		return;
 	}
 
-	_Chain_Initialize(&inactives,info->obj_blocks,info->max_nodes,info->node_size);
+	_Chain_Initialize(&inactives,info->object_blocks,info->maximum,info->size);
 
-	idx = info->min_id;
+	idx = info->minimum_id;
 	while((object=(Objects_Control*)_Chain_Get(&inactives))!=NULL) {
 		object->id = idx;
 		object->information = NULL;
-		_Chain_Append(&info->inactives,&object->node);
+		_Chain_Append(&info->Inactive,&object->Node);
 		idx++;
 	}
 
-	info->max_id += info->max_nodes;
-	info->inactives_cnt += info->max_nodes;
+	info->maximum_id += info->maximum;
+	info->inactive += info->maximum;
 	_lwp_objmgr_memsize += size;
 }
 
@@ -64,7 +64,7 @@ Objects_Control* _Objects_Get_isr_disable(Objects_Information *info,u32 id,u32 *
 	Objects_Control *object = NULL;
 
 	_CPU_ISR_Disable(level);
-	if(info->max_id>=id) {
+	if(info->maximum_id>=id) {
 		if((object=info->local_table[id])!=NULL) {
 			*p_level = level;
 			return object;
@@ -78,7 +78,7 @@ Objects_Control* _Objects_Get_no_protection(Objects_Information *info,u32 id)
 {
 	Objects_Control *object = NULL;
 
-	if(info->max_id>=id) {
+	if(info->maximum_id>=id) {
 		if((object=info->local_table[id])!=NULL) return object;
 	}
 	return NULL;
@@ -88,7 +88,7 @@ Objects_Control* _Objects_Get(Objects_Information *info,u32 id)
 {
 	Objects_Control *object = NULL;
 
-	if(info->max_id>=id) {
+	if(info->maximum_id>=id) {
 		_Thread_Disable_dispatch();
 		if((object=info->local_table[id])!=NULL) return object;
 		_Thread_Enable_dispatch();
@@ -102,10 +102,10 @@ Objects_Control* _Objects_Allocate(Objects_Information *info)
 	Objects_Control* object;
 
 	_CPU_ISR_Disable(level);
-	 object = (Objects_Control*)_Chain_Get_unprotected(&info->inactives);
+	 object = (Objects_Control*)_Chain_Get_unprotected(&info->Inactive);
 	 if(object) {
 		 object->information = info;
-		 info->inactives_cnt--;
+		 info->inactive--;
 	 }
 	_CPU_ISR_Restore(level);
 
@@ -117,8 +117,8 @@ void _Objects_Free(Objects_Information *info,Objects_Control *object)
 	u32 level;
 
 	_CPU_ISR_Disable(level);
-	_Chain_Append_unprotected(&info->inactives,&object->node);
+	_Chain_Append_unprotected(&info->Inactive,&object->Node);
 	object->information	= NULL;
-	info->inactives_cnt++;
+	info->inactive++;
 	_CPU_ISR_Restore(level);
 }
