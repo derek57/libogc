@@ -11,7 +11,7 @@ void _CORE_mutex_Initialize(CORE_mutex_Control *mutex,CORE_mutex_Attributes *att
 		mutex->nest_count = 1;
 		mutex->holder = _thr_executing;
 		if(_CORE_mutex_Is_inherit_priority(attrs) || _CORE_mutex_Is_priority_ceiling(attrs))
-			_thr_executing->res_cnt++;
+			_thr_executing->resource_count++;
 	} else {
 		mutex->nest_count = 0;
 		mutex->holder = NULL;
@@ -48,19 +48,19 @@ u32 _CORE_mutex_Surrender(CORE_mutex_Control *mutex)
 	}
 
 	if(_CORE_mutex_Is_inherit_priority(&mutex->Attributes) || _CORE_mutex_Is_priority_ceiling(&mutex->Attributes))
-		holder->res_cnt--;
+		holder->resource_count--;
 
 	mutex->holder = NULL;
 	if(_CORE_mutex_Is_inherit_priority(&mutex->Attributes) || _CORE_mutex_Is_priority_ceiling(&mutex->Attributes)) {
-		if(holder->res_cnt==0 && holder->real_prio!=holder->cur_prio) 
-			_Thread_Change_priority(holder,holder->real_prio,TRUE);
+		if(holder->resource_count==0 && holder->real_priority!=holder->current_priority) 
+			_Thread_Change_priority(holder,holder->real_priority,TRUE);
 	}
 	
 	if((thethread=_Thread_queue_Dequeue(&mutex->Wait_queue))) {
 		mutex->nest_count = 1;
 		mutex->holder = thethread;
 		if(_CORE_mutex_Is_inherit_priority(&mutex->Attributes) || _CORE_mutex_Is_priority_ceiling(&mutex->Attributes))
-			thethread->res_cnt++;
+			thethread->resource_count++;
 	} else
 		mutex->lock = LWP_MUTEX_UNLOCKED;
 
@@ -73,16 +73,16 @@ void _CORE_mutex_Seize_interrupt_blocking(CORE_mutex_Control *mutex,u64 timeout)
 
 	exec = _thr_executing;
 	if(_CORE_mutex_Is_inherit_priority(&mutex->Attributes)){
-		if(mutex->holder->cur_prio>exec->cur_prio)
-			_Thread_Change_priority(mutex->holder,exec->cur_prio,FALSE);
+		if(mutex->holder->current_priority>exec->current_priority)
+			_Thread_Change_priority(mutex->holder,exec->current_priority,FALSE);
 	}
 
 	mutex->blocked_count++;
 	_Thread_queue_Enqueue(&mutex->Wait_queue,timeout);
 
-	if(_thr_executing->wait.return_code==LWP_MUTEX_SUCCESSFUL) {
+	if(_thr_executing->Wait.return_code==LWP_MUTEX_SUCCESSFUL) {
 		if(_CORE_mutex_Is_priority_ceiling(&mutex->Attributes)) {
-			if(mutex->Attributes.priority_ceiling<exec->cur_prio) 
+			if(mutex->Attributes.priority_ceiling<exec->current_priority) 
 				_Thread_Change_priority(exec,mutex->Attributes.priority_ceiling,FALSE);
 		}
 	}

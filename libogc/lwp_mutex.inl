@@ -32,13 +32,13 @@ static __inline__ u32 _CORE_mutex_Seize_interrupt_trylock(CORE_mutex_Control *mu
 	u32 level = *isr_level;
 
 	exec = _thr_executing;
-	exec->wait.return_code = LWP_MUTEX_SUCCESSFUL;
+	exec->Wait.return_code = LWP_MUTEX_SUCCESSFUL;
 	if(!_CORE_mutex_Is_locked(mutex)) {
 		mutex->lock = LWP_MUTEX_LOCKED;
 		mutex->holder = exec;
 		mutex->nest_count = 1;
 		if(_CORE_mutex_Is_inherit_priority(&mutex->Attributes) || _CORE_mutex_Is_priority_ceiling(&mutex->Attributes))
-			exec->res_cnt++;
+			exec->resource_count++;
 		if(!_CORE_mutex_Is_priority_ceiling(&mutex->Attributes)) {
 			_CPU_ISR_Restore(level);
 			return 0;
@@ -47,7 +47,7 @@ static __inline__ u32 _CORE_mutex_Seize_interrupt_trylock(CORE_mutex_Control *mu
 			u32 prioceiling,priocurr;
 			
 			prioceiling = mutex->Attributes.priority_ceiling;
-			priocurr = exec->cur_prio;
+			priocurr = exec->current_priority;
 			if(priocurr==prioceiling) {
 				_CPU_ISR_Restore(level);
 				return 0;
@@ -59,9 +59,9 @@ static __inline__ u32 _CORE_mutex_Seize_interrupt_trylock(CORE_mutex_Control *mu
 				_Thread_Enable_dispatch();
 				return 0;
 			}
-			exec->wait.return_code = LWP_MUTEX_CEILINGVIOL;
+			exec->Wait.return_code = LWP_MUTEX_CEILINGVIOL;
 			mutex->nest_count = 0;
-			exec->res_cnt--;
+			exec->resource_count--;
 			_CPU_ISR_Restore(level);
 			return 0;
 		}
@@ -75,7 +75,7 @@ static __inline__ u32 _CORE_mutex_Seize_interrupt_trylock(CORE_mutex_Control *mu
 				_CPU_ISR_Restore(level);
 				return 0;
 			case LWP_MUTEX_NEST_ERROR:
-				exec->wait.return_code = LWP_MUTEX_NEST_NOTALLOWED;
+				exec->Wait.return_code = LWP_MUTEX_NEST_NOTALLOWED;
 				_CPU_ISR_Restore(level);
 				return 0;
 			case LWP_MUTEX_NEST_BLOCK:

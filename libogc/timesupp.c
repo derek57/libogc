@@ -191,8 +191,8 @@ unsigned int _DEFUN(nanosleep,(tb),
 
 	timeout = _POSIX_Timespec_to_interval(tb);
 	_Thread_Set_state(_thr_executing,LWP_STATES_DELAYING|LWP_STATES_INTERRUPTIBLE_BY_SIGNAL);
-	_Watchdog_Initialize(&_thr_executing->timer,_Thread_Delay_ended,_thr_executing->object.id,_thr_executing);
-	_Watchdog_Insert_ticks(&_thr_executing->timer,timeout);
+	_Watchdog_Initialize(&_thr_executing->Timer,_Thread_Delay_ended,_thr_executing->Object.id,_thr_executing);
+	_Watchdog_Insert_ticks(&_thr_executing->Timer,timeout);
 
 	_Thread_Enable_dispatch();
 	return TB_SUCCESSFUL;

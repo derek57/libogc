@@ -20,7 +20,7 @@ u32 _Thread_Stack_Allocate(Thread_Control *thethread,u32 size)
 
 void _Thread_Stack_Free(Thread_Control *thethread)
 {
-	if(!thethread->stack_allocated)
+	if(!thethread->core_allocated_stack)
 		return;
 
 	_Workspace_Free(thethread->stack);

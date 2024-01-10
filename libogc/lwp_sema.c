@@ -33,7 +33,7 @@ u32 _CORE_semaphore_Seize(CORE_semaphore_Control *sema,u32 id,u32 wait,u64 timeo
 	Thread_Control *exec;
 	
 	exec = _thr_executing;
-	exec->wait.return_code = LWP_SEMA_SUCCESSFUL;
+	exec->Wait.return_code = LWP_SEMA_SUCCESSFUL;
 
 	_CPU_ISR_Disable(level);
 	if(sema->count!=0) {
@@ -44,13 +44,13 @@ u32 _CORE_semaphore_Seize(CORE_semaphore_Control *sema,u32 id,u32 wait,u64 timeo
 
 	if(!wait) {
 		_CPU_ISR_Restore(level);
-		exec->wait.return_code = LWP_SEMA_UNSATISFIED_NOWAIT;
+		exec->Wait.return_code = LWP_SEMA_UNSATISFIED_NOWAIT;
 		return LWP_SEMA_UNSATISFIED_NOWAIT;
 	}
 
 	_Thread_queue_Enter_critical_section(&sema->Wait_queue);
-	exec->wait.queue = &sema->Wait_queue;
-	exec->wait.id = id;
+	exec->Wait.queue = &sema->Wait_queue;
+	exec->Wait.id = id;
 	_CPU_ISR_Restore(level);
 	
 	_Thread_queue_Enqueue(&sema->Wait_queue,timeout);

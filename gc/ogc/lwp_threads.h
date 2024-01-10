@@ -36,26 +36,26 @@ typedef struct {
 typedef struct Thread_Control_struct Thread_Control; 
 
 struct Thread_Control_struct {
-	Objects_Control object;
-	u8  cur_prio,real_prio;
-	u32 suspendcnt,res_cnt;
+	Objects_Control Object;
+	u8  current_priority,real_priority;
+	u32 suspend_count,resource_count;
 	u32 isr_level;
-	u32 cur_state;
+	u32 current_state;
 	u32 cpu_time_budget;
-	lwp_cpu_budget_algorithms budget_algo;
+	lwp_cpu_budget_algorithms budget_algorithm;
 	bool is_preemptible;
-	Thread_Wait_information wait;
-	Priority_Information priomap;
-	Watchdog_Control timer;
+	Thread_Wait_information Wait;
+	Priority_Information Priority_map;
+	Watchdog_Control Timer;
 
-	void* (*entry)(void *);
-	void *arg;
+	void* (*entry_point)(void *);
+	void *pointer_argument;
 	void *stack;
-	u32 stack_size;
-	u8 stack_allocated;
+	u32 size;
+	u8 core_allocated_stack;
 	Chain_Control *ready;
 	Thread_queue_Control join_list;
-	Context_Control context;		//16
+	Context_Control Registers;		//16
 	void *libc_reent;
 };
 

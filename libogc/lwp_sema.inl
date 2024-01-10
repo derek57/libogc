@@ -12,7 +12,7 @@ static __inline__ void _CORE_semaphore_Seize_isr_disable(CORE_semaphore_Control 
 	u32 level = *isrlevel;
 
 	exec = _thr_executing;
-	exec->wait.return_code = LWP_SEMA_SUCCESSFUL;
+	exec->Wait.return_code = LWP_SEMA_SUCCESSFUL;
 	if(sema->count!=0) {
 		--sema->count;
 		_CPU_ISR_Restore(level);
@@ -21,14 +21,14 @@ static __inline__ void _CORE_semaphore_Seize_isr_disable(CORE_semaphore_Control 
 
 	if(!wait) {
 		_CPU_ISR_Restore(level);
-		exec->wait.return_code = LWP_SEMA_UNSATISFIED_NOWAIT;
+		exec->Wait.return_code = LWP_SEMA_UNSATISFIED_NOWAIT;
 		return;
 	}
 
 	_Thread_Disable_dispatch();
 	_Thread_queue_Enter_critical_section(&sema->Wait_queue);
-	exec->wait.queue = &sema->Wait_queue;
-	exec->wait.id = id;
+	exec->Wait.queue = &sema->Wait_queue;
+	exec->Wait.id = id;
 	_CPU_ISR_Restore(level);
 
 	_Thread_queue_Enqueue(&sema->Wait_queue,0);

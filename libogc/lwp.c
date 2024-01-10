@@ -90,7 +90,7 @@ static Thread_Control* __lwp_cntrl_allocate()
 	_Thread_Disable_dispatch();
 	thethread = (Thread_Control*)_Objects_Allocate(&_lwp_thr_objects);
 	if(thethread) {
-		_Objects_Open(&_lwp_thr_objects,&thethread->object);
+		_Objects_Open(&_lwp_thr_objects,&thethread->Object);
 		return thethread;
 	}
 	_Thread_Enable_dispatch();
@@ -113,8 +113,8 @@ static tqueue_st* __lwp_tqueue_allocate()
 
 static __inline__ void __lwp_cntrl_free(Thread_Control *thethread)
 {
-	_Objects_Close(&_lwp_thr_objects,&thethread->object);
-	_Objects_Free(&_lwp_thr_objects,&thethread->object);
+	_Objects_Close(&_lwp_thr_objects,&thethread->Object);
+	_Objects_Free(&_lwp_thr_objects,&thethread->Object);
 }
 
 static __inline__ void __lwp_tqueue_free(tqueue_st *tq)
@@ -139,14 +139,14 @@ void __lwp_sysinit()
 	_Thread_Initialize(_thr_idle,NULL,0,255,0,TRUE);
 	_thr_executing = _thr_heir = _thr_idle;
 	_Thread_Start(_thr_idle,_Thread_Idle_body,NULL);
-	_Objects_Open(&_lwp_thr_objects,&_thr_idle->object);
+	_Objects_Open(&_lwp_thr_objects,&_thr_idle->Object);
 
 	// create main thread, as this is our entry point
 	// for every GC application.
 	_thr_main = (Thread_Control*)_Objects_Allocate(&_lwp_thr_objects);
 	_Thread_Initialize(_thr_main,__stack_end,((u32)__stack_addr-(u32)__stack_end),191,0,TRUE);
 	_Thread_Start(_thr_main,(void*)__crtmain,NULL);
-	_Objects_Open(&_lwp_thr_objects,&_thr_main->object);
+	_Objects_Open(&_lwp_thr_objects,&_thr_main->Object);
 }
 
 BOOL __lwp_thread_isalive(lwp_t thr_id)
@@ -157,7 +157,7 @@ BOOL __lwp_thread_isalive(lwp_t thr_id)
 	
 	if(thethread) {  
 		u32 *stackbase = thethread->stack;
-		if(stackbase[0]==0xDEADBABE && !_States_Is_dormant(thethread->cur_state) && !_States_Is_Transient(thethread->cur_state))
+		if(stackbase[0]==0xDEADBABE && !_States_Is_dormant(thethread->current_state) && !_States_Is_Transient(thethread->current_state))
 			return TRUE;
 	}
 	
@@ -166,7 +166,7 @@ BOOL __lwp_thread_isalive(lwp_t thr_id)
 
 lwp_t pthread_self()
 {
-	return _thr_executing->object.id;
+	return _thr_executing->Object.id;
 }
 
 BOOL __lwp_thread_exists(lwp_t thr_id)
@@ -182,7 +182,7 @@ Context_Control* __lwp_thread_context(lwp_t thr_id)
 
 	LWP_CHECK_THREAD(thr_id);
 	thethread = (Thread_Control*)_Objects_Get_no_protection(&_lwp_thr_objects,LWP_OBJMASKID(thr_id));
-	if(thethread) pctx = &thethread->context;
+	if(thethread) pctx = &thethread->Registers;
 
 	return pctx;
 }
@@ -211,7 +211,7 @@ s32 LWP_CreateThread(lwp_t *thethread,void* (*entry)(void *),void *arg,void *sta
 		return -1;
 	}
 
-	*thethread = (lwp_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_THREAD)|LWP_OBJMASKID(lwp_thread->object.id));
+	*thethread = (lwp_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_THREAD)|LWP_OBJMASKID(lwp_thread->Object.id));
 	_Thread_Enable_dispatch();
 
 	return 0;
@@ -224,7 +224,7 @@ s32 LWP_SuspendThread(lwp_t thethread)
 	lwp_thread = __lwp_cntrl_open(thethread);
 	if(!lwp_thread) return -1;
 
-	if(!_States_Is_suspended(lwp_thread->cur_state)) {
+	if(!_States_Is_suspended(lwp_thread->current_state)) {
 		_Thread_Suspend(lwp_thread);
 		_Thread_Enable_dispatch();
 		return LWP_SUCCESSFUL;
@@ -240,7 +240,7 @@ s32 LWP_ResumeThread(lwp_t thethread)
 	lwp_thread = __lwp_cntrl_open(thethread);
 	if(!lwp_thread) return -1;
 
-	if(_States_Is_suspended(lwp_thread->cur_state)) {
+	if(_States_Is_suspended(lwp_thread->current_state)) {
 		_Thread_Resume(lwp_thread,TRUE);
 		_Thread_Enable_dispatch();
 		return LWP_SUCCESSFUL;
@@ -254,7 +254,7 @@ lwp_t LWP_GetSelf()
 	lwp_t ret;
 
 	_Thread_Disable_dispatch();
-	ret = (lwp_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_THREAD)|LWP_OBJMASKID(_thr_executing->object.id));
+	ret = (lwp_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_THREAD)|LWP_OBJMASKID(_thr_executing->Object.id));
 	_Thread_Unnest_dispatch();
 
 	return ret;
@@ -295,7 +295,7 @@ BOOL LWP_ThreadIsSuspended(lwp_t thethread)
 	lwp_thread = __lwp_cntrl_open(thethread);
   	if(!lwp_thread) return FALSE;
 	
-	state = (_States_Is_suspended(lwp_thread->cur_state) ? TRUE : FALSE);
+	state = (_States_Is_suspended(lwp_thread->current_state) ? TRUE : FALSE);
 
 	_Thread_Enable_dispatch();
 	return state;
@@ -319,11 +319,11 @@ s32 LWP_JoinThread(lwp_t thethread,void **value_ptr)
 	exec = _thr_executing;
 	_CPU_ISR_Disable(level);
 	_Thread_queue_Enter_critical_section(&lwp_thread->join_list);
-	exec->wait.return_code = 0;
-	exec->wait.return_argument_1 = NULL;
-	exec->wait.return_argument = (void*)&return_ptr;
-	exec->wait.queue = &lwp_thread->join_list;
-	exec->wait.id = thethread;
+	exec->Wait.return_code = 0;
+	exec->Wait.return_argument_1 = NULL;
+	exec->Wait.return_argument = (void*)&return_ptr;
+	exec->Wait.queue = &lwp_thread->join_list;
+	exec->Wait.id = thethread;
 	_CPU_ISR_Restore(level);
 	_Thread_queue_Enqueue(&lwp_thread->join_list,LWP_WD_NOTIMEOUT);
 	_Thread_Enable_dispatch();
@@ -378,11 +378,11 @@ s32 LWP_ThreadSleep(lwpq_t thequeue)
 	exec = _thr_executing;
 	_CPU_ISR_Disable(level);
 	_Thread_queue_Enter_critical_section(&tq->tqueue);
-	exec->wait.return_code = 0;
-	exec->wait.return_argument = NULL;
-	exec->wait.return_argument_1 = NULL;
-	exec->wait.queue = &tq->tqueue;
-	exec->wait.id = thequeue;
+	exec->Wait.return_code = 0;
+	exec->Wait.return_argument = NULL;
+	exec->Wait.return_argument_1 = NULL;
+	exec->Wait.queue = &tq->tqueue;
+	exec->Wait.id = thequeue;
 	_CPU_ISR_Restore(level);
 	_Thread_queue_Enqueue(&tq->tqueue,LWP_THREADQ_NOTIMEOUT);
 	_Thread_Enable_dispatch();
