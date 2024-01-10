@@ -3,7 +3,7 @@
 
 static __inline__ u32 _CORE_semaphore_Is_priority(CORE_semaphore_Attributes *attr)
 {
-	return (attr->mode==LWP_SEMA_MODEPRIORITY);
+	return (attr->discipline==LWP_SEMA_MODEPRIORITY);
 }
 
 static __inline__ void _CORE_semaphore_Seize_isr_disable(CORE_semaphore_Control *sema,u32 id,u32 wait,u32 *isrlevel)
@@ -26,12 +26,12 @@ static __inline__ void _CORE_semaphore_Seize_isr_disable(CORE_semaphore_Control 
 	}
 
 	_Thread_Disable_dispatch();
-	_Thread_queue_Enter_critical_section(&sema->wait_queue);
-	exec->wait.queue = &sema->wait_queue;
+	_Thread_queue_Enter_critical_section(&sema->Wait_queue);
+	exec->wait.queue = &sema->Wait_queue;
 	exec->wait.id = id;
 	_CPU_ISR_Restore(level);
 
-	_Thread_queue_Enqueue(&sema->wait_queue,0);
+	_Thread_queue_Enqueue(&sema->Wait_queue,0);
 	_Thread_Enable_dispatch();
 }
 

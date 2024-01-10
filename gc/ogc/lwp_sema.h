@@ -18,13 +18,13 @@ extern "C" {
 #endif
 
 typedef struct {
-	u32 max_cnt;
-	u32 mode;
+	u32 maximum_count;
+	u32 discipline;
 } CORE_semaphore_Attributes;
 
 typedef struct {
-	Thread_queue_Control wait_queue;
-	CORE_semaphore_Attributes	attrs;
+	Thread_queue_Control Wait_queue;
+	CORE_semaphore_Attributes	Attributes;
 	u32 count;
 } CORE_semaphore_Control;
 

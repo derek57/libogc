@@ -95,8 +95,8 @@ s32 LWP_SemInit(sem_t *sem,u32 start,u32 max)
 	ret = __lwp_sema_allocate();
 	if(!ret) return -1;
 
-	attr.max_cnt = max;
-	attr.mode = LWP_SEMA_MODEFIFO;
+	attr.maximum_count = max;
+	attr.discipline = LWP_SEMA_MODEFIFO;
 	CORE_semaphore_Initialize(&ret->sema,&attr,start);
 
 	*sem = (sem_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_SEM)|LWP_OBJMASKID(ret->object.id));
