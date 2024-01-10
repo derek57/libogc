@@ -22,7 +22,7 @@ struct Heap_Block_struct {
 	u32 back_flag;
 	u32 front_flag;
 	heap_block *next;
-	heap_block *prev;
+	heap_block *previous;
 };
 
 typedef struct {
@@ -37,9 +37,9 @@ typedef struct {
 	heap_block *final;
 
 	heap_block *first;
-	heap_block *perm_null;
+	heap_block *permanent_null;
 	heap_block *last;
-	u32 pg_size;
+	u32 page_size;
 	u32 reserved;
 } Heap_Control;
 
