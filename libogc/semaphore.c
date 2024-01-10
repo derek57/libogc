@@ -114,7 +114,7 @@ s32 LWP_SemWait(sem_t sem)
 	_CORE_semaphore_Seize(&lwp_sem->sema,lwp_sem->object.id,TRUE,LWP_THREADQ_NOTIMEOUT);
 	_Thread_Enable_dispatch();
 
-	switch(_thr_executing->wait.ret_code) {
+	switch(_thr_executing->wait.return_code) {
 		case LWP_SEMA_SUCCESSFUL:
 			break;
 		case LWP_SEMA_UNSATISFIED_NOWAIT:

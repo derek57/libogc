@@ -16,7 +16,7 @@ static void _Thread_queue_Timeout(void *usr_data)
 	if(thequeue->sync_state!=LWP_THREADQ_SYNCHRONIZED && _Thread_Is_executing(thethread)) {
 		if(thequeue->sync_state!=LWP_THREADQ_SATISFIED) thequeue->sync_state = LWP_THREADQ_TIMEOUT;
 	} else {
-		thethread->wait.ret_code = thethread->wait.queue->timeout_state;
+		thethread->wait.return_code = thethread->wait.queue->timeout_state;
 		_Thread_queue_Extract(thethread->wait.queue,thethread);
 	}
 	_Thread_Unnest_dispatch();
@@ -60,7 +60,7 @@ void _Thread_queue_Enqueue_fifo(Thread_queue_Control *queue,Thread_Control *thet
 			_CPU_ISR_Restore(level);
 			return;
 		case LWP_THREADQ_TIMEOUT:
-			thethread->wait.ret_code = thethread->wait.queue->timeout_state;
+			thethread->wait.return_code = thethread->wait.queue->timeout_state;
 			_CPU_ISR_Restore(level);
 			break;
 		case LWP_THREADQ_SATISFIED:
@@ -117,7 +117,7 @@ void _Thread_queue_Enqueue_priority(Thread_queue_Control *queue,Thread_Control *
 	Chain_Control *header;
 	Chain_Node *cur_node,*next_node,*prev_node,*search_node;
 
-	_Chain_Initialize_empty(&thethread->wait.block2n);
+	_Chain_Initialize_empty(&thethread->wait.Block2n);
 	
 	prio = thethread->cur_prio;
 	header_idx = prio/LWP_THREADQ_PRIOPERHEADER;
@@ -198,7 +198,7 @@ equal_prio:
 #ifdef _LWPTHRQ_DEBUG
 	printf("_Thread_queue_Enqueue_priority(%p,equal_prio)\n",thethread);
 #endif
-	search_node = _Chain_Tail(&search_thread->wait.block2n);
+	search_node = _Chain_Tail(&search_thread->wait.Block2n);
 	prev_node = search_node->prev;
 	cur_node = (Chain_Node*)thethread;
 
@@ -222,7 +222,7 @@ synchronize:
 		case LWP_THREADQ_NOTHINGHAPPEND:
 			break;
 		case LWP_THREADQ_TIMEOUT:
-			thethread->wait.ret_code = thethread->wait.queue->timeout_state;
+			thethread->wait.return_code = thethread->wait.queue->timeout_state;
 			_CPU_ISR_Restore(level);
 			break;
 		case LWP_THREADQ_SATISFIED:
@@ -270,23 +270,23 @@ dequeue:
 #ifdef _LWPTHRQ_DEBUG
 	printf("_Thread_queue_Dequeue_priority(%p,dequeue)\n",ret);
 #endif
-	newfirstnode = ret->wait.block2n.first;
+	newfirstnode = ret->wait.Block2n.first;
 	newfirstthr = (Thread_Control*)newfirstnode;
 	next_node = ret->object.node.next;
 	prev_node = ret->object.node.prev;
-	if(!_Chain_Is_empty(&ret->wait.block2n)) {
-		last_node = ret->wait.block2n.last;
+	if(!_Chain_Is_empty(&ret->wait.Block2n)) {
+		last_node = ret->wait.Block2n.last;
 		newsecnode = newfirstnode->next;
 		prev_node->next = newfirstnode;
 		next_node->prev = newfirstnode;
 		newfirstnode->next = next_node;
 		newfirstnode->prev = prev_node;
 		
-		if(!_Chain_Has_only_one_node(&ret->wait.block2n)) {
-			newsecnode->prev = _Chain_Head(&newfirstthr->wait.block2n);
-			newfirstthr->wait.block2n.first = newsecnode;
-			newfirstthr->wait.block2n.last = last_node;
-			last_node->next = _Chain_Tail(&newfirstthr->wait.block2n);
+		if(!_Chain_Has_only_one_node(&ret->wait.Block2n)) {
+			newsecnode->prev = _Chain_Head(&newfirstthr->wait.Block2n);
+			newfirstthr->wait.Block2n.first = newsecnode;
+			newfirstthr->wait.Block2n.last = last_node;
+			last_node->next = _Chain_Tail(&newfirstthr->wait.Block2n);
 		}
 	} else {
 		prev_node->next = next_node;
@@ -399,7 +399,7 @@ void _Thread_queue_Flush(Thread_queue_Control *queue,u32 status)
 {
 	Thread_Control *thethread;
 	while((thethread=_Thread_queue_Dequeue(queue))) {
-		thethread->wait.ret_code = status;
+		thethread->wait.return_code = status;
 	}
 }
 
@@ -450,10 +450,10 @@ void _Thread_queue_Extract_priority(Thread_queue_Control *queue,Thread_Control *
 		next = curr->next;
 		prev = curr->prev;
 		
-		if(!_Chain_Is_empty(&thethread->wait.block2n)) {
-			new_first = thethread->wait.block2n.first;
+		if(!_Chain_Is_empty(&thethread->wait.Block2n)) {
+			new_first = thethread->wait.Block2n.first;
 			first = (Thread_Control*)new_first;
-			last = thethread->wait.block2n.last;
+			last = thethread->wait.Block2n.last;
 			new_sec = new_first->next;
 
 			prev->next = new_first;
@@ -461,11 +461,11 @@ void _Thread_queue_Extract_priority(Thread_queue_Control *queue,Thread_Control *
 			new_first->next = next;
 			new_first->prev = prev;
 
-			if(!_Chain_Has_only_one_node(&thethread->wait.block2n)) {
-				new_sec->prev = _Chain_Head(&first->wait.block2n);
-				first->wait.block2n.first = new_sec;
-				first->wait.block2n.last = last;
-				last->next = _Chain_Tail(&first->wait.block2n);
+			if(!_Chain_Has_only_one_node(&thethread->wait.Block2n)) {
+				new_sec->prev = _Chain_Head(&first->wait.Block2n);
+				first->wait.Block2n.first = new_sec;
+				first->wait.Block2n.last = last;
+				last->next = _Chain_Tail(&first->wait.Block2n);
 			}
 		} else {
 			prev->next = next;

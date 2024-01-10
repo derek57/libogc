@@ -80,7 +80,7 @@ u32 _CORE_message_queue_Seize(CORE_message_queue_Control *mqueue,u32 id,void *bu
 	Thread_Control *exec,*thread;
 
 	exec = _thr_executing;
-	exec->wait.ret_code = LWP_MQ_STATUS_SUCCESSFUL;
+	exec->wait.return_code = LWP_MQ_STATUS_SUCCESSFUL;
 #ifdef _LWPMQ_DEBUG
 	printf("_CORE_message_queue_Seize(%p,%d,%p,%p,%d,%d)\n",mqueue,id,buffer,size,wait,mqueue->num_pendingmsgs);
 #endif
@@ -92,7 +92,7 @@ u32 _CORE_message_queue_Seize(CORE_message_queue_Control *mqueue,u32 id,void *bu
 		_CPU_ISR_Restore(level);
 		
 		*size = msg->contents.size;
-		exec->wait.cnt = msg->prio;
+		exec->wait.count = msg->prio;
 		_CORE_message_queue_Copy_buffer(buffer,msg->contents.buffer,*size);
 
 		thread = _Thread_queue_Dequeue(&mqueue->wait_queue);
@@ -101,9 +101,9 @@ u32 _CORE_message_queue_Seize(CORE_message_queue_Control *mqueue,u32 id,void *bu
 			return LWP_MQ_STATUS_SUCCESSFUL;
 		}
 
-		msg->prio = thread->wait.cnt;
-		msg->contents.size = (u32)thread->wait.ret_arg_1;
-		_CORE_message_queue_Copy_buffer(msg->contents.buffer,thread->wait.ret_arg,msg->contents.size);
+		msg->prio = thread->wait.count;
+		msg->contents.size = (u32)thread->wait.return_argument_1;
+		_CORE_message_queue_Copy_buffer(msg->contents.buffer,thread->wait.return_argument,msg->contents.size);
 		
 		_CORE_message_queue_Insert_message(mqueue,msg,msg->prio);
 		return LWP_MQ_STATUS_SUCCESSFUL;
@@ -111,15 +111,15 @@ u32 _CORE_message_queue_Seize(CORE_message_queue_Control *mqueue,u32 id,void *bu
 
 	if(!wait) {
 		_CPU_ISR_Restore(level);
-		exec->wait.ret_code = LWP_MQ_STATUS_UNSATISFIED_NOWAIT;
+		exec->wait.return_code = LWP_MQ_STATUS_UNSATISFIED_NOWAIT;
 		return LWP_MQ_STATUS_UNSATISFIED_NOWAIT;
 	}
 
 	_Thread_queue_Enter_critical_section(&mqueue->wait_queue);
 	exec->wait.queue = &mqueue->wait_queue;
 	exec->wait.id = id;
-	exec->wait.ret_arg = (void*)buffer;
-	exec->wait.ret_arg_1 = (void*)size;
+	exec->wait.return_argument = (void*)buffer;
+	exec->wait.return_argument_1 = (void*)size;
 	_CPU_ISR_Restore(level);
 
 	_Thread_queue_Enqueue(&mqueue->wait_queue,timeout);
@@ -141,9 +141,9 @@ u32 _CORE_message_queue_Submit(CORE_message_queue_Control *mqueue,u32 id,void *b
 	if(mqueue->num_pendingmsgs==0) {
 		thread = _Thread_queue_Dequeue(&mqueue->wait_queue);
 		if(thread) {
-			_CORE_message_queue_Copy_buffer(thread->wait.ret_arg,buffer,size);
-			*(u32*)thread->wait.ret_arg_1 = size;
-			thread->wait.cnt = type;
+			_CORE_message_queue_Copy_buffer(thread->wait.return_argument,buffer,size);
+			*(u32*)thread->wait.return_argument_1 = size;
+			thread->wait.count = type;
 			return LWP_MQ_STATUS_SUCCESSFUL;
 		}
 	}
@@ -169,9 +169,9 @@ u32 _CORE_message_queue_Submit(CORE_message_queue_Control *mqueue,u32 id,void *b
 		_Thread_queue_Enter_critical_section(&mqueue->wait_queue);
 		exec->wait.queue = &mqueue->wait_queue;
 		exec->wait.id = id;
-		exec->wait.ret_arg = (void*)buffer;
-		exec->wait.ret_arg_1 = (void*)size;
-		exec->wait.cnt = type;
+		exec->wait.return_argument = (void*)buffer;
+		exec->wait.return_argument_1 = (void*)size;
+		exec->wait.count = type;
 		_CPU_ISR_Restore(level);
 		
 		_Thread_queue_Enqueue(&mqueue->wait_queue,timeout);
@@ -202,8 +202,8 @@ u32 _CORE_message_queue_Broadcast(CORE_message_queue_Control *mqueue,void *buffe
 		if(size>mqueue->max_msgsize)
 			rsize = mqueue->max_msgsize;
 
-		_CORE_message_queue_Copy_buffer(waitp->ret_arg,buffer,rsize);
-		*(u32*)waitp->ret_arg_1 = size;
+		_CORE_message_queue_Copy_buffer(waitp->return_argument,buffer,rsize);
+		*(u32*)waitp->return_argument = size;
 	}
 	*count = num_broadcast;
 	return LWP_MQ_STATUS_SUCCESSFUL;

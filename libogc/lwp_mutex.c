@@ -80,7 +80,7 @@ void _CORE_mutex_Seize_interrupt_blocking(CORE_mutex_Control *mutex,u64 timeout)
 	mutex->blocked_cnt++;
 	_Thread_queue_Enqueue(&mutex->wait_queue,timeout);
 
-	if(_thr_executing->wait.ret_code==LWP_MUTEX_SUCCESSFUL) {
+	if(_thr_executing->wait.return_code==LWP_MUTEX_SUCCESSFUL) {
 		if(_CORE_mutex_Is_priority_ceiling(&mutex->atrrs)) {
 			if(mutex->atrrs.prioceil<exec->cur_prio) 
 				_Thread_Change_priority(exec,mutex->atrrs.prioceil,FALSE);

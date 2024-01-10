@@ -199,11 +199,11 @@ static void _Thread_Handler()
 	level = exec->isr_level;
 	_CPU_ISR_Set_level(level);
 	_Thread_Enable_dispatch();
-	exec->wait.ret_arg = exec->entry(exec->arg);
+	exec->wait.return_argument = exec->entry(exec->arg);
 
-	pthread_exit(exec->wait.ret_arg);
+	pthread_exit(exec->wait.return_argument);
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("_Thread_Handler(%p): thread returned(%p)\n",exec,exec->wait.ret_arg);
+	kprintf("_Thread_Handler(%p): thread returned(%p)\n",exec,exec->wait.return_argument);
 #endif
 }
 
@@ -614,9 +614,9 @@ void _Thread_Close(Thread_Control *thethread)
 	}
 	
 	_CPU_ISR_Disable(level);
-	value_ptr = (void**)thethread->wait.ret_arg;
+	value_ptr = (void**)thethread->wait.return_argument;
 	while((p=_Thread_queue_Dequeue(&thethread->join_list))!=NULL) {
-		*(void**)p->wait.ret_arg = value_ptr;
+		*(void**)p->wait.return_argument = value_ptr;
 	}
 	thethread->cpu_time_budget = 0;
 	thethread->budget_algo = LWP_CPU_BUDGET_ALGO_NONE;
@@ -662,7 +662,7 @@ void __lwp_thread_closeall()
 void pthread_exit(void *value_ptr)
 {
 	_Thread_Disable_dispatch();
-	_thr_executing->wait.ret_arg = (u32*)value_ptr;
+	_thr_executing->wait.return_argument = (u32*)value_ptr;
 	_Thread_Close(_thr_executing);
 	_Thread_Enable_dispatch();
 }

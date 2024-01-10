@@ -24,12 +24,12 @@ typedef enum
 
 typedef struct {
 	u32 id;
-	u32 cnt;
-	void *ret_arg;
-	void *ret_arg_1;
+	u32 count;
+	void *return_argument;
+	void *return_argument_1;
 	u32 option;
-	u32 ret_code;
-	Chain_Control block2n;
+	u32 return_code;
+	Chain_Control Block2n;
 	Thread_queue_Control *queue;
 } Thread_Wait_information;
 

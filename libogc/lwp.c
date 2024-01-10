@@ -319,9 +319,9 @@ s32 LWP_JoinThread(lwp_t thethread,void **value_ptr)
 	exec = _thr_executing;
 	_CPU_ISR_Disable(level);
 	_Thread_queue_Enter_critical_section(&lwp_thread->join_list);
-	exec->wait.ret_code = 0;
-	exec->wait.ret_arg_1 = NULL;
-	exec->wait.ret_arg = (void*)&return_ptr;
+	exec->wait.return_code = 0;
+	exec->wait.return_argument_1 = NULL;
+	exec->wait.return_argument = (void*)&return_ptr;
 	exec->wait.queue = &lwp_thread->join_list;
 	exec->wait.id = thethread;
 	_CPU_ISR_Restore(level);
@@ -378,9 +378,9 @@ s32 LWP_ThreadSleep(lwpq_t thequeue)
 	exec = _thr_executing;
 	_CPU_ISR_Disable(level);
 	_Thread_queue_Enter_critical_section(&tq->tqueue);
-	exec->wait.ret_code = 0;
-	exec->wait.ret_arg = NULL;
-	exec->wait.ret_arg_1 = NULL;
+	exec->wait.return_code = 0;
+	exec->wait.return_argument = NULL;
+	exec->wait.return_argument_1 = NULL;
 	exec->wait.queue = &tq->tqueue;
 	exec->wait.id = thequeue;
 	_CPU_ISR_Restore(level);

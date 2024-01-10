@@ -12,7 +12,7 @@ static __inline__ void _CORE_semaphore_Seize_isr_disable(CORE_semaphore_Control 
 	u32 level = *isrlevel;
 
 	exec = _thr_executing;
-	exec->wait.ret_code = LWP_SEMA_SUCCESSFUL;
+	exec->wait.return_code = LWP_SEMA_SUCCESSFUL;
 	if(sema->count!=0) {
 		--sema->count;
 		_CPU_ISR_Restore(level);
@@ -21,7 +21,7 @@ static __inline__ void _CORE_semaphore_Seize_isr_disable(CORE_semaphore_Control 
 
 	if(!wait) {
 		_CPU_ISR_Restore(level);
-		exec->wait.ret_code = LWP_SEMA_UNSATISFIED_NOWAIT;
+		exec->wait.return_code = LWP_SEMA_UNSATISFIED_NOWAIT;
 		return;
 	}
 

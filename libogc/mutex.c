@@ -63,7 +63,7 @@ static s32 __lwp_mutex_locksupp(mutex_t lock,u32 timeout,u8 block)
 	if(!p) return -1;
 
 	_CORE_mutex_Seize(&p->mutex,p->object.id,block,timeout,level);
-	return _thr_executing->wait.ret_code;
+	return _thr_executing->wait.return_code;
 }
 
 void __lwp_mutex_init()

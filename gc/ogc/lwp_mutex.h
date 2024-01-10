@@ -53,7 +53,7 @@ static __inline__ u32 _CORE_mutex_Seize_interrupt_trylock(CORE_mutex_Control *mu
 		if(_CORE_mutex_Seize_interrupt_trylock(_mutex_t,&_level)) { \
 			if(!_wait) {	\
 				_CPU_ISR_Restore(_level); \
-				_thr_executing->wait.ret_code = LWP_MUTEX_UNSATISFIED_NOWAIT; \
+				_thr_executing->wait.return_code = LWP_MUTEX_UNSATISFIED_NOWAIT; \
 			} else { \
 				_Thread_queue_Enter_critical_section(&(_mutex_t)->wait_queue); \
 				_thr_executing->wait.queue = &(_mutex_t)->wait_queue; \
