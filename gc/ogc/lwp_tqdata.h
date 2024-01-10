@@ -22,13 +22,13 @@ extern "C" {
 
 typedef struct {
 	union {
-		Chain_Control fifo;
-		Chain_Control priority[LWP_THREADQ_NUM_PRIOHEADERS];
-	} queues;
+		Chain_Control Fifo;
+		Chain_Control Priority[LWP_THREADQ_NUM_PRIOHEADERS];
+	} Queues;
 	u32 sync_state;
-	u32 mode;
+	u32 discipline;
 	u32 state;
-	u32 timeout_state;
+	u32 timeout_status;
 } Thread_queue_Control;
 
 #ifdef __cplusplus

@@ -16,7 +16,7 @@ static void _Thread_queue_Timeout(void *usr_data)
 	if(thequeue->sync_state!=LWP_THREADQ_SYNCHRONIZED && _Thread_Is_executing(thethread)) {
 		if(thequeue->sync_state!=LWP_THREADQ_SATISFIED) thequeue->sync_state = LWP_THREADQ_TIMEOUT;
 	} else {
-		thethread->wait.return_code = thethread->wait.queue->timeout_state;
+		thethread->wait.return_code = thethread->wait.queue->timeout_status;
 		_Thread_queue_Extract(thethread->wait.queue,thethread);
 	}
 	_Thread_Unnest_dispatch();
@@ -24,8 +24,8 @@ static void _Thread_queue_Timeout(void *usr_data)
 
 Thread_Control* _Thread_queue_First_fifo(Thread_queue_Control *queue)
 {
-	if(!_Chain_Is_empty(&queue->queues.fifo))
-		return (Thread_Control*)queue->queues.fifo.first;
+	if(!_Chain_Is_empty(&queue->Queues.Fifo))
+		return (Thread_Control*)queue->Queues.Fifo.first;
 
 	return NULL;
 }
@@ -35,8 +35,8 @@ Thread_Control* _Thread_queue_First_priority(Thread_queue_Control *queue)
 	u32 index;
 
 	for(index=0;index<LWP_THREADQ_NUM_PRIOHEADERS;index++) {
-		if(!_Chain_Is_empty(&queue->queues.priority[index]))
-			return (Thread_Control*)queue->queues.priority[index].first;
+		if(!_Chain_Is_empty(&queue->Queues.Priority[index]))
+			return (Thread_Control*)queue->Queues.Priority[index].first;
 	}
 	return NULL;
 }
@@ -56,11 +56,11 @@ void _Thread_queue_Enqueue_fifo(Thread_queue_Control *queue,Thread_Control *thet
 		case LWP_THREADQ_SYNCHRONIZED:
 			break;
 		case LWP_THREADQ_NOTHINGHAPPEND:
-			_Chain_Append_unprotected(&queue->queues.fifo,&thethread->object.Node);
+			_Chain_Append_unprotected(&queue->Queues.Fifo,&thethread->object.Node);
 			_CPU_ISR_Restore(level);
 			return;
 		case LWP_THREADQ_TIMEOUT:
-			thethread->wait.return_code = thethread->wait.queue->timeout_state;
+			thethread->wait.return_code = thethread->wait.queue->timeout_status;
 			_CPU_ISR_Restore(level);
 			break;
 		case LWP_THREADQ_SATISFIED:
@@ -82,8 +82,8 @@ Thread_Control* _Thread_queue_Dequeue_fifo(Thread_queue_Control *queue)
 	Thread_Control *ret;
 
 	_CPU_ISR_Disable(level);
-	if(!_Chain_Is_empty(&queue->queues.fifo)) {
-		ret = (Thread_Control*)_Chain_Get_first_unprotected(&queue->queues.fifo);
+	if(!_Chain_Is_empty(&queue->Queues.Fifo)) {
+		ret = (Thread_Control*)_Chain_Get_first_unprotected(&queue->Queues.Fifo);
 		if(!_Watchdog_Is_active(&ret->timer)) {
 			_CPU_ISR_Restore(level);
 			_Thread_Unblock(ret);
@@ -121,7 +121,7 @@ void _Thread_queue_Enqueue_priority(Thread_queue_Control *queue,Thread_Control *
 	
 	prio = thethread->cur_prio;
 	header_idx = prio/LWP_THREADQ_PRIOPERHEADER;
-	header = &queue->queues.priority[header_idx];
+	header = &queue->Queues.Priority[header_idx];
 	block_state = queue->state;
 
 	if(prio&LWP_THREADQ_REVERSESEARCHMASK) {
@@ -222,7 +222,7 @@ synchronize:
 		case LWP_THREADQ_NOTHINGHAPPEND:
 			break;
 		case LWP_THREADQ_TIMEOUT:
-			thethread->wait.return_code = thethread->wait.queue->timeout_state;
+			thethread->wait.return_code = thethread->wait.queue->timeout_status;
 			_CPU_ISR_Restore(level);
 			break;
 		case LWP_THREADQ_SATISFIED:
@@ -245,8 +245,8 @@ Thread_Control* _Thread_queue_Dequeue_priority(Thread_queue_Control *queue)
 
 	_CPU_ISR_Disable(level);
 	for(idx=0;idx<LWP_THREADQ_NUM_PRIOHEADERS;idx++) {
-		if(!_Chain_Is_empty(&queue->queues.priority[idx])) {
-			ret	 = (Thread_Control*)queue->queues.priority[idx].first;
+		if(!_Chain_Is_empty(&queue->Queues.Priority[idx])) {
+			ret	 = (Thread_Control*)queue->Queues.Priority[idx].first;
 			goto dequeue;
 		}
 	}
@@ -310,19 +310,19 @@ void _Thread_queue_Initialize(Thread_queue_Control *queue,u32 mode,u32 state,u32
 	u32 index;
 
 	queue->state = state;
-	queue->mode = mode;
-	queue->timeout_state = timeout_state;
+	queue->discipline = mode;
+	queue->timeout_status = timeout_state;
 	queue->sync_state = LWP_THREADQ_SYNCHRONIZED;
 #ifdef _LWPTHRQ_DEBUG
 	printf("_Thread_queue_Initialize(%p,%08x,%d,%d)\n",queue,state,timeout_state,mode);
 #endif
 	switch(mode) {
 		case LWP_THREADQ_MODEFIFO:
-			_Chain_Initialize_empty(&queue->queues.fifo);
+			_Chain_Initialize_empty(&queue->Queues.Fifo);
 			break;
 		case LWP_THREADQ_MODEPRIORITY:
 			for(index=0;index<LWP_THREADQ_NUM_PRIOHEADERS;index++)
-				_Chain_Initialize_empty(&queue->queues.priority[index]);
+				_Chain_Initialize_empty(&queue->Queues.Priority[index]);
 			break;
 	}
 }
@@ -331,7 +331,7 @@ Thread_Control* _Thread_queue_First(Thread_queue_Control *queue)
 {
 	Thread_Control *ret;
 
-	switch(queue->mode) {
+	switch(queue->discipline) {
 		case LWP_THREADQ_MODEFIFO:
 			ret = _Thread_queue_First_fifo(queue);
 			break;
@@ -361,7 +361,7 @@ void _Thread_queue_Enqueue(Thread_queue_Control *queue,u64 timeout)
 #ifdef _LWPTHRQ_DEBUG
 	printf("_Thread_queue_Enqueue(%p,%p,%d)\n",queue,thethread,queue->mode);
 #endif
-	switch(queue->mode) {
+	switch(queue->discipline) {
 		case LWP_THREADQ_MODEFIFO:
 			_Thread_queue_Enqueue_fifo(queue,thethread,timeout);
 			break;
@@ -378,7 +378,7 @@ Thread_Control* _Thread_queue_Dequeue(Thread_queue_Control *queue)
 #ifdef _LWPTHRQ_DEBUG
 	printf("_Thread_queue_Dequeue(%p,%p,%d,%d)\n",queue,_thr_executing,queue->mode,queue->sync_state);
 #endif
-	switch(queue->mode) {
+	switch(queue->discipline) {
 		case LWP_THREADQ_MODEFIFO:
 			ret = _Thread_queue_Dequeue_fifo(queue);
 			break;
@@ -405,7 +405,7 @@ void _Thread_queue_Flush(Thread_queue_Control *queue,u32 status)
 
 void _Thread_queue_Extract(Thread_queue_Control *queue,Thread_Control *thethread)
 {
-	switch(queue->mode) {
+	switch(queue->discipline) {
 		case LWP_THREADQ_MODEFIFO:
 			_Thread_queue_Extract_fifo(queue,thethread);
 			break;
