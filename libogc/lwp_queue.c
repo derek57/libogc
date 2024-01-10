@@ -3,11 +3,11 @@
 #include "processor.h"
 #include "lwp_queue.h"
 
-void _Chain_Initialize(lwp_queue *queue,void *start_addr,u32 num_nodes,u32 node_size)
+void _Chain_Initialize(Chain_Control *queue,void *start_addr,u32 num_nodes,u32 node_size)
 {
 	u32 count;
-	lwp_node *curr;
-	lwp_node *next;
+	Chain_Node *curr;
+	Chain_Node *next;
 
 #ifdef _LWPQ_DEBUG
 	printf("_Chain_Initialize(%p,%p,%d,%d)\n",queue,start_addr,num_nodes,node_size);
@@ -15,22 +15,22 @@ void _Chain_Initialize(lwp_queue *queue,void *start_addr,u32 num_nodes,u32 node_
 	count = num_nodes;
 	curr = _Chain_Head(queue);
 	queue->perm_null = NULL;
-	next = (lwp_node*)start_addr;
+	next = (Chain_Node*)start_addr;
 	
 	while(count--) {
 		curr->next = next;
 		next->prev = curr;
 		curr = next;
-		next = (lwp_node*)(((void*)next)+node_size);
+		next = (Chain_Node*)(((void*)next)+node_size);
 	}
 	curr->next = _Chain_Tail(queue);
 	queue->last = curr;
 }
 
-lwp_node* _Chain_Get(lwp_queue *queue)
+Chain_Node* _Chain_Get(Chain_Control *queue)
 {
 	u32 level;
-	lwp_node *ret = NULL;
+	Chain_Node *ret = NULL;
 	
 	_CPU_ISR_Disable(level);
 	if(!_Chain_Is_empty(queue)) {
@@ -40,7 +40,7 @@ lwp_node* _Chain_Get(lwp_queue *queue)
 	return ret;
 }
 
-void _Chain_Append(lwp_queue *queue,lwp_node *node)
+void _Chain_Append(Chain_Control *queue,Chain_Node *node)
 {
 	u32 level;
 	
@@ -49,7 +49,7 @@ void _Chain_Append(lwp_queue *queue,lwp_node *node)
 	_CPU_ISR_Restore(level);
 }
 
-void _Chain_Extract(lwp_node *node)
+void _Chain_Extract(Chain_Node *node)
 {
 	u32 level;
 	
@@ -58,7 +58,7 @@ void _Chain_Extract(lwp_node *node)
 	_CPU_ISR_Restore(level);
 }
 
-void _Chain_Insert(lwp_node *after,lwp_node *node)
+void _Chain_Insert(Chain_Node *after,Chain_Node *node)
 {
 	u32 level;
 	

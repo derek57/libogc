@@ -1,25 +1,25 @@
 #ifndef __LWP_INL__
 #define __LWP_INL__
 
-static __inline__ u32 _Thread_Is_executing(lwp_cntrl *thethread)
+static __inline__ u32 _Thread_Is_executing(Thread_Control *thethread)
 {
 	return (thethread==_thr_executing);
 }
 
-static __inline__ u32 _Thread_Is_heir(lwp_cntrl *thethread)
+static __inline__ u32 _Thread_Is_heir(Thread_Control *thethread)
 {
 	return (thethread==_thr_heir);
 }
 
 static __inline__ void _Thread_Calculate_heir()
 {
-	_thr_heir = (lwp_cntrl*)_lwp_thr_ready[_Priority_Get_highest()].first;
+	_thr_heir = (Thread_Control*)_lwp_thr_ready[_Priority_Get_highest()].first;
 #ifdef _LWPTHREADS_DEBUG
 	printf("_Thread_Calculate_heir(%p)\n",_thr_heir);
 #endif
 }
 
-static __inline__ u32 _Thread_Is_allocated_fp(lwp_cntrl *thethread)
+static __inline__ u32 _Thread_Is_allocated_fp(Thread_Control *thethread)
 {
 	return (thethread==_thr_allocated_fp);
 }
@@ -50,7 +50,7 @@ static __inline__ void _Thread_Unnest_dispatch()
 	--_thread_dispatch_disable_level;
 }
 
-static __inline__ void _Thread_Unblock(lwp_cntrl *thethread)
+static __inline__ void _Thread_Unblock(Thread_Control *thethread)
 {
 	_Thread_Clear_state(thethread,LWP_STATES_BLOCKED);
 }

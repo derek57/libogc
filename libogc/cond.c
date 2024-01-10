@@ -46,12 +46,12 @@ distribution.
 }
 
 typedef struct _cond_st {
-	lwp_obj object;
+	Objects_Control object;
 	mutex_t lock;
-	lwp_thrqueue wait_queue;
+	Thread_queue_Control wait_queue;
 } cond_st;
 
-lwp_objinfo _lwp_cond_objects;
+Objects_Information _lwp_cond_objects;
 
 extern int clock_gettime(struct timespec *tp);
 extern void timespec_subtract(const struct timespec *tp_start,const struct timespec *tp_end,struct timespec *result);
@@ -130,7 +130,7 @@ static s32 __lwp_cond_waitsupp(cond_t cond,mutex_t mutex,u64 timeout,u8 timedout
 
 static s32 __lwp_cond_signalsupp(cond_t cond,u8 isbroadcast)
 {
-	lwp_cntrl *thethread;
+	Thread_Control *thethread;
 	cond_st *thecond;
 	
 	thecond = __lwp_cond_open(cond);

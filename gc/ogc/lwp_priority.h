@@ -11,11 +11,11 @@
 extern "C" {
 #endif
 
-typedef struct _priocntrl {
+typedef struct {
 	u32 *minor;
 	u32 ready_minor,ready_major;
 	u32 block_minor,block_major;
-} prio_cntrl;
+} Priority_Information;
 
 extern vu32 _prio_major_bitmap;
 extern u32 _prio_bitmap[];

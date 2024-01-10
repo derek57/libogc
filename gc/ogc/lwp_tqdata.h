@@ -20,16 +20,16 @@ extern "C" {
 #include "lwp_queue.h"
 #include "lwp_priority.h"
 
-typedef struct _lwpthrqueue {
+typedef struct {
 	union {
-		lwp_queue fifo;
-		lwp_queue priority[LWP_THREADQ_NUM_PRIOHEADERS];
+		Chain_Control fifo;
+		Chain_Control priority[LWP_THREADQ_NUM_PRIOHEADERS];
 	} queues;
 	u32 sync_state;
 	u32 mode;
 	u32 state;
 	u32 timeout_state;
-} lwp_thrqueue;
+} Thread_queue_Control;
 
 #ifdef __cplusplus
 	}

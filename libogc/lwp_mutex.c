@@ -1,7 +1,7 @@
 #include "asm.h"
 #include "lwp_mutex.h"
 
-void _CORE_mutex_Initialize(lwp_mutex *mutex,lwp_mutex_attr *attrs,u32 init_lock)
+void _CORE_mutex_Initialize(CORE_mutex_Control *mutex,CORE_mutex_Attributes *attrs,u32 init_lock)
 {
 	mutex->atrrs = *attrs;
 	mutex->lock = init_lock;
@@ -20,10 +20,10 @@ void _CORE_mutex_Initialize(lwp_mutex *mutex,lwp_mutex_attr *attrs,u32 init_lock
 	_Thread_queue_Initialize(&mutex->wait_queue,_CORE_mutex_Is_fifo(attrs)?LWP_THREADQ_MODEFIFO:LWP_THREADQ_MODEPRIORITY,LWP_STATES_WAITING_FOR_MUTEX,LWP_MUTEX_TIMEOUT);
 }
 
-u32 _CORE_mutex_Surrender(lwp_mutex *mutex)
+u32 _CORE_mutex_Surrender(CORE_mutex_Control *mutex)
 {
-	lwp_cntrl *thethread;
-	lwp_cntrl *holder;
+	Thread_Control *thethread;
+	Thread_Control *holder;
 
 	holder = mutex->holder;
 
@@ -67,9 +67,9 @@ u32 _CORE_mutex_Surrender(lwp_mutex *mutex)
 	return LWP_MUTEX_SUCCESSFUL;
 }
 
-void _CORE_mutex_Seize_interrupt_blocking(lwp_mutex *mutex,u64 timeout)
+void _CORE_mutex_Seize_interrupt_blocking(CORE_mutex_Control *mutex,u64 timeout)
 {
-	lwp_cntrl *exec;
+	Thread_Control *exec;
 
 	exec = _thr_executing;
 	if(_CORE_mutex_Is_inherit_priority(&mutex->atrrs)){
@@ -89,7 +89,7 @@ void _CORE_mutex_Seize_interrupt_blocking(lwp_mutex *mutex,u64 timeout)
 	_Thread_Enable_dispatch();
 }
 
-void _CORE_mutex_Flush(lwp_mutex *mutex,u32 status)
+void _CORE_mutex_Flush(CORE_mutex_Control *mutex,u32 status)
 {
 	_Thread_queue_Flush(&mutex->wait_queue,status);
 }

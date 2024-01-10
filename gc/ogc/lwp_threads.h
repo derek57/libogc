@@ -22,19 +22,21 @@ typedef enum
 	LWP_CPU_BUDGET_ALGO_TIMESLICE	
 } lwp_cpu_budget_algorithms;
 
-typedef struct _lwpwaitinfo {
+typedef struct {
 	u32 id;
 	u32 cnt;
 	void *ret_arg;
 	void *ret_arg_1;
 	u32 option;
 	u32 ret_code;
-	lwp_queue block2n;
-	lwp_thrqueue *queue;
-} lwp_waitinfo;
+	Chain_Control block2n;
+	Thread_queue_Control *queue;
+} Thread_Wait_information;
 
-typedef struct _lwpcntrl {
-	lwp_obj object;
+typedef struct Thread_Control_struct Thread_Control; 
+
+struct Thread_Control_struct {
+	Objects_Control object;
 	u8  cur_prio,real_prio;
 	u32 suspendcnt,res_cnt;
 	u32 isr_level;
@@ -42,52 +44,52 @@ typedef struct _lwpcntrl {
 	u32 cpu_time_budget;
 	lwp_cpu_budget_algorithms budget_algo;
 	bool is_preemptible;
-	lwp_waitinfo wait;
-	prio_cntrl priomap;
-	wd_cntrl timer;
+	Thread_Wait_information wait;
+	Priority_Information priomap;
+	Watchdog_Control timer;
 
 	void* (*entry)(void *);
 	void *arg;
 	void *stack;
 	u32 stack_size;
 	u8 stack_allocated;
-	lwp_queue *ready;
-	lwp_thrqueue join_list;
+	Chain_Control *ready;
+	Thread_queue_Control join_list;
 	frame_context context;		//16
 	void *libc_reent;
-} lwp_cntrl, *lwp_cntrl_t;
+};
 
-extern lwp_cntrl *_thr_main;
-extern lwp_cntrl *_thr_idle;
-extern lwp_cntrl *_thr_executing;
-extern lwp_cntrl *_thr_heir;
-extern lwp_cntrl *_thr_allocated_fp;
+extern Thread_Control *_thr_main;
+extern Thread_Control *_thr_idle;
+extern Thread_Control *_thr_executing;
+extern Thread_Control *_thr_heir;
+extern Thread_Control *_thr_allocated_fp;
 extern vu32 _context_switch_want;
 extern vu32 _thread_dispatch_disable_level;
 
-extern wd_cntrl _lwp_wd_timeslice;
+extern Watchdog_Control _lwp_wd_timeslice;
 extern void **__lwp_thr_libc_reent;
-extern lwp_queue _lwp_thr_ready[];
+extern Chain_Control _lwp_thr_ready[];
 
 void _Thread_Dispatch();
 void _Thread_Yield_processor();
 void __lwp_thread_closeall();
-void _Thread_Set_state(lwp_cntrl *,u32);
-void _Thread_Clear_state(lwp_cntrl *,u32);
-void _Thread_Change_priority(lwp_cntrl *,u32,u32);
-void _Thread_Set_priority(lwp_cntrl *,u32);
-void _Thread_Set_transient(lwp_cntrl *);
-void _Thread_Suspend(lwp_cntrl *);
-void _Thread_Resume(lwp_cntrl *,u32);
-void _Thread_Load_environment(lwp_cntrl *);
-void _Thread_Ready(lwp_cntrl *);
-u32 _Thread_Initialize(lwp_cntrl *,void *,u32,u32,u32,bool);
-u32 _Thread_Start(lwp_cntrl *,void* (*)(void*),void *);
+void _Thread_Set_state(Thread_Control *,u32);
+void _Thread_Clear_state(Thread_Control *,u32);
+void _Thread_Change_priority(Thread_Control *,u32,u32);
+void _Thread_Set_priority(Thread_Control *,u32);
+void _Thread_Set_transient(Thread_Control *);
+void _Thread_Suspend(Thread_Control *);
+void _Thread_Resume(Thread_Control *,u32);
+void _Thread_Load_environment(Thread_Control *);
+void _Thread_Ready(Thread_Control *);
+u32 _Thread_Initialize(Thread_Control *,void *,u32,u32,u32,bool);
+u32 _Thread_Start(Thread_Control *,void* (*)(void*),void *);
 void pthread_exit(void *);
-void _Thread_Close(lwp_cntrl *);
+void _Thread_Close(Thread_Control *);
 void _Thread_Start_multitasking();
 void _Thread_Stop_multitasking(void (*exitfunc)());
-lwp_obj* _Thread_Get(lwp_cntrl *);
+Objects_Control* _Thread_Get(Thread_Control *);
 u32 _Thread_Evaluate_mode();
 
 u32 _ISR_Is_in_progress();

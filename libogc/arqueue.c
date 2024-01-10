@@ -42,8 +42,8 @@ static u32 __ARQChunkSize;
 static u32 __ARQInitFlag = 0;
 static lwpq_t __ARQSyncQueue;
 
-static lwp_queue __ARQReqQueueLo;
-static lwp_queue __ARQReqQueueHi;
+static Chain_Control __ARQReqQueueLo;
+static Chain_Control __ARQReqQueueHi;
 static ARQRequest *__ARQReqPendingLo;
 static ARQRequest *__ARQReqPendingHi;
 static ARQCallback __ARQCallbackLo = NULL;

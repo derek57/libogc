@@ -10,13 +10,13 @@ struct _reent libc_globl_reent;
 extern void _wrapup_reent(struct _reent *);
 extern void _reclaim_reent(struct _reent *);
 
-int libc_create_hook(lwp_cntrl *curr_thr,lwp_cntrl *create_thr)
+int libc_create_hook(Thread_Control *curr_thr,Thread_Control *create_thr)
 {
 	create_thr->libc_reent = NULL;
 	return 1;
 }
 
-int libc_start_hook(lwp_cntrl *curr_thr,lwp_cntrl *start_thr)
+int libc_start_hook(Thread_Control *curr_thr,Thread_Control *start_thr)
 {
 	struct _reent *ptr;
 
@@ -31,7 +31,7 @@ int libc_start_hook(lwp_cntrl *curr_thr,lwp_cntrl *start_thr)
 	return 1;
 }
 
-int libc_delete_hook(lwp_cntrl *curr_thr, lwp_cntrl *delete_thr)
+int libc_delete_hook(Thread_Control *curr_thr, Thread_Control *delete_thr)
 {
 	struct _reent *ptr;
 

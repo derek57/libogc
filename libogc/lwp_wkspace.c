@@ -8,7 +8,7 @@
 
 #define ROUND32UP(v)			(((u32)(v)+31)&~31)
 
-heap_cntrl __wkspace_heap;
+Heap_Control __wkspace_heap;
 static u32 __wkspace_heap_size = 0;
 
 void _Workspace_Handler_initialization(u32 size)

@@ -228,7 +228,7 @@ typedef enum data_req_s
  *	@brief Data read request structure.
  */
 struct data_req_t {
-	lwp_node node;
+	Chain_Node node;
 	ubyte data[48];					/**< buffer where read data is written						*/
 	unsigned int len;
 	data_req_s state;			/**< set to 1 if not using callback and needs to be cleaned up	*/
@@ -247,7 +247,7 @@ typedef enum cmd_blk_s
 
 struct cmd_blk_t 
 {
-	lwp_node node;
+	Chain_Node node;
 
 	ubyte data[48];
 	uint len;
@@ -601,7 +601,7 @@ typedef struct wiimote_t {
 		WCONST ubyte normal_timeout;			/**< normal timeout							*/
 		WCONST ubyte exp_timeout;			/**< timeout for expansion handshake		*/
 	#elif defined(GEKKO)
-		WCONST lwp_queue cmdq;
+		WCONST Chain_Control cmdq;
 		WCONST struct bd_addr bdaddr;		/**< bt address								*/
 		WCONST char bdaddr_str[18];			/**< readable bt address					*/
 		WCONST struct bte_pcb *sock;	/**< output socket							*/

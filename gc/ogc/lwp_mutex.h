@@ -28,25 +28,25 @@
 extern "C" {
 #endif
 
-typedef struct _lwpmutexattr {
+typedef struct {
 	u32 mode;
 	u32 nest_behavior;
 	u8 prioceil,onlyownerrelease;
-} lwp_mutex_attr;
+} CORE_mutex_Attributes;
 
-typedef struct _lwpmutex {
-	lwp_thrqueue wait_queue;
-	lwp_mutex_attr atrrs;
+typedef struct {
+	Thread_queue_Control wait_queue;
+	CORE_mutex_Attributes atrrs;
 	u32 lock,nest_cnt,blocked_cnt;
-	lwp_cntrl *holder;
-} lwp_mutex;
+	Thread_Control *holder;
+} CORE_mutex_Control;
 
-void _CORE_mutex_Initialize(lwp_mutex *mutex,lwp_mutex_attr *attrs,u32 init_lock);
-u32 _CORE_mutex_Surrender(lwp_mutex *mutex);
-void _CORE_mutex_Seize_interrupt_blocking(lwp_mutex *mutex,u64 timeout);
-void _CORE_mutex_Flush(lwp_mutex *mutex,u32 status);
+void _CORE_mutex_Initialize(CORE_mutex_Control *mutex,CORE_mutex_Attributes *attrs,u32 init_lock);
+u32 _CORE_mutex_Surrender(CORE_mutex_Control *mutex);
+void _CORE_mutex_Seize_interrupt_blocking(CORE_mutex_Control *mutex,u64 timeout);
+void _CORE_mutex_Flush(CORE_mutex_Control *mutex,u32 status);
 
-static __inline__ u32 _CORE_mutex_Seize_interrupt_trylock(lwp_mutex *mutex,u32 *isr_level);
+static __inline__ u32 _CORE_mutex_Seize_interrupt_trylock(CORE_mutex_Control *mutex,u32 *isr_level);
 
 #define _CORE_mutex_Seize(_mutex_t,_id,_wait,_timeout,_level) \
 	do { \

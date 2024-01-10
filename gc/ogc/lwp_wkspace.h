@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-extern heap_cntrl __wkspace_heap;
+extern Heap_Control __wkspace_heap;
 
 void _Workspace_Handler_initialization(u32 size);
 

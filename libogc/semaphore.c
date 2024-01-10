@@ -48,11 +48,11 @@ distribution.
 
 typedef struct _sema_st
 {
-	lwp_obj object;
-	lwp_sema sema;
+	Objects_Control object;
+	CORE_semaphore_Control sema;
 } sema_st;
 
-lwp_objinfo _lwp_sema_objects;
+Objects_Information _lwp_sema_objects;
 
 void __lwp_sema_init()
 {
@@ -87,7 +87,7 @@ static sema_st* __lwp_sema_allocate()
 
 s32 LWP_SemInit(sem_t *sem,u32 start,u32 max)
 {
-	lwp_semattr attr;
+	CORE_semaphore_Attributes attr;
 	sema_st *ret;
 
 	if(!sem) return -1;

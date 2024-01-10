@@ -46,11 +46,11 @@ distribution.
 
 typedef struct _mqbox_st
 {
-	lwp_obj object;
-	mq_cntrl mqueue;
+	Objects_Control object;
+	CORE_message_queue_Control mqueue;
 } mqbox_st;
 
-lwp_objinfo _lwp_mqbox_objects;
+Objects_Information _lwp_mqbox_objects;
 
 void __lwp_mqbox_init()
 {
@@ -85,7 +85,7 @@ static mqbox_st* __lwp_mqbox_allocate()
 
 s32 MQ_Init(mqbox_t *mqbox,u32 count)
 {
-	mq_attr attr;
+	CORE_message_queue_Attributes attr;
 	mqbox_st *ret = NULL;
 
 	if(!mqbox) return -1;

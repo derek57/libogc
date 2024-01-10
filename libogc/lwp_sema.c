@@ -1,7 +1,7 @@
 #include "asm.h"
 #include "lwp_sema.h"
 
-void CORE_semaphore_Initialize(lwp_sema *sema,lwp_semattr *attrs,u32 init_count)
+void CORE_semaphore_Initialize(CORE_semaphore_Control *sema,CORE_semaphore_Attributes *attrs,u32 init_count)
 {
 	sema->attrs = *attrs;
 	sema->count = init_count;
@@ -9,10 +9,10 @@ void CORE_semaphore_Initialize(lwp_sema *sema,lwp_semattr *attrs,u32 init_count)
 	_Thread_queue_Initialize(&sema->wait_queue,_CORE_semaphore_Is_priority(attrs)?LWP_THREADQ_MODEPRIORITY:LWP_THREADQ_MODEFIFO,LWP_STATES_WAITING_FOR_SEMAPHORE,LWP_SEMA_TIMEOUT);
 }
 
-u32 _CORE_semaphore_Surrender(lwp_sema *sema,u32 id)
+u32 _CORE_semaphore_Surrender(CORE_semaphore_Control *sema,u32 id)
 {
 	u32 level,ret;
-	lwp_cntrl *thethread;
+	Thread_Control *thethread;
 	
 	ret = LWP_SEMA_SUCCESSFUL;
 	if((thethread=_Thread_queue_Dequeue(&sema->wait_queue))) return ret;
@@ -27,10 +27,10 @@ u32 _CORE_semaphore_Surrender(lwp_sema *sema,u32 id)
 	return ret;
 }
 
-u32 _CORE_semaphore_Seize(lwp_sema *sema,u32 id,u32 wait,u64 timeout)
+u32 _CORE_semaphore_Seize(CORE_semaphore_Control *sema,u32 id,u32 wait,u64 timeout)
 {
 	u32 level;
-	lwp_cntrl *exec;
+	Thread_Control *exec;
 	
 	exec = _thr_executing;
 	exec->wait.ret_code = LWP_SEMA_SUCCESSFUL;
@@ -57,7 +57,7 @@ u32 _CORE_semaphore_Seize(lwp_sema *sema,u32 id,u32 wait,u64 timeout)
 	return LWP_SEMA_SUCCESSFUL;
 }
 
-void _CORE_semaphore_Flush(lwp_sema *sema,u32 status)
+void _CORE_semaphore_Flush(CORE_semaphore_Control *sema,u32 status)
 {
 	_Thread_queue_Flush(&sema->wait_queue,status);
 }

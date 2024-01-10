@@ -203,7 +203,7 @@ static dvdcmdblk *__dvd_executing = NULL;
 static void *__dvd_usrdata = NULL;
 static dvddiskid *__dvd_diskID = (dvddiskid*)0x80000000;
 
-static lwp_queue __dvd_waitingqueue[4];
+static Chain_Control __dvd_waitingqueue[4];
 static dvdcmdl __dvd_cmdlist[4];
 static dvdcmds __dvd_cmd_curr,__dvd_cmd_prev;
 

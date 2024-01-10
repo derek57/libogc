@@ -13,22 +13,24 @@ extern int printk(const char *fmt,...);
 extern "C" {
 #endif
 
-typedef struct _lwpnode {
-	struct _lwpnode *next;
-	struct _lwpnode *prev;
-} lwp_node;
+typedef struct Chain_Node_struct Chain_Node; 
 
-typedef struct _lwpqueue {
-	lwp_node *first;
-	lwp_node *perm_null;
-	lwp_node *last;
-} lwp_queue;
+struct Chain_Node_struct {
+	Chain_Node *next;
+	Chain_Node *prev;
+};
 
-void _Chain_Initialize(lwp_queue *,void *,u32,u32);
-lwp_node* _Chain_Get(lwp_queue *);
-void _Chain_Append(lwp_queue *,lwp_node *);
-void _Chain_Extract(lwp_node *);
-void _Chain_Insert(lwp_node *,lwp_node *);
+typedef struct {
+	Chain_Node *first;
+	Chain_Node *perm_null;
+	Chain_Node *last;
+} Chain_Control;
+
+void _Chain_Initialize(Chain_Control *,void *,u32,u32);
+Chain_Node* _Chain_Get(Chain_Control *);
+void _Chain_Append(Chain_Control *,Chain_Node *);
+void _Chain_Extract(Chain_Node *);
+void _Chain_Insert(Chain_Node *,Chain_Node *);
 
 #ifdef LIBOGC_INTERNAL
 #include <libogc/lwp_queue.inl>

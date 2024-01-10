@@ -14,13 +14,13 @@ extern int errno;
 #define MEMLOCK_MUTEX_ID			0x00030040
 
 static int initialized = 0;
-static lwp_mutex mem_lock;
+static CORE_mutex_Control mem_lock;
 
 void __memlock_init()
 {
 	_Thread_Disable_dispatch();
 	if(!initialized) {
-		lwp_mutex_attr attr;
+		CORE_mutex_Attributes attr;
 
 		initialized = 1;
 		

@@ -58,7 +58,7 @@ typedef struct _arq_request ARQRequest;
 typedef void (*ARQCallback)(ARQRequest *);
 
 struct _arq_request {
-	lwp_node node;
+	Chain_Node node;
 	u32 owner,dir,prio,state;
 	u32 aram_addr,mram_addr,len;
 	ARQCallback callback;

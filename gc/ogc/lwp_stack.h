@@ -13,8 +13,8 @@
 extern "C" {
 #endif
 
-u32 _Thread_Stack_Allocate(lwp_cntrl *,u32);
-void _Thread_Stack_Free(lwp_cntrl *);
+u32 _Thread_Stack_Allocate(Thread_Control *,u32);
+void _Thread_Stack_Free(Thread_Control *);
 
 #ifdef LIBOGC_INTERNAL
 #include <libogc/lwp_stack.inl>

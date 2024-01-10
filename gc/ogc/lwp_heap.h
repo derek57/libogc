@@ -17,22 +17,22 @@
 extern "C" {
 #endif
 
-typedef struct _heap_block_st heap_block;
-struct _heap_block_st {
+typedef struct Heap_Block_struct heap_block;
+struct Heap_Block_struct {
 	u32 back_flag;
 	u32 front_flag;
 	heap_block *next;
 	heap_block *prev;
 };
 
-typedef struct _heap_iblock_st {
+typedef struct {
 	u32 free_blocks;
 	u32 free_size;
 	u32 used_blocks;
 	u32 used_size;
-} heap_iblock;
+} Heap_Information_block;
 
-typedef struct _heap_cntrl_st {
+typedef struct {
 	heap_block *start;
 	heap_block *final;
 
@@ -41,12 +41,12 @@ typedef struct _heap_cntrl_st {
 	heap_block *last;
 	u32 pg_size;
 	u32 reserved;
-} heap_cntrl;
+} Heap_Control;
 
-u32 _Heap_Initialize(heap_cntrl *theheap,void *start_addr,u32 size,u32 pg_size);
-void* _Heap_Allocate(heap_cntrl *theheap,u32 size);
-BOOL _Heap_Free(heap_cntrl *theheap,void *ptr);
-u32 _Heap_Get_information(heap_cntrl *theheap,heap_iblock *theinfo);
+u32 _Heap_Initialize(Heap_Control *theheap,void *start_addr,u32 size,u32 pg_size);
+void* _Heap_Allocate(Heap_Control *theheap,u32 size);
+BOOL _Heap_Free(Heap_Control *theheap,void *ptr);
+u32 _Heap_Get_information(Heap_Control *theheap,Heap_Information_block *theinfo);
 
 #ifdef LIBOGC_INTERNAL
 #include <libogc/lwp_heap.inl>

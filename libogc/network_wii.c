@@ -240,7 +240,7 @@ static vs32 _last_init_result = -ENETDOWN;
 static s32 net_ip_top_fd = -1;
 static u8 __net_heap_inited = 0;
 static s32 __net_hid=-1;
-static heap_cntrl __net_heap;
+static Heap_Control __net_heap;
 
 static char __manage_fs[] ATTRIBUTE_ALIGN(32) = "/dev/net/ncd/manage";
 static char __iptop_fs[] ATTRIBUTE_ALIGN(32) = "/dev/net/ip/top";

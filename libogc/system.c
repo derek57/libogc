@@ -100,8 +100,8 @@ struct _sramcntrl {
 
 typedef struct _alarm_st
 {
-	lwp_obj object;
-	wd_cntrl alarm;
+	Objects_Control object;
+	Watchdog_Control alarm;
 	u64 ticks;
 	u64 periodic;
 	u64 start_per;
@@ -122,9 +122,9 @@ static u8 *sys_fontwidthtab = NULL;
 static u8 *sys_fontimage = NULL;
 static sys_fontheader *sys_fontdata = NULL;
 
-static lwp_queue sys_reset_func_queue;
+static Chain_Control sys_reset_func_queue;
 static u32 system_initialized = 0;
-static lwp_objinfo sys_alarm_objects;
+static Objects_Information sys_alarm_objects;
 
 static void *__sysarena1lo = NULL;
 static void *__sysarena1hi = NULL;
@@ -360,7 +360,7 @@ static s32 __call_resetfuncs(s32 final)
 {
 	s32 ret;
 	sys_resetinfo *info;
-	lwp_queue *header = &sys_reset_func_queue;
+	Chain_Control *header = &sys_reset_func_queue;
 
 	ret = 1;
 	info = (sys_resetinfo*)header->first;
@@ -1233,7 +1233,7 @@ void SYS_RegisterResetFunc(sys_resetinfo *info)
 {
 	u32 level;
 	sys_resetinfo *after;
-	lwp_queue *header = &sys_reset_func_queue;
+	Chain_Control *header = &sys_reset_func_queue;
 
 	_CPU_ISR_Disable(level);
 	for(after=(sys_resetinfo*)header->first;after->node.next!=NULL && info->prio>=after->prio;after=(sys_resetinfo*)after->node.next);
@@ -1243,7 +1243,7 @@ void SYS_RegisterResetFunc(sys_resetinfo *info)
 
 void SYS_UnregisterResetFunc(sys_resetinfo *info) {
 	u32 level;
-	lwp_node *n;
+	Chain_Node *n;
 
 	_CPU_ISR_Disable(level);
 	for (n = sys_reset_func_queue.first; n->next; n = n->next) {

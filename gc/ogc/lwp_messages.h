@@ -27,46 +27,46 @@
 extern "C" {
 #endif
 
-typedef void (*mq_notifyhandler)(void *);
+typedef void (*CORE_message_queue_Notify_Handler)(void *);
 
-typedef struct _mqbuffer {
+typedef struct {
 	u32 size;
 	u32 buffer[1];
-} mq_buffer;
+} CORE_message_queue_Buffer;
 
-typedef struct _mqbuffercntrl {
-	lwp_node node;
+typedef struct {
+	Chain_Node node;
 	u32 prio;
-	mq_buffer contents;
-} mq_buffercntrl;
+	CORE_message_queue_Buffer contents;
+} CORE_message_queue_Buffer_control;
 
 //the following struct is extensible
-typedef struct _mqattr {
+typedef struct {
 	u32 mode;
-} mq_attr;
+} CORE_message_queue_Attributes;
 
-typedef struct _mqcntrl {
-	lwp_thrqueue wait_queue;
-	mq_attr attr;
+typedef struct {
+	Thread_queue_Control wait_queue;
+	CORE_message_queue_Attributes attr;
 	u32 max_pendingmsgs;
 	u32 num_pendingmsgs;
 	u32 max_msgsize;
-	lwp_queue pending_msgs;
-	mq_buffer *msq_buffers;
-	mq_notifyhandler notify_handler;
+	Chain_Control pending_msgs;
+	CORE_message_queue_Buffer *msq_buffers;
+	CORE_message_queue_Notify_Handler notify_handler;
 	void *notify_arg;
-	lwp_queue inactive_msgs;
-} mq_cntrl;
+	Chain_Control inactive_msgs;
+} CORE_message_queue_Control;
 
-u32 _CORE_message_queue_Initialize(mq_cntrl *mqueue,mq_attr *attrs,u32 max_pendingmsgs,u32 max_msgsize);
-void _CORE_message_queue_Close(mq_cntrl *mqueue,u32 status);
-u32 _CORE_message_queue_Seize(mq_cntrl *mqueue,u32 id,void *buffer,u32 *size,u32 wait,u64 timeout);
-u32 _CORE_message_queue_Submit(mq_cntrl *mqueue,u32 id,void *buffer,u32 size,u32 type,u32 wait,u64 timeout);
-u32 _CORE_message_queue_Broadcast(mq_cntrl *mqueue,void *buffer,u32 size,u32 id,u32 *count);
-void _CORE_message_queue_Insert_message(mq_cntrl *mqueue,mq_buffercntrl *msg,u32 type);
-u32 _CORE_message_queue_Flush(mq_cntrl *mqueue);
-u32 _CORE_message_queue_Flush_support(mq_cntrl *mqueue);
-void _CORE_message_queue_Flush_waiting_threads(mq_cntrl *mqueue);
+u32 _CORE_message_queue_Initialize(CORE_message_queue_Control *mqueue,CORE_message_queue_Attributes *attrs,u32 max_pendingmsgs,u32 max_msgsize);
+void _CORE_message_queue_Close(CORE_message_queue_Control *mqueue,u32 status);
+u32 _CORE_message_queue_Seize(CORE_message_queue_Control *mqueue,u32 id,void *buffer,u32 *size,u32 wait,u64 timeout);
+u32 _CORE_message_queue_Submit(CORE_message_queue_Control *mqueue,u32 id,void *buffer,u32 size,u32 type,u32 wait,u64 timeout);
+u32 _CORE_message_queue_Broadcast(CORE_message_queue_Control *mqueue,void *buffer,u32 size,u32 id,u32 *count);
+void _CORE_message_queue_Insert_message(CORE_message_queue_Control *mqueue,CORE_message_queue_Buffer_control *msg,u32 type);
+u32 _CORE_message_queue_Flush(CORE_message_queue_Control *mqueue);
+u32 _CORE_message_queue_Flush_support(CORE_message_queue_Control *mqueue);
+void _CORE_message_queue_Flush_waiting_threads(CORE_message_queue_Control *mqueue);
 
 #ifdef LIBOGC_INTERNAL
 #include <libogc/lwp_messages.inl>

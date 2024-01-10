@@ -7,11 +7,11 @@
 
 static void _Thread_queue_Timeout(void *usr_data)
 {
-	lwp_cntrl *thethread;
-	lwp_thrqueue *thequeue;
+	Thread_Control *thethread;
+	Thread_queue_Control *thequeue;
 	
 	_Thread_Disable_dispatch();
-	thethread = (lwp_cntrl*)usr_data;
+	thethread = (Thread_Control*)usr_data;
 	thequeue = thethread->wait.queue;
 	if(thequeue->sync_state!=LWP_THREADQ_SYNCHRONIZED && _Thread_Is_executing(thethread)) {
 		if(thequeue->sync_state!=LWP_THREADQ_SATISFIED) thequeue->sync_state = LWP_THREADQ_TIMEOUT;
@@ -22,26 +22,26 @@ static void _Thread_queue_Timeout(void *usr_data)
 	_Thread_Unnest_dispatch();
 }
 
-lwp_cntrl* _Thread_queue_First_fifo(lwp_thrqueue *queue)
+Thread_Control* _Thread_queue_First_fifo(Thread_queue_Control *queue)
 {
 	if(!_Chain_Is_empty(&queue->queues.fifo))
-		return (lwp_cntrl*)queue->queues.fifo.first;
+		return (Thread_Control*)queue->queues.fifo.first;
 
 	return NULL;
 }
 
-lwp_cntrl* _Thread_queue_First_priority(lwp_thrqueue *queue)
+Thread_Control* _Thread_queue_First_priority(Thread_queue_Control *queue)
 {
 	u32 index;
 
 	for(index=0;index<LWP_THREADQ_NUM_PRIOHEADERS;index++) {
 		if(!_Chain_Is_empty(&queue->queues.priority[index]))
-			return (lwp_cntrl*)queue->queues.priority[index].first;
+			return (Thread_Control*)queue->queues.priority[index].first;
 	}
 	return NULL;
 }
 
-void _Thread_queue_Enqueue_fifo(lwp_thrqueue *queue,lwp_cntrl *thethread,u64 timeout)
+void _Thread_queue_Enqueue_fifo(Thread_queue_Control *queue,Thread_Control *thethread,u64 timeout)
 {
 	u32 level,sync_state;
 
@@ -76,14 +76,14 @@ void _Thread_queue_Enqueue_fifo(lwp_thrqueue *queue,lwp_cntrl *thethread,u64 tim
 	_Thread_Unblock(thethread);
 }
 
-lwp_cntrl* _Thread_queue_Dequeue_fifo(lwp_thrqueue *queue)
+Thread_Control* _Thread_queue_Dequeue_fifo(Thread_queue_Control *queue)
 {
 	u32 level;
-	lwp_cntrl *ret;
+	Thread_Control *ret;
 
 	_CPU_ISR_Disable(level);
 	if(!_Chain_Is_empty(&queue->queues.fifo)) {
-		ret = (lwp_cntrl*)_Chain_Get_first_unprotected(&queue->queues.fifo);
+		ret = (Thread_Control*)_Chain_Get_first_unprotected(&queue->queues.fifo);
 		if(!_Watchdog_Is_active(&ret->timer)) {
 			_CPU_ISR_Restore(level);
 			_Thread_Unblock(ret);
@@ -110,12 +110,12 @@ lwp_cntrl* _Thread_queue_Dequeue_fifo(lwp_thrqueue *queue)
 	return NULL;
 }
 
-void _Thread_queue_Enqueue_priority(lwp_thrqueue *queue,lwp_cntrl *thethread,u64 timeout)
+void _Thread_queue_Enqueue_priority(Thread_queue_Control *queue,Thread_Control *thethread,u64 timeout)
 {
 	u32 level,search_prio,header_idx,prio,block_state,sync_state;
-	lwp_cntrl *search_thread;
-	lwp_queue *header;
-	lwp_node *cur_node,*next_node,*prev_node,*search_node;
+	Thread_Control *search_thread;
+	Chain_Control *header;
+	Chain_Node *cur_node,*next_node,*prev_node,*search_node;
 
 	_Chain_Initialize_empty(&thethread->wait.block2n);
 	
@@ -137,8 +137,8 @@ void _Thread_queue_Enqueue_priority(lwp_thrqueue *queue,lwp_cntrl *thethread,u64
 forward_search:
 	search_prio = LWP_PRIO_MIN - 1;
 	_CPU_ISR_Disable(level);
-	search_thread = (lwp_cntrl*)header->first;
-	while(!_Chain_Is_tail(header,(lwp_node*)search_thread)) {
+	search_thread = (Thread_Control*)header->first;
+	while(!_Chain_Is_tail(header,(Chain_Node*)search_thread)) {
 		search_prio = search_thread->cur_prio;
 		if(prio<=search_prio) break;
 		_CPU_ISR_Flash(level);
@@ -147,15 +147,15 @@ forward_search:
 			_CPU_ISR_Restore(level);
 			goto forward_search;
 		}
-		search_thread = (lwp_cntrl*)search_thread->object.node.next;
+		search_thread = (Thread_Control*)search_thread->object.node.next;
 	}
 	if(queue->sync_state!=LWP_THREADQ_NOTHINGHAPPEND) goto synchronize;
 	queue->sync_state = LWP_THREADQ_SYNCHRONIZED;
 	if(prio==search_prio) goto equal_prio;
 
-	search_node = (lwp_node*)search_thread;
+	search_node = (Chain_Node*)search_thread;
 	prev_node = search_node->prev;
-	cur_node = (lwp_node*)thethread;
+	cur_node = (Chain_Node*)thethread;
 	
 	cur_node->next = search_node;
 	cur_node->prev = prev_node;
@@ -167,8 +167,8 @@ forward_search:
 reverse_search:
 	search_prio = LWP_PRIO_MAX + 1;
 	_CPU_ISR_Disable(level);
-	search_thread = (lwp_cntrl*)header->last;
-	while(!_Chain_Is_head(header,(lwp_node*)search_thread)) {
+	search_thread = (Thread_Control*)header->last;
+	while(!_Chain_Is_head(header,(Chain_Node*)search_thread)) {
 		search_prio = search_thread->cur_prio;
 		if(prio>=search_prio) break;
 		_CPU_ISR_Flash(level);
@@ -177,15 +177,15 @@ reverse_search:
 			_CPU_ISR_Restore(level);
 			goto reverse_search;
 		}
-		search_thread = (lwp_cntrl*)search_thread->object.node.prev;
+		search_thread = (Thread_Control*)search_thread->object.node.prev;
 	}
 	if(queue->sync_state!=LWP_THREADQ_NOTHINGHAPPEND) goto synchronize;
 	queue->sync_state = LWP_THREADQ_SYNCHRONIZED;
 	if(prio==search_prio) goto equal_prio;
 
-	search_node = (lwp_node*)search_thread;
+	search_node = (Chain_Node*)search_thread;
 	next_node = search_node->next;
-	cur_node = (lwp_node*)thethread;
+	cur_node = (Chain_Node*)thethread;
 	
 	cur_node->next = next_node;
 	cur_node->prev = search_node;
@@ -200,7 +200,7 @@ equal_prio:
 #endif
 	search_node = _Chain_Tail(&search_thread->wait.block2n);
 	prev_node = search_node->prev;
-	cur_node = (lwp_node*)thethread;
+	cur_node = (Chain_Node*)thethread;
 
 	cur_node->next = search_node;
 	cur_node->prev = prev_node;
@@ -237,16 +237,16 @@ synchronize:
 	_Thread_Unblock(thethread);
 }
 
-lwp_cntrl* _Thread_queue_Dequeue_priority(lwp_thrqueue *queue)
+Thread_Control* _Thread_queue_Dequeue_priority(Thread_queue_Control *queue)
 {
 	u32 level,idx;
-	lwp_cntrl *newfirstthr,*ret = NULL;
-	lwp_node *newfirstnode,*newsecnode,*last_node,*next_node,*prev_node;
+	Thread_Control *newfirstthr,*ret = NULL;
+	Chain_Node *newfirstnode,*newsecnode,*last_node,*next_node,*prev_node;
 
 	_CPU_ISR_Disable(level);
 	for(idx=0;idx<LWP_THREADQ_NUM_PRIOHEADERS;idx++) {
 		if(!_Chain_Is_empty(&queue->queues.priority[idx])) {
-			ret	 = (lwp_cntrl*)queue->queues.priority[idx].first;
+			ret	 = (Thread_Control*)queue->queues.priority[idx].first;
 			goto dequeue;
 		}
 	}
@@ -271,7 +271,7 @@ dequeue:
 	printf("_Thread_queue_Dequeue_priority(%p,dequeue)\n",ret);
 #endif
 	newfirstnode = ret->wait.block2n.first;
-	newfirstthr = (lwp_cntrl*)newfirstnode;
+	newfirstthr = (Thread_Control*)newfirstnode;
 	next_node = ret->object.node.next;
 	prev_node = ret->object.node.prev;
 	if(!_Chain_Is_empty(&ret->wait.block2n)) {
@@ -305,7 +305,7 @@ dequeue:
 	return ret;
 }
 
-void _Thread_queue_Initialize(lwp_thrqueue *queue,u32 mode,u32 state,u32 timeout_state)
+void _Thread_queue_Initialize(Thread_queue_Control *queue,u32 mode,u32 state,u32 timeout_state)
 {
 	u32 index;
 
@@ -327,9 +327,9 @@ void _Thread_queue_Initialize(lwp_thrqueue *queue,u32 mode,u32 state,u32 timeout
 	}
 }
 
-lwp_cntrl* _Thread_queue_First(lwp_thrqueue *queue)
+Thread_Control* _Thread_queue_First(Thread_queue_Control *queue)
 {
-	lwp_cntrl *ret;
+	Thread_Control *ret;
 
 	switch(queue->mode) {
 		case LWP_THREADQ_MODEFIFO:
@@ -346,9 +346,9 @@ lwp_cntrl* _Thread_queue_First(lwp_thrqueue *queue)
 	return ret;
 }
 
-void _Thread_queue_Enqueue(lwp_thrqueue *queue,u64 timeout)
+void _Thread_queue_Enqueue(Thread_queue_Control *queue,u64 timeout)
 {
-	lwp_cntrl *thethread;
+	Thread_Control *thethread;
 
 	thethread = _thr_executing;
 	_Thread_Set_state(thethread,queue->state);
@@ -371,9 +371,9 @@ void _Thread_queue_Enqueue(lwp_thrqueue *queue,u64 timeout)
 	}
 }
 
-lwp_cntrl* _Thread_queue_Dequeue(lwp_thrqueue *queue)
+Thread_Control* _Thread_queue_Dequeue(Thread_queue_Control *queue)
 {
-	lwp_cntrl *ret = NULL;
+	Thread_Control *ret = NULL;
 
 #ifdef _LWPTHRQ_DEBUG
 	printf("_Thread_queue_Dequeue(%p,%p,%d,%d)\n",queue,_thr_executing,queue->mode,queue->sync_state);
@@ -395,15 +395,15 @@ lwp_cntrl* _Thread_queue_Dequeue(lwp_thrqueue *queue)
 	return ret;
 }
 
-void _Thread_queue_Flush(lwp_thrqueue *queue,u32 status)
+void _Thread_queue_Flush(Thread_queue_Control *queue,u32 status)
 {
-	lwp_cntrl *thethread;
+	Thread_Control *thethread;
 	while((thethread=_Thread_queue_Dequeue(queue))) {
 		thethread->wait.ret_code = status;
 	}
 }
 
-void _Thread_queue_Extract(lwp_thrqueue *queue,lwp_cntrl *thethread)
+void _Thread_queue_Extract(Thread_queue_Control *queue,Thread_Control *thethread)
 {
 	switch(queue->mode) {
 		case LWP_THREADQ_MODEFIFO:
@@ -416,7 +416,7 @@ void _Thread_queue_Extract(lwp_thrqueue *queue,lwp_cntrl *thethread)
 
 }
 
-void _Thread_queue_Extract_fifo(lwp_thrqueue *queue,lwp_cntrl *thethread)
+void _Thread_queue_Extract_fifo(Thread_queue_Control *queue,Thread_Control *thethread)
 {
 	u32 level;
 
@@ -437,13 +437,13 @@ void _Thread_queue_Extract_fifo(lwp_thrqueue *queue,lwp_cntrl *thethread)
 	_Thread_Unblock(thethread);
 }
 
-void _Thread_queue_Extract_priority(lwp_thrqueue *queue,lwp_cntrl *thethread)
+void _Thread_queue_Extract_priority(Thread_queue_Control *queue,Thread_Control *thethread)
 {
 	u32 level;
-	lwp_cntrl *first;
-	lwp_node *curr,*next,*prev,*new_first,*new_sec,*last;
+	Thread_Control *first;
+	Chain_Node *curr,*next,*prev,*new_first,*new_sec,*last;
 
-	curr = (lwp_node*)thethread;
+	curr = (Chain_Node*)thethread;
 
 	_CPU_ISR_Disable(level);
 	if(_States_Is_waiting_on_thread_queue(thethread->cur_state)) {
@@ -452,7 +452,7 @@ void _Thread_queue_Extract_priority(lwp_thrqueue *queue,lwp_cntrl *thethread)
 		
 		if(!_Chain_Is_empty(&thethread->wait.block2n)) {
 			new_first = thethread->wait.block2n.first;
-			first = (lwp_cntrl*)new_first;
+			first = (Thread_Control*)new_first;
 			last = thethread->wait.block2n.last;
 			new_sec = new_first->next;
 
@@ -484,7 +484,7 @@ void _Thread_queue_Extract_priority(lwp_thrqueue *queue,lwp_cntrl *thethread)
 		_CPU_ISR_Restore(level);
 }
 
-u32 _Thread_queue_Extract_with_proxy(lwp_cntrl *thethread)
+u32 _Thread_queue_Extract_with_proxy(Thread_Control *thethread)
 {
 	u32 state;
 

@@ -2,7 +2,7 @@
 #include "lwp_stack.h"
 #include "lwp_wkspace.h"
 
-u32 _Thread_Stack_Allocate(lwp_cntrl *thethread,u32 size)
+u32 _Thread_Stack_Allocate(Thread_Control *thethread,u32 size)
 {
 	void *stack_addr = NULL;
 
@@ -18,7 +18,7 @@ u32 _Thread_Stack_Allocate(lwp_cntrl *thethread,u32 size)
 	return size;
 }
 
-void _Thread_Stack_Free(lwp_cntrl *thethread)
+void _Thread_Stack_Free(Thread_Control *thethread)
 {
 	if(!thethread->stack_allocated)
 		return;

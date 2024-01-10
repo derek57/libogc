@@ -3,7 +3,7 @@
 #include "lwp_messages.h"
 #include "lwp_wkspace.h"
 
-void _CORE_message_queue_Insert_message(mq_cntrl *mqueue,mq_buffercntrl *msg,u32 type)
+void _CORE_message_queue_Insert_message(CORE_message_queue_Control *mqueue,CORE_message_queue_Buffer_control *msg,u32 type)
 {
 	++mqueue->num_pendingmsgs;
 	msg->prio = type;
@@ -21,14 +21,14 @@ void _CORE_message_queue_Insert_message(mq_cntrl *mqueue,mq_buffercntrl *msg,u32
 			break;
 		default:
 		{
-			mq_buffercntrl *tmsg;
-			lwp_node *node;
-			lwp_queue *header;
+			CORE_message_queue_Buffer_control *tmsg;
+			Chain_Node *node;
+			Chain_Control *header;
 
 			header = &mqueue->pending_msgs;
 			node = header->first;
 			while(!_Chain_Is_tail(header,node)) {
-				tmsg = (mq_buffercntrl*)node;
+				tmsg = (CORE_message_queue_Buffer_control*)node;
 				if(tmsg->prio<=msg->prio) {
 					node = node->next;
 					continue;
@@ -44,7 +44,7 @@ void _CORE_message_queue_Insert_message(mq_cntrl *mqueue,mq_buffercntrl *msg,u32
 		mqueue->notify_handler(mqueue->notify_arg);
 }
 
-u32 _CORE_message_queue_Initialize(mq_cntrl *mqueue,mq_attr *attrs,u32 max_pendingmsgs,u32 max_msgsize)
+u32 _CORE_message_queue_Initialize(CORE_message_queue_Control *mqueue,CORE_message_queue_Attributes *attrs,u32 max_pendingmsgs,u32 max_msgsize)
 {
 	u32 alloc_msgsize;
 	u32 buffering_req;
@@ -61,23 +61,23 @@ u32 _CORE_message_queue_Initialize(mq_cntrl *mqueue,mq_attr *attrs,u32 max_pendi
 	if(alloc_msgsize&(sizeof(u32)-1))
 		alloc_msgsize = (alloc_msgsize+sizeof(u32))&~(sizeof(u32)-1);
 	
-	buffering_req = max_pendingmsgs*(alloc_msgsize+sizeof(mq_buffercntrl));
-	mqueue->msq_buffers = (mq_buffer*)_Workspace_Allocate(buffering_req);
+	buffering_req = max_pendingmsgs*(alloc_msgsize+sizeof(CORE_message_queue_Buffer_control));
+	mqueue->msq_buffers = (CORE_message_queue_Buffer*)_Workspace_Allocate(buffering_req);
 
 	if(!mqueue->msq_buffers) return 0;
 
-	_Chain_Initialize(&mqueue->inactive_msgs,mqueue->msq_buffers,max_pendingmsgs,(alloc_msgsize+sizeof(mq_buffercntrl)));
+	_Chain_Initialize(&mqueue->inactive_msgs,mqueue->msq_buffers,max_pendingmsgs,(alloc_msgsize+sizeof(CORE_message_queue_Buffer_control)));
 	_Chain_Initialize_empty(&mqueue->pending_msgs);
 	_Thread_queue_Initialize(&mqueue->wait_queue,_CORE_message_queue_Is_priority(attrs)?LWP_THREADQ_MODEPRIORITY:LWP_THREADQ_MODEFIFO,LWP_STATES_WAITING_FOR_MESSAGE,LWP_MQ_STATUS_TIMEOUT);
 
 	return 1;
 }
 
-u32 _CORE_message_queue_Seize(mq_cntrl *mqueue,u32 id,void *buffer,u32 *size,u32 wait,u64 timeout)
+u32 _CORE_message_queue_Seize(CORE_message_queue_Control *mqueue,u32 id,void *buffer,u32 *size,u32 wait,u64 timeout)
 {
 	u32 level;
-	mq_buffercntrl *msg;
-	lwp_cntrl *exec,*thread;
+	CORE_message_queue_Buffer_control *msg;
+	Thread_Control *exec,*thread;
 
 	exec = _thr_executing;
 	exec->wait.ret_code = LWP_MQ_STATUS_SUCCESSFUL;
@@ -126,11 +126,11 @@ u32 _CORE_message_queue_Seize(mq_cntrl *mqueue,u32 id,void *buffer,u32 *size,u32
 	return LWP_MQ_STATUS_SUCCESSFUL;
 }
 
-u32 _CORE_message_queue_Submit(mq_cntrl *mqueue,u32 id,void *buffer,u32 size,u32 type,u32 wait,u64 timeout)
+u32 _CORE_message_queue_Submit(CORE_message_queue_Control *mqueue,u32 id,void *buffer,u32 size,u32 type,u32 wait,u64 timeout)
 {
 	u32 level;
-	lwp_cntrl *thread;
-	mq_buffercntrl *msg;
+	Thread_Control *thread;
+	CORE_message_queue_Buffer_control *msg;
 
 #ifdef _LWPMQ_DEBUG
 	printf("_CORE_message_queue_Submit(%p,%p,%d,%d,%d,%d)\n",mqueue,buffer,size,id,type,wait);
@@ -163,7 +163,7 @@ u32 _CORE_message_queue_Submit(mq_cntrl *mqueue,u32 id,void *buffer,u32 size,u32
 	if(_ISR_Is_in_progress()) return LWP_MQ_STATUS_UNSATISFIED;
 
 	{
-		lwp_cntrl *exec = _thr_executing;
+		Thread_Control *exec = _thr_executing;
 
 		_CPU_ISR_Disable(level);
 		_Thread_queue_Enter_critical_section(&mqueue->wait_queue);
@@ -179,11 +179,11 @@ u32 _CORE_message_queue_Submit(mq_cntrl *mqueue,u32 id,void *buffer,u32 size,u32
 	return LWP_MQ_STATUS_UNSATISFIED_WAIT;
 }
 
-u32 _CORE_message_queue_Broadcast(mq_cntrl *mqueue,void *buffer,u32 size,u32 id,u32 *count)
+u32 _CORE_message_queue_Broadcast(CORE_message_queue_Control *mqueue,void *buffer,u32 size,u32 id,u32 *count)
 {
-	lwp_cntrl *thread;
+	Thread_Control *thread;
 	u32 num_broadcast;
-	lwp_waitinfo *waitp;
+	Thread_Wait_information *waitp;
 	u32 rsize;
 #ifdef _LWPMQ_DEBUG
 	printf("_CORE_message_queue_Broadcast(%p,%p,%d,%d,%p)\n",mqueue,buffer,size,id,count);
@@ -209,14 +209,14 @@ u32 _CORE_message_queue_Broadcast(mq_cntrl *mqueue,void *buffer,u32 size,u32 id,
 	return LWP_MQ_STATUS_SUCCESSFUL;
 }
 
-void _CORE_message_queue_Close(mq_cntrl *mqueue,u32 status)
+void _CORE_message_queue_Close(CORE_message_queue_Control *mqueue,u32 status)
 {
 	_Thread_queue_Flush(&mqueue->wait_queue,status);
 	_CORE_message_queue_Flush_support(mqueue);
 	_Workspace_Free(mqueue->msq_buffers);
 }
 
-u32 _CORE_message_queue_Flush(mq_cntrl *mqueue)
+u32 _CORE_message_queue_Flush(CORE_message_queue_Control *mqueue)
 {
 	if(mqueue->num_pendingmsgs!=0)
 		return _CORE_message_queue_Flush_support(mqueue);
@@ -224,12 +224,12 @@ u32 _CORE_message_queue_Flush(mq_cntrl *mqueue)
 		return 0;
 }
 
-u32 _CORE_message_queue_Flush_support(mq_cntrl *mqueue)
+u32 _CORE_message_queue_Flush_support(CORE_message_queue_Control *mqueue)
 {
 	u32 level;
-	lwp_node *inactive;
-	lwp_node *mqueue_first;
-	lwp_node *mqueue_last;
+	Chain_Node *inactive;
+	Chain_Node *mqueue_first;
+	Chain_Node *mqueue_last;
 	u32 cnt;
 
 	_CPU_ISR_Disable(level);
@@ -252,7 +252,7 @@ u32 _CORE_message_queue_Flush_support(mq_cntrl *mqueue)
 	return cnt;
 }
 
-void _CORE_message_queue_Flush_waiting_threads(mq_cntrl *mqueue)
+void _CORE_message_queue_Flush_waiting_threads(CORE_message_queue_Control *mqueue)
 {
 	_Thread_queue_Flush(&mqueue->wait_queue,LWP_MQ_STATUS_UNSATISFIED_NOWAIT);
 }

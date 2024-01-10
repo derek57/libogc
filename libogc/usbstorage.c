@@ -94,7 +94,7 @@ distribution.
 
 #define DEVLIST_MAXSIZE    			8
 
-static heap_cntrl __heap;
+static Heap_Control __heap;
 static bool __inited = false;
 static u64 usb_last_used = 0;
 static lwpq_t __usbstorage_waitq = 0;

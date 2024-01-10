@@ -125,7 +125,7 @@ struct _ipcheap
 {
 	void *membase;
 	u32 size;
-	heap_cntrl heap;
+	Heap_Control heap;
 };
 
 struct _ioctlvfmt_bufent

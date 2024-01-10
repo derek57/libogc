@@ -66,7 +66,7 @@ extern vu32 _wd_sync_level;
 extern vu32 _wd_sync_count;
 extern u32 _wd_ticks_since_boot;
 
-extern lwp_queue _wd_ticks_queue;
+extern Chain_Control _wd_ticks_queue;
 
 extern u32 gettick();
 extern u64 gettime();
@@ -79,22 +79,21 @@ u32 diff_nsec(u64 start,u64 end);
 
 typedef void (*wd_service_routine)(void *);
 
-typedef struct _wdcntrl {
-	lwp_node node;
+typedef struct {
+	Chain_Node node;
 	u64 start;
 	u32 id;
 	u32 state;
 	u64 fire;
 	wd_service_routine routine;
 	void *usr_data;
-} wd_cntrl;
+} Watchdog_Control;
 
 void _Watchdog_Handler_initialization();
-void __lwp_watchdog_settimer(wd_cntrl *wd);
-void _Watchdog_Insert(lwp_queue *header,wd_cntrl *wd);
-u32 _Watchdog_Remove(lwp_queue *header,wd_cntrl *wd);
-void _Watchdog_Tickle(lwp_queue *queue);
-void _Watchdog_Adjust(lwp_queue *queue,u32 dir,s64 interval);
+void _Watchdog_Insert(Chain_Control *header,Watchdog_Control *wd);
+u32 _Watchdog_Remove(Chain_Control *header,Watchdog_Control *wd);
+void _Watchdog_Tickle(Chain_Control *queue);
+void _Watchdog_Adjust(Chain_Control *queue,u32 dir,s64 interval);
 
 #ifdef LIBOGC_INTERNAL
 #include <libogc/lwp_watchdog.inl>

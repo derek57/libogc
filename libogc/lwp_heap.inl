@@ -1,12 +1,12 @@
 #ifndef __LWP_HEAP_INL__
 #define __LWP_HEAP_INL__
 
-static __inline__ heap_block* _Heap_Head(heap_cntrl *theheap)
+static __inline__ heap_block* _Heap_Head(Heap_Control *theheap)
 {
 	return (heap_block*)&theheap->start;
 }
 
-static __inline__ heap_block* _Heap_Tail(heap_cntrl *heap)
+static __inline__ heap_block* _Heap_Tail(Heap_Control *heap)
 {
 	return (heap_block*)&heap->final;
 }
@@ -57,7 +57,7 @@ static __inline__ void* _Heap_Start_of_user_area(heap_block *block)
 	return (void*)&block->next;
 }
 
-static __inline__ bool _Heap_Is_block_in(heap_cntrl *heap,heap_block *block)
+static __inline__ bool _Heap_Is_block_in(Heap_Control *heap,heap_block *block)
 {
 	return ((u32)block>=(u32)heap->start && (u32)block<=(u32)heap->final);
 }

@@ -225,7 +225,7 @@ typedef s32 (*resetfunction)(s32 final);
 typedef struct _sys_resetinfo sys_resetinfo;
 
 struct _sys_resetinfo {
-	lwp_node node;
+	Chain_Node node;
 	resetfunction func;
 	u32 prio;
 };

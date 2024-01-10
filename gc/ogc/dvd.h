@@ -155,7 +155,7 @@ typedef void (*dvdcbcallback)(s32 result,dvdcmdblk *block);
  *        This structure is used internally to control the requested operation.
  */
 struct _dvdcmdblk {
-	lwp_node node;
+	Chain_Node node;
 	u32 cmd;
 	s32 state;
 	s64 offset;

@@ -46,11 +46,11 @@ distribution.
 
 typedef struct _mutex_st
 {
-	lwp_obj object;
-	lwp_mutex mutex;
+	Objects_Control object;
+	CORE_mutex_Control mutex;
 } mutex_st;
 
-lwp_objinfo _lwp_mutex_objects;
+Objects_Information _lwp_mutex_objects;
 
 static s32 __lwp_mutex_locksupp(mutex_t lock,u32 timeout,u8 block)
 {
@@ -100,7 +100,7 @@ static mutex_st* __lwp_mutex_allocate()
 
 s32 LWP_MutexInit(mutex_t *mutex,bool use_recursive)
 {
-	lwp_mutex_attr attr;
+	CORE_mutex_Attributes attr;
 	mutex_st *ret;
 	
 	if(!mutex) return -1;

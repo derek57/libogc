@@ -60,7 +60,7 @@ distribution.
 
 
 struct _lck_dev {
-	lwp_node node;
+	Chain_Node node;
 	u32 dev;
 	EXICallback unlockcb;
 };
@@ -77,11 +77,11 @@ typedef struct _exibus_priv {
 	u32 lck_cnt;
 	u32 exi_id;
 	u64 exi_idtime;
-	lwp_queue lckd_dev;
+	Chain_Control lckd_dev;
 	u32 lckd_dev_bits;
 } exibus_priv;
 
-static lwp_queue _lckdev_queue;
+static Chain_Control _lckdev_queue;
 static struct _lck_dev lckdevs[EXI_LOCK_DEVS];
 static exibus_priv eximap[EXI_MAX_CHANNELS];
 static u64 last_exi_idtime[EXI_MAX_CHANNELS];

@@ -17,21 +17,21 @@
 extern "C" {
 #endif
 
-typedef struct _lwpsemattr {
+typedef struct {
 	u32 max_cnt;
 	u32 mode;
-} lwp_semattr;
+} CORE_semaphore_Attributes;
 
-typedef struct _lwpsema {
-	lwp_thrqueue wait_queue;
-	lwp_semattr	attrs;
+typedef struct {
+	Thread_queue_Control wait_queue;
+	CORE_semaphore_Attributes	attrs;
 	u32 count;
-} lwp_sema;
+} CORE_semaphore_Control;
 
-void CORE_semaphore_Initialize(lwp_sema *sema,lwp_semattr *attrs,u32 init_count);
-u32 _CORE_semaphore_Surrender(lwp_sema *sema,u32 id);
-u32 _CORE_semaphore_Seize(lwp_sema *sema,u32 id,u32 wait,u64 timeout);
-void _CORE_semaphore_Flush(lwp_sema *sema,u32 status);
+void CORE_semaphore_Initialize(CORE_semaphore_Control *sema,CORE_semaphore_Attributes *attrs,u32 init_count);
+u32 _CORE_semaphore_Surrender(CORE_semaphore_Control *sema,u32 id);
+u32 _CORE_semaphore_Seize(CORE_semaphore_Control *sema,u32 id,u32 wait,u64 timeout);
+void _CORE_semaphore_Flush(CORE_semaphore_Control *sema,u32 status);
 
 #ifdef LIBOGC_INTERNAL
 #include <libogc/lwp_sema.inl>

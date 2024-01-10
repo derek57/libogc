@@ -12,31 +12,31 @@
 extern "C" {
 #endif
 
-typedef struct _lwp_objinfo lwp_objinfo;
+typedef struct _Objects_Control Objects_Information;
 
-typedef struct _lwp_obj {
-	lwp_node node;
+typedef struct {
+	Chain_Node node;
 	s32 id;
-	lwp_objinfo *information;
-} lwp_obj;
+	Objects_Information *information;
+} Objects_Control;
 
-struct _lwp_objinfo {
+struct _Objects_Control {
 	u32 min_id;
 	u32 max_id;
 	u32 max_nodes;
 	u32 node_size;
-	lwp_obj **local_table;
+	Objects_Control **local_table;
 	void *obj_blocks;
-	lwp_queue inactives;
+	Chain_Control inactives;
 	u32 inactives_cnt;
 };
 
-void _Objects_Initialize_information(lwp_objinfo *info,u32 max_nodes,u32 node_size);
-void _Objects_Free(lwp_objinfo *info,lwp_obj *object);
-lwp_obj* _Objects_Allocate(lwp_objinfo *info);
-lwp_obj* _Objects_Get(lwp_objinfo *info,u32 id);
-lwp_obj* _Objects_Get_isr_disable(lwp_objinfo *info,u32 id,u32 *p_level);
-lwp_obj* _Objects_Get_no_protection(lwp_objinfo *info,u32 id);
+void _Objects_Initialize_information(Objects_Information *info,u32 max_nodes,u32 node_size);
+void _Objects_Free(Objects_Information *info,Objects_Control *object);
+Objects_Control* _Objects_Allocate(Objects_Information *info);
+Objects_Control* _Objects_Get(Objects_Information *info,u32 id);
+Objects_Control* _Objects_Get_isr_disable(Objects_Information *info,u32 id,u32 *p_level);
+Objects_Control* _Objects_Get_no_protection(Objects_Information *info,u32 id);
 
 #ifdef LIBOGC_INTERNAL
 #include <libogc/lwp_objmgr.inl>

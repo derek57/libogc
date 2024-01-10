@@ -1,7 +1,7 @@
 #ifndef __LWP_PRIORITY_INL__
 #define __LWP_PRIORITY_INL__
 
-static __inline__ void _Priority_Initialize_information(prio_cntrl *theprio,u32 prio)
+static __inline__ void _Priority_Initialize_information(Priority_Information *theprio,u32 prio)
 {
 	u32 major,minor,mask;
 	
@@ -22,13 +22,13 @@ static __inline__ void _Priority_Initialize_information(prio_cntrl *theprio,u32 
 #endif
 }
 
-static __inline__ void _Priority_Add_to_bit_map(prio_cntrl *theprio)
+static __inline__ void _Priority_Add_to_bit_map(Priority_Information *theprio)
 {
 	*theprio->minor |= theprio->ready_minor;
 	_prio_major_bitmap |= theprio->ready_major;
 }
 
-static __inline__ void _Priority_Remove_from_bit_map(prio_cntrl *theprio)
+static __inline__ void _Priority_Remove_from_bit_map(Priority_Information *theprio)
 {
 	*theprio->minor &= theprio->block_minor;
 	if(*theprio->minor==0)

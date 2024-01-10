@@ -47,7 +47,7 @@ distribution.
 #define DEVLIST_MAXSIZE				8
 
 typedef struct {
-	lwp_node node;
+	Chain_Node node;
 	mouse_event event;
 } _node;
 
@@ -65,7 +65,7 @@ struct umouse {
 	u32 ep_size;
 };
 
-static lwp_queue _queue;
+static Chain_Control _queue;
 
 static s32 hId = -1;
 static bool _mouse_is_inited = false;
@@ -83,7 +83,7 @@ static s32 _mouse_addEvent(const mouse_event *event) {
 	_node *n = malloc(sizeof(_node));
 	n->event = *event;
 
-	_Chain_Append(&_queue, (lwp_node*) n);
+	_Chain_Append(&_queue, (Chain_Node*) n);
 
 	return 1;
 }

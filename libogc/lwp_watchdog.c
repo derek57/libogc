@@ -14,9 +14,9 @@ vu32 _wd_sync_level;
 vu32 _wd_sync_count;
 u32 _wd_ticks_since_boot;
 
-lwp_queue _wd_ticks_queue;
+Chain_Control _wd_ticks_queue;
 
-static void __lwp_wd_settimer(wd_cntrl *wd)
+static void __lwp_wd_settimer(Watchdog_Control *wd)
 {
 	u64 now;
 	s64 diff;
@@ -58,12 +58,12 @@ void _Watchdog_Handler_initialization()
 	_Chain_Initialize_empty(&_wd_ticks_queue);
 }
 
-void _Watchdog_Insert(lwp_queue *header,wd_cntrl *wd)
+void _Watchdog_Insert(Chain_Control *header,Watchdog_Control *wd)
 {
 	u32 level;
 	u64 fire;
 	u32 isr_nest_level;
-	wd_cntrl *after;
+	Watchdog_Control *after;
 #ifdef _LWPWD_DEBUG
 	printf("_Watchdog_Insert(%p,%llu,%llu)\n",wd,wd->start,wd->fire);
 #endif
@@ -98,11 +98,11 @@ exit_insert:
 	return;
 }
 
-u32 _Watchdog_Remove(lwp_queue *header,wd_cntrl *wd)
+u32 _Watchdog_Remove(Chain_Control *header,Watchdog_Control *wd)
 {
 	u32 level;
 	u32 prev_state;
-	wd_cntrl *next;
+	Watchdog_Control *next;
 #ifdef _LWPWD_DEBUG
 	printf("_Watchdog_Remove(%p)\n",wd);
 #endif
@@ -127,9 +127,9 @@ u32 _Watchdog_Remove(lwp_queue *header,wd_cntrl *wd)
 	return prev_state;
 }
 
-void _Watchdog_Tickle(lwp_queue *queue)
+void _Watchdog_Tickle(Chain_Control *queue)
 {
-	wd_cntrl *wd;
+	Watchdog_Control *wd;
 	u64 now;
 	s64 diff;
 
@@ -161,7 +161,7 @@ void _Watchdog_Tickle(lwp_queue *queue)
 	}
 }
 
-void _Watchdog_Adjust(lwp_queue *queue,u32 dir,s64 interval)
+void _Watchdog_Adjust(Chain_Control *queue,u32 dir,s64 interval)
 {
 	u32 level;
 	u64 abs_int;

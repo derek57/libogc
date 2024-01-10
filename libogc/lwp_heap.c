@@ -7,7 +7,7 @@
 #include "lwp_heap.h"
 
 
-u32 _Heap_Initialize(heap_cntrl *theheap,void *start_addr,u32 size,u32 pg_size)
+u32 _Heap_Initialize(Heap_Control *theheap,void *start_addr,u32 size,u32 pg_size)
 {
 	u32 dsize,level;
 	heap_block *block;
@@ -38,7 +38,7 @@ u32 _Heap_Initialize(heap_cntrl *theheap,void *start_addr,u32 size,u32 pg_size)
 	return (dsize - HEAP_BLOCK_USED_OVERHEAD);
 }
 
-void* _Heap_Allocate(heap_cntrl *theheap,u32 size)
+void* _Heap_Allocate(Heap_Control *theheap,u32 size)
 {
 	u32 excess;
 	u32 dsize;
@@ -96,7 +96,7 @@ void* _Heap_Allocate(heap_cntrl *theheap,u32 size)
 	return ptr;
 }
 
-BOOL _Heap_Free(heap_cntrl *theheap,void *ptr)
+BOOL _Heap_Free(Heap_Control *theheap,void *ptr)
 {
 	heap_block *block;
 	heap_block *next_block;
@@ -159,7 +159,7 @@ BOOL _Heap_Free(heap_cntrl *theheap,void *ptr)
 	return TRUE;
 }
 
-u32 _Heap_Get_information(heap_cntrl *theheap,heap_iblock *theinfo)
+u32 _Heap_Get_information(Heap_Control *theheap,Heap_Information_block *theinfo)
 {
 	u32 not_done = 1;
 	heap_block *theblock = NULL;
