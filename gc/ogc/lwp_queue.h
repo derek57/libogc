@@ -17,12 +17,12 @@ typedef struct Chain_Node_struct Chain_Node;
 
 struct Chain_Node_struct {
 	Chain_Node *next;
-	Chain_Node *prev;
+	Chain_Node *previous;
 };
 
 typedef struct {
 	Chain_Node *first;
-	Chain_Node *perm_null;
+	Chain_Node *permanent_null;
 	Chain_Node *last;
 } Chain_Control;
 

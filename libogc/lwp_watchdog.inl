@@ -26,7 +26,7 @@ static __inline__ Watchdog_Control* _Watchdog_Next(Watchdog_Control *wd)
 
 static __inline__ Watchdog_Control* _Watchdog_Previous(Watchdog_Control *wd)
 {
-	return (Watchdog_Control*)wd->node.prev;
+	return (Watchdog_Control*)wd->node.previous;
 }
 
 static __inline__ void _Watchdog_Activate(Watchdog_Control *wd)

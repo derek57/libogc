@@ -35,7 +35,7 @@ void _CORE_message_queue_Insert_message(CORE_message_queue_Control *mqueue,CORE_
 				}
 				break;
 			}
-			_Chain_Insert(node->prev,&msg->node);
+			_Chain_Insert(node->previous,&msg->node);
 		}
 		break;
 	}
@@ -240,8 +240,8 @@ u32 _CORE_message_queue_Flush_support(CORE_message_queue_Control *mqueue)
 
 	mqueue->inactive_msgs.first = mqueue_first;
 	mqueue_last->next = inactive;
-	inactive->prev = mqueue_last;
-	mqueue_first->prev = _Chain_Head(&mqueue->inactive_msgs);
+	inactive->previous = mqueue_last;
+	mqueue_first->previous = _Chain_Head(&mqueue->inactive_msgs);
 	
 	_Chain_Initialize_empty(&mqueue->pending_msgs);
 

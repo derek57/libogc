@@ -1237,7 +1237,7 @@ void SYS_RegisterResetFunc(sys_resetinfo *info)
 
 	_CPU_ISR_Disable(level);
 	for(after=(sys_resetinfo*)header->first;after->node.next!=NULL && info->prio>=after->prio;after=(sys_resetinfo*)after->node.next);
-	_Chain_Insert_unprotected(after->node.prev,&info->node);
+	_Chain_Insert_unprotected(after->node.previous,&info->node);
 	_CPU_ISR_Restore(level);
 }
 

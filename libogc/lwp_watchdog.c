@@ -88,7 +88,7 @@ restart:
 	}
 	_Watchdog_Activate(wd);
 	wd->delta_interval = fire;
-	_Chain_Insert_unprotected(after->node.prev,&wd->node);
+	_Chain_Insert_unprotected(after->node.previous,&wd->node);
 	if(_Watchdog_First(header)==wd) __lwp_wd_settimer(wd);
 
 exit_insert:

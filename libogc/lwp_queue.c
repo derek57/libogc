@@ -14,12 +14,12 @@ void _Chain_Initialize(Chain_Control *queue,void *start_addr,u32 num_nodes,u32 n
 #endif
 	count = num_nodes;
 	curr = _Chain_Head(queue);
-	queue->perm_null = NULL;
+	queue->permanent_null = NULL;
 	next = (Chain_Node*)start_addr;
 	
 	while(count--) {
 		curr->next = next;
-		next->prev = curr;
+		next->previous = curr;
 		curr = next;
 		next = (Chain_Node*)(((void*)next)+node_size);
 	}

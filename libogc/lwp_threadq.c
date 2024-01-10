@@ -154,13 +154,13 @@ forward_search:
 	if(prio==search_prio) goto equal_prio;
 
 	search_node = (Chain_Node*)search_thread;
-	prev_node = search_node->prev;
+	prev_node = search_node->previous;
 	cur_node = (Chain_Node*)thethread;
 	
 	cur_node->next = search_node;
-	cur_node->prev = prev_node;
+	cur_node->previous = prev_node;
 	prev_node->next = cur_node;
-	search_node->prev = cur_node;
+	search_node->previous = cur_node;
 	_CPU_ISR_Restore(level);
 	return;
 
@@ -177,7 +177,7 @@ reverse_search:
 			_CPU_ISR_Restore(level);
 			goto reverse_search;
 		}
-		search_thread = (Thread_Control*)search_thread->object.Node.prev;
+		search_thread = (Thread_Control*)search_thread->object.Node.previous;
 	}
 	if(queue->sync_state!=LWP_THREADQ_NOTHINGHAPPEND) goto synchronize;
 	queue->sync_state = LWP_THREADQ_SYNCHRONIZED;
@@ -188,9 +188,9 @@ reverse_search:
 	cur_node = (Chain_Node*)thethread;
 	
 	cur_node->next = next_node;
-	cur_node->prev = search_node;
+	cur_node->previous = search_node;
 	search_node->next = cur_node;
-	next_node->prev = cur_node;
+	next_node->previous = cur_node;
 	_CPU_ISR_Restore(level);
 	return;
 
@@ -199,13 +199,13 @@ equal_prio:
 	printf("_Thread_queue_Enqueue_priority(%p,equal_prio)\n",thethread);
 #endif
 	search_node = _Chain_Tail(&search_thread->wait.Block2n);
-	prev_node = search_node->prev;
+	prev_node = search_node->previous;
 	cur_node = (Chain_Node*)thethread;
 
 	cur_node->next = search_node;
-	cur_node->prev = prev_node;
+	cur_node->previous = prev_node;
 	prev_node->next = cur_node;
-	search_node->prev = cur_node;
+	search_node->previous = cur_node;
 	_CPU_ISR_Restore(level);
 	return;
 
@@ -273,24 +273,24 @@ dequeue:
 	newfirstnode = ret->wait.Block2n.first;
 	newfirstthr = (Thread_Control*)newfirstnode;
 	next_node = ret->object.Node.next;
-	prev_node = ret->object.Node.prev;
+	prev_node = ret->object.Node.previous;
 	if(!_Chain_Is_empty(&ret->wait.Block2n)) {
 		last_node = ret->wait.Block2n.last;
 		newsecnode = newfirstnode->next;
 		prev_node->next = newfirstnode;
-		next_node->prev = newfirstnode;
+		next_node->previous = newfirstnode;
 		newfirstnode->next = next_node;
-		newfirstnode->prev = prev_node;
+		newfirstnode->previous = prev_node;
 		
 		if(!_Chain_Has_only_one_node(&ret->wait.Block2n)) {
-			newsecnode->prev = _Chain_Head(&newfirstthr->wait.Block2n);
+			newsecnode->previous = _Chain_Head(&newfirstthr->wait.Block2n);
 			newfirstthr->wait.Block2n.first = newsecnode;
 			newfirstthr->wait.Block2n.last = last_node;
 			last_node->next = _Chain_Tail(&newfirstthr->wait.Block2n);
 		}
 	} else {
 		prev_node->next = next_node;
-		next_node->prev = prev_node;
+		next_node->previous = prev_node;
 	}
 
 	if(!_Watchdog_Is_active(&ret->timer)) {
@@ -448,7 +448,7 @@ void _Thread_queue_Extract_priority(Thread_queue_Control *queue,Thread_Control *
 	_CPU_ISR_Disable(level);
 	if(_States_Is_waiting_on_thread_queue(thethread->cur_state)) {
 		next = curr->next;
-		prev = curr->prev;
+		prev = curr->previous;
 		
 		if(!_Chain_Is_empty(&thethread->wait.Block2n)) {
 			new_first = thethread->wait.Block2n.first;
@@ -457,19 +457,19 @@ void _Thread_queue_Extract_priority(Thread_queue_Control *queue,Thread_Control *
 			new_sec = new_first->next;
 
 			prev->next = new_first;
-			next->prev = new_first;
+			next->previous = new_first;
 			new_first->next = next;
-			new_first->prev = prev;
+			new_first->previous = prev;
 
 			if(!_Chain_Has_only_one_node(&thethread->wait.Block2n)) {
-				new_sec->prev = _Chain_Head(&first->wait.Block2n);
+				new_sec->previous = _Chain_Head(&first->wait.Block2n);
 				first->wait.Block2n.first = new_sec;
 				first->wait.Block2n.last = last;
 				last->next = _Chain_Tail(&first->wait.Block2n);
 			}
 		} else {
 			prev->next = next;
-			next->prev = prev;
+			next->previous = prev;
 		}
 		if(!_Watchdog_Is_active(&thethread->timer)) {
 			_CPU_ISR_Restore(level);
