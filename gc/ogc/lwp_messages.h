@@ -35,27 +35,27 @@ typedef struct {
 } CORE_message_queue_Buffer;
 
 typedef struct {
-	Chain_Node node;
-	u32 prio;
-	CORE_message_queue_Buffer contents;
+	Chain_Node Node;
+	u32 priority;
+	CORE_message_queue_Buffer Contents;
 } CORE_message_queue_Buffer_control;
 
 //the following struct is extensible
 typedef struct {
-	u32 mode;
+	u32 discipline;
 } CORE_message_queue_Attributes;
 
 typedef struct {
-	Thread_queue_Control wait_queue;
-	CORE_message_queue_Attributes attr;
-	u32 max_pendingmsgs;
-	u32 num_pendingmsgs;
-	u32 max_msgsize;
-	Chain_Control pending_msgs;
-	CORE_message_queue_Buffer *msq_buffers;
+	Thread_queue_Control Wait_queue;
+	CORE_message_queue_Attributes Attributes;
+	u32 maximum_pending_messages;
+	u32 number_of_pending_messages;
+	u32 maximum_message_size;
+	Chain_Control Pending_messages;
+	CORE_message_queue_Buffer *message_buffers;
 	CORE_message_queue_Notify_Handler notify_handler;
-	void *notify_arg;
-	Chain_Control inactive_msgs;
+	void *notify_argument;
+	Chain_Control Inactive_messages;
 } CORE_message_queue_Control;
 
 u32 _CORE_message_queue_Initialize(CORE_message_queue_Control *mqueue,CORE_message_queue_Attributes *attrs,u32 max_pendingmsgs,u32 max_msgsize);

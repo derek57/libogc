@@ -93,7 +93,7 @@ s32 MQ_Init(mqbox_t *mqbox,u32 count)
 	ret = __lwp_mqbox_allocate();
 	if(!ret) return MQ_ERROR_TOOMANY;
 
-	attr.mode = LWP_MQ_FIFO;
+	attr.discipline = LWP_MQ_FIFO;
 	if(!_CORE_message_queue_Initialize(&ret->mqueue,&attr,count,sizeof(mqmsg_t))) {
 		__lwp_mqbox_free(ret);
 		_Thread_Enable_dispatch();

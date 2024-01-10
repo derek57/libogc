@@ -4,22 +4,22 @@
 static __inline__ void _CORE_message_queue_Set_notify(CORE_message_queue_Control *mqueue,CORE_message_queue_Notify_Handler handler,void *arg)
 {
 	mqueue->notify_handler = handler;
-	mqueue->notify_arg = arg;
+	mqueue->notify_argument = arg;
 }
 
 static __inline__ u32 _CORE_message_queue_Is_priority(CORE_message_queue_Attributes *attr)
 {
-	return (attr->mode==LWP_MQ_PRIORITY);
+	return (attr->discipline==LWP_MQ_PRIORITY);
 }
 
 static __inline__ CORE_message_queue_Buffer_control* _CORE_message_queue_Allocate_message_buffer(CORE_message_queue_Control *mqueue)
 {
-	return (CORE_message_queue_Buffer_control*)_Chain_Get(&mqueue->inactive_msgs);
+	return (CORE_message_queue_Buffer_control*)_Chain_Get(&mqueue->Inactive_messages);
 }
 
 static __inline__ void _CORE_message_queue_Free_message_buffer(CORE_message_queue_Control *mqueue,CORE_message_queue_Buffer_control *msg)
 {
-	_Chain_Append(&mqueue->inactive_msgs,&msg->node);
+	_Chain_Append(&mqueue->Inactive_messages,&msg->Node);
 }
 
 static __inline__ void _CORE_message_queue_Append(CORE_message_queue_Control *mqueue,CORE_message_queue_Buffer_control *msg)
@@ -27,7 +27,7 @@ static __inline__ void _CORE_message_queue_Append(CORE_message_queue_Control *mq
 #ifdef _LWPMQ_DEBUG
 	printf("__lwpmq_msq_append(%p,%p,%p)\n",mqueue,&mqueue->inactive_msgs,msg);
 #endif
-	_Chain_Append(&mqueue->pending_msgs,&msg->node);
+	_Chain_Append(&mqueue->Pending_messages,&msg->Node);
 }
 
 static __inline__ void _CORE_message_queue_Prepend(CORE_message_queue_Control *mqueue,CORE_message_queue_Buffer_control *msg)
@@ -35,7 +35,7 @@ static __inline__ void _CORE_message_queue_Prepend(CORE_message_queue_Control *m
 #ifdef _LWPMQ_DEBUG
 	printf("__lwpmq_msq_prepend(%p,%p,%p)\n",mqueue,&mqueue->inactive_msgs,msg);
 #endif
-	_Chain_Prepend(&mqueue->pending_msgs,&msg->node);
+	_Chain_Prepend(&mqueue->Pending_messages,&msg->Node);
 }
 
 static __inline__ u32 _CORE_message_queue_Send(CORE_message_queue_Control *mqueue,u32 id,void *buffer,u32 size,u32 wait,u32 timeout)
@@ -50,7 +50,7 @@ static __inline__ u32 _CORE_message_queue_Urgent(CORE_message_queue_Control *mqu
 
 static __inline__ CORE_message_queue_Buffer_control* _CORE_message_queue_Get_pending_message(CORE_message_queue_Control *mqueue)
 {
-	return (CORE_message_queue_Buffer_control*)_Chain_Get_unprotected(&mqueue->pending_msgs);
+	return (CORE_message_queue_Buffer_control*)_Chain_Get_unprotected(&mqueue->Pending_messages);
 }
 
 static __inline__ void _CORE_message_queue_Copy_buffer(void *dest,const void *src,u32 size)
