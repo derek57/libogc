@@ -30,14 +30,14 @@ extern "C" {
 
 typedef struct {
 	u32 mode;
-	u32 nest_behavior;
-	u8 prioceil,onlyownerrelease;
+	u32 lock_nesting_behavior;
+	u8 priority_ceiling,only_owner_release;
 } CORE_mutex_Attributes;
 
 typedef struct {
-	Thread_queue_Control wait_queue;
-	CORE_mutex_Attributes atrrs;
-	u32 lock,nest_cnt,blocked_cnt;
+	Thread_queue_Control Wait_queue;
+	CORE_mutex_Attributes Attributes;
+	u32 lock,nest_count,blocked_count;
 	Thread_Control *holder;
 } CORE_mutex_Control;
 
@@ -55,8 +55,8 @@ static __inline__ u32 _CORE_mutex_Seize_interrupt_trylock(CORE_mutex_Control *mu
 				_CPU_ISR_Restore(_level); \
 				_thr_executing->wait.return_code = LWP_MUTEX_UNSATISFIED_NOWAIT; \
 			} else { \
-				_Thread_queue_Enter_critical_section(&(_mutex_t)->wait_queue); \
-				_thr_executing->wait.queue = &(_mutex_t)->wait_queue; \
+				_Thread_queue_Enter_critical_section(&(_mutex_t)->Wait_queue); \
+				_thr_executing->wait.queue = &(_mutex_t)->Wait_queue; \
 				_thr_executing->wait.id = _id; \
 				_Thread_Disable_dispatch(); \
 				_CPU_ISR_Restore(_level); \
