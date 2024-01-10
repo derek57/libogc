@@ -8,22 +8,22 @@ static __inline__ u32 _CORE_mutex_Is_locked(CORE_mutex_Control *mutex)
 
 static __inline__ u32 _CORE_mutex_Is_priority(CORE_mutex_Attributes *attrs)
 {
-	return (attrs->mode==LWP_MUTEX_PRIORITY);
+	return (attrs->discipline==LWP_MUTEX_PRIORITY);
 }
 
 static __inline__ u32 _CORE_mutex_Is_fifo(CORE_mutex_Attributes *attrs)
 {
-	return (attrs->mode==LWP_MUTEX_FIFO);
+	return (attrs->discipline==LWP_MUTEX_FIFO);
 }
 
 static __inline__ u32 _CORE_mutex_Is_inherit_priority(CORE_mutex_Attributes *attrs)
 {
-	return (attrs->mode==LWP_MUTEX_INHERITPRIO);
+	return (attrs->discipline==LWP_MUTEX_INHERITPRIO);
 }
 
 static __inline__ u32 _CORE_mutex_Is_priority_ceiling(CORE_mutex_Attributes *attrs)
 {
-	return (attrs->mode==LWP_MUTEX_PRIORITYCEIL);
+	return (attrs->discipline==LWP_MUTEX_PRIORITYCEIL);
 }
 
 static __inline__ u32 _CORE_mutex_Seize_interrupt_trylock(CORE_mutex_Control *mutex,u32 *isr_level)

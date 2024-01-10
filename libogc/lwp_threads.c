@@ -12,7 +12,7 @@
 #define LWP_MAXPRIORITIES		256
 
 /* new one */
-frame_context core_context;
+Context_Control core_context;
 
 Thread_Control *_thr_main = NULL;
 Thread_Control *_thr_idle = NULL;

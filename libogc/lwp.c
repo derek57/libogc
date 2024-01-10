@@ -175,10 +175,10 @@ BOOL __lwp_thread_exists(lwp_t thr_id)
 	return (_Objects_Get_no_protection(&_lwp_thr_objects,LWP_OBJMASKID(thr_id))!=NULL);
 }
 
-frame_context* __lwp_thread_context(lwp_t thr_id)
+Context_Control* __lwp_thread_context(lwp_t thr_id)
 {
 	Thread_Control *thethread;
-	frame_context *pctx = NULL;
+	Context_Control *pctx = NULL;
 
 	LWP_CHECK_THREAD(thr_id);
 	thethread = (Thread_Control*)_Objects_Get_no_protection(&_lwp_thr_objects,LWP_OBJMASKID(thr_id));

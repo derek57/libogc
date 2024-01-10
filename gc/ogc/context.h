@@ -27,7 +27,7 @@
    extern "C" {
 #endif /* __cplusplus */
 
-typedef struct _excption_frame {
+typedef struct {
 	u32 EXCPT_Number;
 	u32 SRR0,SRR1;
 	u32 GPR[32];
@@ -40,7 +40,7 @@ typedef struct _excption_frame {
 	f64 FPR[32];
 	u64	FPSCR;
 	f64 PSFPR[32];
-} frame_context;
+} Context_Control;
 
 #ifdef __cplusplus
    }

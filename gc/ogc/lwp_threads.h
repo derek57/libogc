@@ -55,7 +55,7 @@ struct Thread_Control_struct {
 	u8 stack_allocated;
 	Chain_Control *ready;
 	Thread_queue_Control join_list;
-	frame_context context;		//16
+	Context_Control context;		//16
 	void *libc_reent;
 };
 

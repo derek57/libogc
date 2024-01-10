@@ -127,7 +127,7 @@ static void __irq_dump(u32 irqmask,u32 irq_idx)
 }
 #endif
 
-void c_irqdispatcher(frame_context *ctx)
+void c_irqdispatcher(Context_Control *ctx)
 {
 	u32 i,icause,intmask,irq = 0;
 	u32 cause,mask;

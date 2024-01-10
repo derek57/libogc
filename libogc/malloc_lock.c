@@ -24,7 +24,7 @@ void __memlock_init()
 
 		initialized = 1;
 		
-		attr.mode = LWP_MUTEX_FIFO;
+		attr.discipline = LWP_MUTEX_FIFO;
 		attr.lock_nesting_behavior = LWP_MUTEX_NEST_ACQUIRE;
 		attr.only_owner_release = TRUE;
 		attr.priority_ceiling = 1;

@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 typedef struct {
-	u32 mode;
+	u32 discipline;
 	u32 lock_nesting_behavior;
 	u8 priority_ceiling,only_owner_release;
 } CORE_mutex_Attributes;

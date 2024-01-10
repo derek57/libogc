@@ -61,7 +61,7 @@ typedef struct _framerec {
 static void *exception_xfb = (void*)0xC1700000;			//we use a static address above ArenaHi.
 static int reload_timer = -1;
 
-void __exception_sethandler(u32 nExcept, void (*pHndl)(frame_context*));
+void __exception_sethandler(u32 nExcept, void (*pHndl)(Context_Control*));
 
 extern void udelay(int us);
 extern void fpu_exceptionhandler();
@@ -74,7 +74,7 @@ extern void __reload();
 extern s8 exceptionhandler_start[],exceptionhandler_end[],exceptionhandler_patch[];
 extern s8 systemcallhandler_start[],systemcallhandler_end[];
 
-void (*_exceptionhandlertable[NUM_EXCEPTIONS])(frame_context*);
+void (*_exceptionhandlertable[NUM_EXCEPTIONS])(Context_Control*);
 
 static u32 exception_location[NUM_EXCEPTIONS] = {
 		0x00000100, 0x00000200, 0x00000300, 0x00000400,
@@ -152,7 +152,7 @@ void __exception_closeall()
 	}
 }
 
-void __exception_sethandler(u32 nExcept, void (*pHndl)(frame_context*))
+void __exception_sethandler(u32 nExcept, void (*pHndl)(Context_Control*))
 {
 	_exceptionhandlertable[nExcept] = pHndl;
 }
@@ -235,7 +235,7 @@ static void waitForReload()
 }
 
 //just implement core for unrecoverable exceptions.
-void c_default_exceptionhandler(frame_context *pCtx)
+void c_default_exceptionhandler(Context_Control *pCtx)
 {
 	GX_AbortFrame();
 	VIDEO_SetFramebuffer(exception_xfb);
