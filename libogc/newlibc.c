@@ -5,18 +5,18 @@
 #include "lwp_threads.h"
 
 int libc_reentrant;
-struct _reent libc_globl_reent;
+struct _reent libc_global_reent;
 
 extern void _wrapup_reent(struct _reent *);
 extern void _reclaim_reent(struct _reent *);
 
-int libc_create_hook(Thread_Control *curr_thr,Thread_Control *create_thr)
+int libc_create_hook(Thread_Control *current_task,Thread_Control *creating_task)
 {
-	create_thr->libc_reent = NULL;
+	creating_task->libc_reent = NULL;
 	return 1;
 }
 
-int libc_start_hook(Thread_Control *curr_thr,Thread_Control *start_thr)
+int libc_start_hook(Thread_Control *current_task,Thread_Control *starting_task)
 {
 	struct _reent *ptr;
 
@@ -27,35 +27,35 @@ int libc_start_hook(Thread_Control *curr_thr,Thread_Control *start_thr)
 	_REENT_INIT_PTR((ptr));
 #endif
 	
-	start_thr->libc_reent = ptr;
+	starting_task->libc_reent = ptr;
 	return 1;
 }
 
-int libc_delete_hook(Thread_Control *curr_thr, Thread_Control *delete_thr)
+int libc_delete_hook(Thread_Control *current_task, Thread_Control *deleted_task)
 {
 	struct _reent *ptr;
 
-	if(curr_thr==delete_thr)
+	if(current_task==deleted_task)
 		ptr = _REENT;
 	else
-		ptr = (struct _reent*)delete_thr->libc_reent;
+		ptr = (struct _reent*)deleted_task->libc_reent;
 	
-	if(ptr && ptr!=&libc_globl_reent) {
+	if(ptr && ptr!=&libc_global_reent) {
 		_wrapup_reent(ptr);
 		_reclaim_reent(ptr);
 		free(ptr);
 	}
-	delete_thr->libc_reent = 0;
+	deleted_task->libc_reent = 0;
 
-	if(curr_thr==delete_thr) _REENT = 0;
+	if(current_task==deleted_task) _REENT = 0;
 
 	return 1;
 }
 
 void libc_init(int reentrant)
 {
-	libc_globl_reent = (struct _reent)_REENT_INIT((libc_globl_reent));
-	_REENT = &libc_globl_reent;
+	libc_global_reent = (struct _reent)_REENT_INIT((libc_global_reent));
+	_REENT = &libc_global_reent;
 
 	if(reentrant) {
 		_Thread_Set_libc_reent((void*)&_REENT);
@@ -66,9 +66,9 @@ void libc_init(int reentrant)
 void libc_wrapup()
 {
 	if(!_System_state_Is_up(_System_state_Get())) return;
-	if(_REENT!=&libc_globl_reent) {
-		_wrapup_reent(&libc_globl_reent);
-		_REENT = &libc_globl_reent;
+	if(_REENT!=&libc_global_reent) {
+		_wrapup_reent(&libc_global_reent);
+		_REENT = &libc_global_reent;
 	}
 }
 
