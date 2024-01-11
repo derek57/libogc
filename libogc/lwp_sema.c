@@ -1,63 +1,63 @@
 #include "asm.h"
 #include "lwp_sema.h"
 
-void CORE_semaphore_Initialize(CORE_semaphore_Control *sema,CORE_semaphore_Attributes *attrs,u32 init_count)
+void CORE_semaphore_Initialize(CORE_semaphore_Control *the_semaphore,CORE_semaphore_Attributes *the_semaphore_attributes,u32 initial_value)
 {
-	sema->Attributes = *attrs;
-	sema->count = init_count;
+	the_semaphore->Attributes = *the_semaphore_attributes;
+	the_semaphore->count = initial_value;
 
-	_Thread_queue_Initialize(&sema->Wait_queue,_CORE_semaphore_Is_priority(attrs)?LWP_THREADQ_MODEPRIORITY:LWP_THREADQ_MODEFIFO,LWP_STATES_WAITING_FOR_SEMAPHORE,LWP_SEMA_TIMEOUT);
+	_Thread_queue_Initialize(&the_semaphore->Wait_queue,_CORE_semaphore_Is_priority(the_semaphore_attributes)?LWP_THREADQ_MODEPRIORITY:LWP_THREADQ_MODEFIFO,LWP_STATES_WAITING_FOR_SEMAPHORE,LWP_SEMA_TIMEOUT);
 }
 
-u32 _CORE_semaphore_Surrender(CORE_semaphore_Control *sema,u32 id)
+u32 _CORE_semaphore_Surrender(CORE_semaphore_Control *the_semaphore,u32 id)
 {
-	u32 level,ret;
-	Thread_Control *thethread;
+	u32 level,status;
+	Thread_Control *the_thread;
 	
-	ret = LWP_SEMA_SUCCESSFUL;
-	if((thethread=_Thread_queue_Dequeue(&sema->Wait_queue))) return ret;
+	status = LWP_SEMA_SUCCESSFUL;
+	if((the_thread=_Thread_queue_Dequeue(&the_semaphore->Wait_queue))) return status;
 	else {
 		_CPU_ISR_Disable(level);
-		if(sema->count<=sema->Attributes.maximum_count)
-			++sema->count;
+		if(the_semaphore->count<=the_semaphore->Attributes.maximum_count)
+			++the_semaphore->count;
 		else
-			ret = LWP_SEMA_MAXCNT_EXCEEDED;
+			status = LWP_SEMA_MAXCNT_EXCEEDED;
 		_CPU_ISR_Restore(level);
 	}
-	return ret;
+	return status;
 }
 
-u32 _CORE_semaphore_Seize(CORE_semaphore_Control *sema,u32 id,u32 wait,u64 timeout)
+u32 _CORE_semaphore_Seize(CORE_semaphore_Control *the_semaphore,u32 id,u32 wait,u64 timeout)
 {
 	u32 level;
-	Thread_Control *exec;
+	Thread_Control *executing;
 	
-	exec = _thr_executing;
-	exec->Wait.return_code = LWP_SEMA_SUCCESSFUL;
+	executing = _thr_executing;
+	executing->Wait.return_code = LWP_SEMA_SUCCESSFUL;
 
 	_CPU_ISR_Disable(level);
-	if(sema->count!=0) {
-		--sema->count;
+	if(the_semaphore->count!=0) {
+		--the_semaphore->count;
 		_CPU_ISR_Restore(level);
 		return LWP_SEMA_SUCCESSFUL;
 	}
 
 	if(!wait) {
 		_CPU_ISR_Restore(level);
-		exec->Wait.return_code = LWP_SEMA_UNSATISFIED_NOWAIT;
+		executing->Wait.return_code = LWP_SEMA_UNSATISFIED_NOWAIT;
 		return LWP_SEMA_UNSATISFIED_NOWAIT;
 	}
 
-	_Thread_queue_Enter_critical_section(&sema->Wait_queue);
-	exec->Wait.queue = &sema->Wait_queue;
-	exec->Wait.id = id;
+	_Thread_queue_Enter_critical_section(&the_semaphore->Wait_queue);
+	executing->Wait.queue = &the_semaphore->Wait_queue;
+	executing->Wait.id = id;
 	_CPU_ISR_Restore(level);
 	
-	_Thread_queue_Enqueue(&sema->Wait_queue,timeout);
+	_Thread_queue_Enqueue(&the_semaphore->Wait_queue,timeout);
 	return LWP_SEMA_SUCCESSFUL;
 }
 
-void _CORE_semaphore_Flush(CORE_semaphore_Control *sema,u32 status)
+void _CORE_semaphore_Flush(CORE_semaphore_Control *the_semaphore,u32 status)
 {
-	_Thread_queue_Flush(&sema->Wait_queue,status);
+	_Thread_queue_Flush(&the_semaphore->Wait_queue,status);
 }
