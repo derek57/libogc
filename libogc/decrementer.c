@@ -53,7 +53,7 @@ void __decrementer_init()
 void c_decrementer_handler(Context_Control *ctx)
 {
 #ifdef _DECEX_DEBUG
-	printk("c_decrementer_handler(%d)\n",_wd_ticks_since_boot);
+	printk("c_decrementer_handler(%d)\n",_Watchdog_Ticks_since_boot);
 #endif
 	_Watchdog_Tickle_ticks();
 }

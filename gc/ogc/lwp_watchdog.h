@@ -62,11 +62,11 @@
 extern "C" {
 #endif
 
-extern vu32 _wd_sync_level;
-extern vu32 _wd_sync_count;
-extern u32 _wd_ticks_since_boot;
+extern vu32 _Watchdog_Sync_level;
+extern vu32 _Watchdog_Sync_count;
+extern u32 _Watchdog_Ticks_since_boot;
 
-extern Chain_Control _wd_ticks_queue;
+extern Chain_Control _Watchdog_Ticks_chain;
 
 extern u32 gettick();
 extern u64 gettime();

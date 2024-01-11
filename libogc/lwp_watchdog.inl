@@ -56,29 +56,29 @@ static __inline__ u64 _POSIX_Timespec_to_interval(const struct timespec *time)
 
 static __inline__ void _Watchdog_Tickle_ticks()
 {
-	_Watchdog_Tickle(&_wd_ticks_queue);
+	_Watchdog_Tickle(&_Watchdog_Ticks_chain);
 }
 
 static __inline__ void _Watchdog_Insert_ticks(Watchdog_Control *wd,s64 interval)
 {
 	wd->initial = gettime();
 	wd->delta_interval = (wd->initial+LWP_WD_ABS(interval));
-	_Watchdog_Insert(&_wd_ticks_queue,wd);
+	_Watchdog_Insert(&_Watchdog_Ticks_chain,wd);
 }
 
 static __inline__ void _Watchdog_Adjust_ticks(u32 dir,s64 interval)
 {
-	_Watchdog_Adjust(&_wd_ticks_queue,dir,interval);
+	_Watchdog_Adjust(&_Watchdog_Ticks_chain,dir,interval);
 }
 
 static __inline__ void _Watchdog_Remove_ticks(Watchdog_Control *wd)
 {
-	_Watchdog_Remove(&_wd_ticks_queue,wd);
+	_Watchdog_Remove(&_Watchdog_Ticks_chain,wd);
 }
 
 static __inline__ void _Watchdog_Reset(Watchdog_Control *wd)
 {
-	_Watchdog_Remove(&_wd_ticks_queue,wd);
-	_Watchdog_Insert(&_wd_ticks_queue,wd);
+	_Watchdog_Remove(&_Watchdog_Ticks_chain,wd);
+	_Watchdog_Insert(&_Watchdog_Ticks_chain,wd);
 }
 #endif
