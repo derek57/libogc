@@ -2,26 +2,26 @@
 #include "lwp_stack.h"
 #include "lwp_wkspace.h"
 
-u32 _Thread_Stack_Allocate(Thread_Control *thethread,u32 size)
+u32 _Thread_Stack_Allocate(Thread_Control *the_thread,u32 stack_size)
 {
 	void *stack_addr = NULL;
 
-	if(!_Stack_Is_enough(size))
-		size = CPU_MINIMUM_STACK_SIZE;
+	if(!_Stack_Is_enough(stack_size))
+		stack_size = CPU_MINIMUM_STACK_SIZE;
 	
-	size = _Stack_Adjust_size(size);
-	stack_addr = _Workspace_Allocate(size);
+	stack_size = _Stack_Adjust_size(stack_size);
+	stack_addr = _Workspace_Allocate(stack_size);
 
-	if(!stack_addr) size = 0;
+	if(!stack_addr) stack_size = 0;
 
-	thethread->stack = stack_addr;
-	return size;
+	the_thread->stack = stack_addr;
+	return stack_size;
 }
 
-void _Thread_Stack_Free(Thread_Control *thethread)
+void _Thread_Stack_Free(Thread_Control *the_thread)
 {
-	if(!thethread->core_allocated_stack)
+	if(!the_thread->core_allocated_stack)
 		return;
 
-	_Workspace_Free(thethread->stack);
+	_Workspace_Free(the_thread->stack);
 }
