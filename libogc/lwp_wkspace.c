@@ -8,20 +8,20 @@
 
 #define ROUND32UP(v)			(((u32)(v)+31)&~31)
 
-Heap_Control __wkspace_heap;
-static u32 __wkspace_heap_size = 0;
+Heap_Control _Workspace_Area;
+static u32 memory_available = 0;
 
 void _Workspace_Handler_initialization(u32 size)
 {
-	u32 arLo,level,dsize;
+	u32 starting_address,level,dsize;
 
 	// Get current ArenaLo and adjust to 32-byte boundary
 	_CPU_ISR_Disable(level);
-	arLo = ROUND32UP(SYS_GetArenaLo());
-	dsize = (size - (arLo - (u32)SYS_GetArenaLo()));
-	SYS_SetArenaLo((void*)(arLo+dsize));
+	starting_address = ROUND32UP(SYS_GetArenaLo());
+	dsize = (size - (starting_address - (u32)SYS_GetArenaLo()));
+	SYS_SetArenaLo((void*)(starting_address+dsize));
 	_CPU_ISR_Restore(level);
 
-	memset((void*)arLo,0,dsize);
-	__wkspace_heap_size += _Heap_Initialize(&__wkspace_heap,(void*)arLo,dsize,PPC_ALIGNMENT);
+	memset((void*)starting_address,0,dsize);
+	memory_available += _Heap_Initialize(&_Workspace_Area,(void*)starting_address,dsize,PPC_ALIGNMENT);
 }
