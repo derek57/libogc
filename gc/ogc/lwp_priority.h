@@ -17,8 +17,8 @@ typedef struct {
 	u32 block_minor,block_major;
 } Priority_Information;
 
-extern vu32 _prio_major_bitmap;
-extern u32 _prio_bitmap[];
+extern vu32 _Priority_Major_bit_map;
+extern u32 _Priority_Bit_map[];
 
 void _Priority_Handler_initialization();
 

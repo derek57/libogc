@@ -3,49 +3,49 @@
 #include "processor.h"
 #include "lwp_queue.h"
 
-void _Chain_Initialize(Chain_Control *queue,void *start_addr,u32 num_nodes,u32 node_size)
+void _Chain_Initialize(Chain_Control *the_chain,void *starting_address,u32 number_nodes,u32 node_size)
 {
 	u32 count;
-	Chain_Node *curr;
+	Chain_Node *current;
 	Chain_Node *next;
 
 #ifdef _LWPQ_DEBUG
-	printf("_Chain_Initialize(%p,%p,%d,%d)\n",queue,start_addr,num_nodes,node_size);
+	printf("_Chain_Initialize(%p,%p,%d,%d)\n",the_chain,starting_address,number_nodes,node_size);
 #endif
-	count = num_nodes;
-	curr = _Chain_Head(queue);
-	queue->permanent_null = NULL;
-	next = (Chain_Node*)start_addr;
+	count = number_nodes;
+	current = _Chain_Head(the_chain);
+	the_chain->permanent_null = NULL;
+	next = (Chain_Node*)starting_address;
 	
 	while(count--) {
-		curr->next = next;
-		next->previous = curr;
-		curr = next;
+		current->next = next;
+		next->previous = current;
+		current = next;
 		next = (Chain_Node*)(((void*)next)+node_size);
 	}
-	curr->next = _Chain_Tail(queue);
-	queue->last = curr;
+	current->next = _Chain_Tail(the_chain);
+	the_chain->last = current;
 }
 
-Chain_Node* _Chain_Get(Chain_Control *queue)
+Chain_Node* _Chain_Get(Chain_Control *the_chain)
 {
 	u32 level;
-	Chain_Node *ret = NULL;
+	Chain_Node *return_node = NULL;
 	
 	_CPU_ISR_Disable(level);
-	if(!_Chain_Is_empty(queue)) {
-		ret	 = _Chain_Get_first_unprotected(queue);
+	if(!_Chain_Is_empty(the_chain)) {
+		return_node	 = _Chain_Get_first_unprotected(the_chain);
 	}
 	_CPU_ISR_Restore(level);
-	return ret;
+	return return_node;
 }
 
-void _Chain_Append(Chain_Control *queue,Chain_Node *node)
+void _Chain_Append(Chain_Control *the_chain,Chain_Node *node)
 {
 	u32 level;
 	
 	_CPU_ISR_Disable(level);
-	_Chain_Append_unprotected(queue,node);
+	_Chain_Append_unprotected(the_chain,node);
 	_CPU_ISR_Restore(level);
 }
 
@@ -58,11 +58,11 @@ void _Chain_Extract(Chain_Node *node)
 	_CPU_ISR_Restore(level);
 }
 
-void _Chain_Insert(Chain_Node *after,Chain_Node *node)
+void _Chain_Insert(Chain_Node *after_node,Chain_Node *node)
 {
 	u32 level;
 	
 	_CPU_ISR_Disable(level);
-	_Chain_Insert_unprotected(after,node);
+	_Chain_Insert_unprotected(after_node,node);
 	_CPU_ISR_Restore(level);
 }
