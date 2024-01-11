@@ -66,9 +66,9 @@ void __lwp_dumpcontext_fp(Thread_Control *thrA,Thread_Control *thrB)
 
 u32 _ISR_Is_in_progress()
 {
-	register u32 isr_nest_level;
-	isr_nest_level = mfspr(272);
-	return isr_nest_level;
+	register u32 isr_nesting_level;
+	isr_nesting_level = mfspr(272);
+	return isr_nesting_level;
 }
 
 static inline void _CPU_ISR_Set_level(u32 level)
@@ -92,45 +92,45 @@ static inline u32 _CPU_ISR_Get_level()
 
 void _Thread_Delay_ended(void *arg)
 {
-	Thread_Control *thethread = (Thread_Control*)arg;
+	Thread_Control *the_thread = (Thread_Control*)arg;
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("_Thread_Delay_ended(%p)\n",thethread);
+	kprintf("_Thread_Delay_ended(%p)\n",the_thread);
 #endif
-	if(!thethread) return;
+	if(!the_thread) return;
 	
 	_Thread_Disable_dispatch();
-	_Thread_Unblock(thethread);
+	_Thread_Unblock(the_thread);
 	_Thread_Unnest_dispatch();
 }
 
 void _Thread_Tickle_timeslice(void *arg)
 {
 	s64 ticks;
-	Thread_Control *exec;
+	Thread_Control *executing;
 
-	exec = _thr_executing;
+	executing = _thr_executing;
 	ticks = millisecs_to_ticks(1);
 	
 	_Thread_Disable_dispatch();
 
-	if(!exec->is_preemptible) {
+	if(!executing->is_preemptible) {
 		_Watchdog_Insert_ticks(&_lwp_wd_timeslice,ticks);
 		_Thread_Unnest_dispatch();
 		return;
 	}
-	if(!_States_Is_ready(exec->current_state)) {
+	if(!_States_Is_ready(executing->current_state)) {
 		_Watchdog_Insert_ticks(&_lwp_wd_timeslice,ticks);
 		_Thread_Unnest_dispatch();
 		return;
 	}
 
-	switch(exec->budget_algorithm) {
+	switch(executing->budget_algorithm) {
 		case LWP_CPU_BUDGET_ALGO_NONE:
 			break;
 		case LWP_CPU_BUDGET_ALGO_TIMESLICE:
-			if((--exec->cpu_time_budget)==0) {
+			if((--executing->cpu_time_budget)==0) {
 				_Thread_Reset_timeslice();
-				exec->cpu_time_budget = _lwp_ticks_per_timeslice;
+				executing->cpu_time_budget = _lwp_ticks_per_timeslice;
 			}
 			break;
 	}
@@ -142,17 +142,17 @@ void _Thread_Tickle_timeslice(void *arg)
 void __thread_dispatch_fp()
 {
 	u32 level;
-	Thread_Control *exec;
+	Thread_Control *executing;
 
 	_CPU_ISR_Disable(level);
-	exec = _thr_executing;
+	executing = _thr_executing;
 #ifdef _LWPTHREADS_DEBUG
-	__lwp_dumpcontext_fp(exec,_thr_allocated_fp);
+	__lwp_dumpcontext_fp(executing,_thr_allocated_fp);
 #endif
-	if(!_Thread_Is_allocated_fp(exec)) {
+	if(!_Thread_Is_allocated_fp(executing)) {
 		if(_thr_allocated_fp) _CPU_Context_save_fp_context(&_thr_allocated_fp->Registers);
-		_CPU_Context_restore_fp_context(&exec->Registers);
-		_thr_allocated_fp = exec;
+		_CPU_Context_restore_fp_context(&executing->Registers);
+		_thr_allocated_fp = executing;
 	}
 	_CPU_ISR_Restore(level);
 }
@@ -160,10 +160,10 @@ void __thread_dispatch_fp()
 void _Thread_Dispatch()
 {
 	u32 level;
-	Thread_Control *exec,*heir;
+	Thread_Control *executing,*heir;
 
 	_CPU_ISR_Disable(level);
-	exec = _thr_executing;
+	executing = _thr_executing;
 	while(_context_switch_want==TRUE) {
 		heir = _thr_heir;
 		_thread_dispatch_disable_level = 1;
@@ -172,15 +172,15 @@ void _Thread_Dispatch()
 		_CPU_ISR_Restore(level);
 
 		if(__lwp_thr_libc_reent) {
-			exec->libc_reent = *__lwp_thr_libc_reent;
+			executing->libc_reent = *__lwp_thr_libc_reent;
 			*__lwp_thr_libc_reent = heir->libc_reent;
 		}
 #ifdef _DEBUG
-		_cpu_context_switch_ex((void*)&exec->Registers,(void*)&heir->Registers);
+		_cpu_context_switch_ex((void*)&executing->Registers,(void*)&heir->Registers);
 #else
-		_CPU_Context_switch((void*)&exec->Registers,(void*)&heir->Registers);
+		_CPU_Context_switch((void*)&executing->Registers,(void*)&heir->Registers);
 #endif
-		exec = _thr_executing;
+		executing = _thr_executing;
 		_CPU_ISR_Disable(level);
 	}
 	_thread_dispatch_disable_level = 0;
@@ -190,34 +190,34 @@ void _Thread_Dispatch()
 static void _Thread_Handler()
 {
 	u32 level;
-	Thread_Control *exec;
+	Thread_Control *executing;
 
-	exec = _thr_executing;
+	executing = _thr_executing;
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("_Thread_Handler(%p,%d)\n",exec,_thread_dispatch_disable_level);
+	kprintf("_Thread_Handler(%p,%d)\n",executing,_thread_dispatch_disable_level);
 #endif
-	level = exec->isr_level;
+	level = executing->isr_level;
 	_CPU_ISR_Set_level(level);
 	_Thread_Enable_dispatch();
-	exec->Wait.return_argument = exec->entry_point(exec->pointer_argument);
+	executing->Wait.return_argument = executing->entry_point(executing->pointer_argument);
 
-	pthread_exit(exec->Wait.return_argument);
+	pthread_exit(executing->Wait.return_argument);
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("_Thread_Handler(%p): thread returned(%p)\n",exec,exec->wait.return_argument);
+	kprintf("_Thread_Handler(%p): thread returned(%p)\n",executing,executing->wait.return_argument);
 #endif
 }
 
-void _Thread_Rotate_Ready_Queue(u32 prio)
+void _Thread_Rotate_Ready_Queue(u32 priority)
 {
 	u32 level;
-	Thread_Control *exec;
+	Thread_Control *executing;
 	Chain_Control *ready;
 	Chain_Node *node;
 
-	ready = &_lwp_thr_ready[prio];
-	exec = _thr_executing;
+	ready = &_lwp_thr_ready[priority];
+	executing = _thr_executing;
 	
-	if(ready==exec->ready) {
+	if(ready==executing->ready) {
 		_Thread_Yield_processor();
 		return;
 	}
@@ -232,11 +232,11 @@ void _Thread_Rotate_Ready_Queue(u32 prio)
 	if(_thr_heir->ready==ready)
 		_thr_heir = (Thread_Control*)ready->first;
 
-	if(exec!=_thr_heir)
+	if(executing!=_thr_heir)
 		_context_switch_want = TRUE;
 
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("_Thread_Rotate_Ready_Queue(%d,%p,%p)\n",prio,exec,_thr_heir);
+	kprintf("_Thread_Rotate_Ready_Queue(%d,%p,%p)\n",priority,executing,_thr_heir);
 #endif
 	_CPU_ISR_Restore(level);
 }
@@ -244,21 +244,21 @@ void _Thread_Rotate_Ready_Queue(u32 prio)
 void _Thread_Yield_processor()
 {
 	u32 level;
-	Thread_Control *exec;
+	Thread_Control *executing;
 	Chain_Control *ready;
 	
-	exec = _thr_executing;
-	ready = exec->ready;
+	executing = _thr_executing;
+	ready = executing->ready;
 	
 	_CPU_ISR_Disable(level);
 	if(!_Chain_Has_only_one_node(ready)) {
-		_Chain_Extract_unprotected(&exec->Object.Node);
-		_Chain_Append_unprotected(ready,&exec->Object.Node);
+		_Chain_Extract_unprotected(&executing->Object.Node);
+		_Chain_Append_unprotected(ready,&executing->Object.Node);
 		_CPU_ISR_Flash(level);
-		if(_Thread_Is_heir(exec))
+		if(_Thread_Is_heir(executing))
 			_thr_heir = (Thread_Control*)ready->first;
 		_context_switch_want = TRUE;
-	} else if(!_Thread_Is_heir(exec))
+	} else if(!_Thread_Is_heir(executing))
 		_context_switch_want = TRUE;
 	_CPU_ISR_Restore(level);
 }
@@ -266,11 +266,11 @@ void _Thread_Yield_processor()
 void _Thread_Reset_timeslice()
 {
 	u32 level;
-	Thread_Control *exec;
+	Thread_Control *executing;
 	Chain_Control *ready;
 
-	exec = _thr_executing;
-	ready = exec->ready;
+	executing = _thr_executing;
+	ready = executing->ready;
 
 	_CPU_ISR_Disable(level);
 	if(_Chain_Has_only_one_node(ready)) {
@@ -278,70 +278,70 @@ void _Thread_Reset_timeslice()
 		return;
 	}
 
-	_Chain_Extract_unprotected(&exec->Object.Node);
-	_Chain_Append_unprotected(ready,&exec->Object.Node);
+	_Chain_Extract_unprotected(&executing->Object.Node);
+	_Chain_Append_unprotected(ready,&executing->Object.Node);
 
 	_CPU_ISR_Flash(level);
 
-	if(_Thread_Is_heir(exec))
+	if(_Thread_Is_heir(executing))
 		_thr_heir = (Thread_Control*)ready->first;
 
 	_context_switch_want = TRUE;
 	_CPU_ISR_Restore(level);
 }
 
-void _Thread_Set_state(Thread_Control *thethread,u32 state)
+void _Thread_Set_state(Thread_Control *the_thread,u32 state)
 {
 	u32 level;
 	Chain_Control *ready;
 
-	ready = thethread->ready;
+	ready = the_thread->ready;
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("_Thread_Set_state(%d,%p,%p,%08x)\n",_context_switch_want,_thr_heir,thethread,thethread->cur_state);
+	kprintf("_Thread_Set_state(%d,%p,%p,%08x)\n",_context_switch_want,_thr_heir,the_thread,the_thread->cur_state);
 #endif
 	_CPU_ISR_Disable(level);
-	if(!_States_Is_ready(thethread->current_state)) {
-		thethread->current_state = _States_Clear(thethread->current_state,state);
+	if(!_States_Is_ready(the_thread->current_state)) {
+		the_thread->current_state = _States_Clear(the_thread->current_state,state);
 		_CPU_ISR_Restore(level);
 		return;
 	}
 
-	thethread->current_state = state;
+	the_thread->current_state = state;
 	if(_Chain_Has_only_one_node(ready)) {
 		_Chain_Initialize_empty(ready);
-		_Priority_Remove_from_bit_map(&thethread->Priority_map);
+		_Priority_Remove_from_bit_map(&the_thread->Priority_map);
 	} else 
-		_Chain_Extract_unprotected(&thethread->Object.Node);
+		_Chain_Extract_unprotected(&the_thread->Object.Node);
 	_CPU_ISR_Flash(level);
 
-	if(_Thread_Is_heir(thethread))
+	if(_Thread_Is_heir(the_thread))
 		_Thread_Calculate_heir();
-	if(_Thread_Is_executing(thethread))
+	if(_Thread_Is_executing(the_thread))
 		_context_switch_want = TRUE;
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("_Thread_Set_state(%d,%p,%p,%08x)\n",_context_switch_want,_thr_heir,thethread,thethread->cur_state);
+	kprintf("_Thread_Set_state(%d,%p,%p,%08x)\n",_context_switch_want,_thr_heir,the_thread,the_thread->cur_state);
 #endif
 	_CPU_ISR_Restore(level);
 }
 
-void _Thread_Clear_state(Thread_Control *thethread,u32 state)
+void _Thread_Clear_state(Thread_Control *the_thread,u32 state)
 {
-	u32 level,cur_state;
+	u32 level,current_state;
 	
 	_CPU_ISR_Disable(level);
 
-	cur_state = thethread->current_state;
-	if(cur_state&state) {
-		cur_state = thethread->current_state = _States_Clear(cur_state,state);
-		if(_States_Is_ready(cur_state)) {
-			_Priority_Add_to_bit_map(&thethread->Priority_map);
-			_Chain_Append_unprotected(thethread->ready,&thethread->Object.Node);
+	current_state = the_thread->current_state;
+	if(current_state&state) {
+		current_state = the_thread->current_state = _States_Clear(current_state,state);
+		if(_States_Is_ready(current_state)) {
+			_Priority_Add_to_bit_map(&the_thread->Priority_map);
+			_Chain_Append_unprotected(the_thread->ready,&the_thread->Object.Node);
 			_CPU_ISR_Flash(level);
 			
-			if(thethread->current_priority<_thr_heir->current_priority) {
-				_thr_heir = thethread;
+			if(the_thread->current_priority<_thr_heir->current_priority) {
+				_thr_heir = the_thread;
 				if(_thr_executing->is_preemptible
-					|| thethread->current_priority==0)
+					|| the_thread->current_priority==0)
 				_context_switch_want = TRUE;
 			}
 		}
@@ -352,39 +352,39 @@ void _Thread_Clear_state(Thread_Control *thethread,u32 state)
 
 u32 _Thread_Evaluate_mode()
 {
-	Thread_Control *exec;
+	Thread_Control *executing;
 	
-	exec = _thr_executing;
-	if(!_States_Is_ready(exec->current_state)
-		|| (!_Thread_Is_heir(exec) && exec->is_preemptible)){
+	executing = _thr_executing;
+	if(!_States_Is_ready(executing->current_state)
+		|| (!_Thread_Is_heir(executing) && executing->is_preemptible)){
 		_context_switch_want = TRUE;
 		return TRUE;
 	}
 	return FALSE;
 }
 
-void _Thread_Change_priority(Thread_Control *thethread,u32 prio,u32 prependit)
+void _Thread_Change_priority(Thread_Control *the_thread,u32 new_priority,u32 prepend_it)
 {
 	u32 level;
 	
-	_Thread_Set_transient(thethread);
+	_Thread_Set_transient(the_thread);
 	
-	if(thethread->current_priority!=prio) 
-		_Thread_Set_priority(thethread,prio);
+	if(the_thread->current_priority!=new_priority) 
+		_Thread_Set_priority(the_thread,new_priority);
 
 	_CPU_ISR_Disable(level);
 
-	thethread->current_state = _States_Clear(thethread->current_state,LWP_STATES_TRANSIENT);
-	if(!_States_Is_ready(thethread->current_state)) {
+	the_thread->current_state = _States_Clear(the_thread->current_state,LWP_STATES_TRANSIENT);
+	if(!_States_Is_ready(the_thread->current_state)) {
 		_CPU_ISR_Restore(level);
 		return;
 	}
 
-	_Priority_Add_to_bit_map(&thethread->Priority_map);
-	if(prependit)
-		_Chain_Prepend_unprotected(thethread->ready,&thethread->Object.Node);
+	_Priority_Add_to_bit_map(&the_thread->Priority_map);
+	if(prepend_it)
+		_Chain_Prepend_unprotected(the_thread->ready,&the_thread->Object.Node);
 	else
-		_Chain_Append_unprotected(thethread->ready,&thethread->Object.Node);
+		_Chain_Append_unprotected(the_thread->ready,&the_thread->Object.Node);
 
 	_CPU_ISR_Flash(level);
 
@@ -397,100 +397,100 @@ void _Thread_Change_priority(Thread_Control *thethread,u32 prio,u32 prependit)
 	_CPU_ISR_Restore(level);
 }
 
-void _Thread_Set_priority(Thread_Control *thethread,u32 prio)
+void _Thread_Set_priority(Thread_Control *the_thread,u32 new_priority)
 {
-	thethread->current_priority = prio;
-	thethread->ready = &_lwp_thr_ready[prio];
-	_Priority_Initialize_information(&thethread->Priority_map,prio);
+	the_thread->current_priority = new_priority;
+	the_thread->ready = &_lwp_thr_ready[new_priority];
+	_Priority_Initialize_information(&the_thread->Priority_map,new_priority);
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("_Thread_Set_priority(%p,%d,%p)\n",thethread,prio,thethread->ready);
+	kprintf("_Thread_Set_priority(%p,%d,%p)\n",the_thread,new_priority,the_thread->ready);
 #endif
 }
 
-void _Thread_Suspend(Thread_Control *thethread)
+void _Thread_Suspend(Thread_Control *the_thread)
 {
 	u32 level;
 	Chain_Control *ready;
 
-	ready = thethread->ready;
+	ready = the_thread->ready;
 	
 	_CPU_ISR_Disable(level);
-	thethread->suspend_count++;
-	if(!_States_Is_ready(thethread->current_state)) {
-		thethread->current_state = _States_Set(thethread->current_state,LWP_STATES_SUSPENDED);
+	the_thread->suspend_count++;
+	if(!_States_Is_ready(the_thread->current_state)) {
+		the_thread->current_state = _States_Set(the_thread->current_state,LWP_STATES_SUSPENDED);
 		_CPU_ISR_Restore(level);
 		return;
 	}
 	
-	thethread->current_state = LWP_STATES_SUSPENDED;
+	the_thread->current_state = LWP_STATES_SUSPENDED;
 	if(_Chain_Has_only_one_node(ready)) {
 		_Chain_Initialize_empty(ready);
-		_Priority_Remove_from_bit_map(&thethread->Priority_map);
+		_Priority_Remove_from_bit_map(&the_thread->Priority_map);
 	} else {
-		_Chain_Extract_unprotected(&thethread->Object.Node);
+		_Chain_Extract_unprotected(&the_thread->Object.Node);
 	}
 	_CPU_ISR_Flash(level);
 	
-	if(_Thread_Is_heir(thethread))
+	if(_Thread_Is_heir(the_thread))
 		_Thread_Calculate_heir();
 	
-	if(_Thread_Is_executing(thethread))
+	if(_Thread_Is_executing(the_thread))
 		_context_switch_want = TRUE;
 
 	_CPU_ISR_Restore(level);
 }
 
-void _Thread_Set_transient(Thread_Control *thethread)
+void _Thread_Set_transient(Thread_Control *the_thread)
 {
-	u32 level,oldstates;
+	u32 level,old_state;
 	Chain_Control *ready;
 
-	ready = thethread->ready;
+	ready = the_thread->ready;
 
 	_CPU_ISR_Disable(level);
 	
-	oldstates = thethread->current_state;
-	thethread->current_state = _States_Set(oldstates,LWP_STATES_TRANSIENT);
+	old_state = the_thread->current_state;
+	the_thread->current_state = _States_Set(old_state,LWP_STATES_TRANSIENT);
 
-	if(_States_Is_ready(oldstates)) {
+	if(_States_Is_ready(old_state)) {
 		if(_Chain_Has_only_one_node(ready)) {
 			_Chain_Initialize_empty(ready);
-			_Priority_Remove_from_bit_map(&thethread->Priority_map);
+			_Priority_Remove_from_bit_map(&the_thread->Priority_map);
 		} else {
-			_Chain_Extract_unprotected(&thethread->Object.Node);
+			_Chain_Extract_unprotected(&the_thread->Object.Node);
 		}
 	}
 
 	_CPU_ISR_Restore(level);
 }
 
-void _Thread_Resume(Thread_Control *thethread,u32 force)
+void _Thread_Resume(Thread_Control *the_thread,u32 force)
 {
-	u32 level,state;
+	u32 level,current_state;
 	
 	_CPU_ISR_Disable(level);
 
 	if(force==TRUE)
-		thethread->suspend_count = 0;
+		the_thread->suspend_count = 0;
 	else
-		thethread->suspend_count--;
+		the_thread->suspend_count--;
 	
-	if(thethread->suspend_count>0) {
+	if(the_thread->suspend_count>0) {
 		_CPU_ISR_Restore(level);
 		return;
 	}
 
-	state = thethread->current_state;
-	if(state&LWP_STATES_SUSPENDED) {
-		state = thethread->current_state = _States_Clear(thethread->current_state,LWP_STATES_SUSPENDED);
-		if(_States_Is_ready(state)) {
-			_Priority_Add_to_bit_map(&thethread->Priority_map);
-			_Chain_Append_unprotected(thethread->ready,&thethread->Object.Node);
+	current_state = the_thread->current_state;
+	if(current_state&LWP_STATES_SUSPENDED) {
+		current_state = the_thread->current_state = _States_Clear(the_thread->current_state,LWP_STATES_SUSPENDED);
+		if(_States_Is_ready(current_state)) {
+			_Priority_Add_to_bit_map(&the_thread->Priority_map);
+			_Chain_Append_unprotected(the_thread->ready,&the_thread->Object.Node);
 			_CPU_ISR_Flash(level);
-			if(thethread->current_priority<_thr_heir->current_priority) {
-				_thr_heir = thethread;
+			if(the_thread->current_priority<_thr_heir->current_priority) {
+				_thr_heir = the_thread;
 				if(_thr_executing->is_preemptible
-					|| thethread->current_priority==0)
+					|| the_thread->current_priority==0)
 				_context_switch_want = TRUE;
 			}
 		}
@@ -498,15 +498,15 @@ void _Thread_Resume(Thread_Control *thethread,u32 force)
 	_CPU_ISR_Restore(level);
 }
 
-void _Thread_Load_environment(Thread_Control *thethread)
+void _Thread_Load_environment(Thread_Control *the_thread)
 {
 	u32 stackbase,sp,size;
 	u32 r2,r13,msr_value;
 	
-	thethread->Registers.FPSCR = 0x000000f8;
+	the_thread->Registers.FPSCR = 0x000000f8;
 
-	stackbase = (u32)thethread->stack;
-	size = thethread->size;
+	stackbase = (u32)the_thread->stack;
+	size = the_thread->size;
 
 	// tag both bottom & head of stack
 	*((u32*)stackbase) = 0xDEADBABE;
@@ -514,37 +514,37 @@ void _Thread_Load_environment(Thread_Control *thethread)
 	sp &= ~(CPU_STACK_ALIGNMENT-1);
 	*((u32*)sp) = 0;
 	
-	thethread->Registers.GPR[1] = sp;
+	the_thread->Registers.GPR[1] = sp;
 	
 	msr_value = (MSR_ME|MSR_IR|MSR_DR|MSR_RI);
-	if(!(thethread->isr_level&CPU_MODES_INTERRUPT_MASK))
+	if(!(the_thread->isr_level&CPU_MODES_INTERRUPT_MASK))
 		msr_value |= MSR_EE;
 	
-	thethread->Registers.MSR = msr_value;
-	thethread->Registers.LR = (u32)_Thread_Handler;
+	the_thread->Registers.MSR = msr_value;
+	the_thread->Registers.LR = (u32)_Thread_Handler;
 
 	__asm__ __volatile__ ("mr %0,2; mr %1,13" : "=r" ((r2)), "=r" ((r13)));
-	thethread->Registers.GPR[2] = r2;
-	thethread->Registers.GPR[13] = r13;
+	the_thread->Registers.GPR[2] = r2;
+	the_thread->Registers.GPR[13] = r13;
 
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("_Thread_Load_environment(%p,%p,%d,%p)\n",thethread,(void*)stackbase,size,(void*)sp);
+	kprintf("_Thread_Load_environment(%p,%p,%d,%p)\n",the_thread,(void*)stackbase,size,(void*)sp);
 #endif
 
 }
 
-void _Thread_Ready(Thread_Control *thethread)
+void _Thread_Ready(Thread_Control *the_thread)
 {
 	u32 level;
 	Thread_Control *heir;
 
 	_CPU_ISR_Disable(level);
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("_Thread_Ready(%p)\n",thethread);
+	kprintf("_Thread_Ready(%p)\n",the_thread);
 #endif
-	thethread->current_state = LWP_STATES_READY;
-	_Priority_Add_to_bit_map(&thethread->Priority_map);
-	_Chain_Append_unprotected(thethread->ready,&thethread->Object.Node);
+	the_thread->current_state = LWP_STATES_READY;
+	_Priority_Add_to_bit_map(&the_thread->Priority_map);
+	_Chain_Append_unprotected(the_thread->ready,&the_thread->Object.Node);
 	_CPU_ISR_Flash(level);
 
 	_Thread_Calculate_heir();
@@ -555,82 +555,82 @@ void _Thread_Ready(Thread_Control *thethread)
 	_CPU_ISR_Restore(level);
 }
 
-u32 _Thread_Initialize(Thread_Control *thethread,void *stack_area,u32 stack_size,u32 prio,u32 isr_level,bool is_preemtible)
+u32 _Thread_Initialize(Thread_Control *the_thread,void *stack_area,u32 stack_size,u32 priority,u32 isr_level,bool is_preemptible)
 {
-	u32 act_stack_size = 0;
+	u32 actual_stack_size = 0;
 
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("_Thread_Initialize(%p,%p,%d,%d,%d)\n",thethread,stack_area,stack_size,prio,isr_level);
+	kprintf("_Thread_Initialize(%p,%p,%d,%d,%d)\n",the_thread,stack_area,stack_size,priority,isr_level);
 #endif
 
 	if(!stack_area) {
 		if(!_Stack_Is_enough(stack_size))
-			act_stack_size = CPU_MINIMUM_STACK_SIZE;
+			actual_stack_size = CPU_MINIMUM_STACK_SIZE;
 		else
-			act_stack_size = stack_size;
+			actual_stack_size = stack_size;
 
-		act_stack_size = _Thread_Stack_Allocate(thethread,act_stack_size);
-		if(!act_stack_size) return 0;
+		actual_stack_size = _Thread_Stack_Allocate(the_thread,actual_stack_size);
+		if(!actual_stack_size) return 0;
 
-		thethread->core_allocated_stack = TRUE;
+		the_thread->core_allocated_stack = TRUE;
 	} else {
-		thethread->stack = stack_area;
-		act_stack_size = stack_size;
-		thethread->core_allocated_stack = FALSE;
+		the_thread->stack = stack_area;
+		actual_stack_size = stack_size;
+		the_thread->core_allocated_stack = FALSE;
 	}
-	thethread->size = act_stack_size;
+	the_thread->size = actual_stack_size;
 
-	_Thread_queue_Initialize(&thethread->join_list,LWP_THREADQ_MODEFIFO,LWP_STATES_WAITING_FOR_JOINATEXIT,0);
+	_Thread_queue_Initialize(&the_thread->join_list,LWP_THREADQ_MODEFIFO,LWP_STATES_WAITING_FOR_JOINATEXIT,0);
 
-	memset(&thethread->Registers,0,sizeof(thethread->Registers));
-	memset(&thethread->Wait,0,sizeof(thethread->Wait));
+	memset(&the_thread->Registers,0,sizeof(the_thread->Registers));
+	memset(&the_thread->Wait,0,sizeof(the_thread->Wait));
 
-	thethread->budget_algorithm = (prio<128 ? LWP_CPU_BUDGET_ALGO_NONE : LWP_CPU_BUDGET_ALGO_TIMESLICE);
-	thethread->is_preemptible = is_preemtible;
-	thethread->isr_level = isr_level;
-	thethread->real_priority = prio;
-	thethread->current_state = LWP_STATES_DORMANT;
-	thethread->cpu_time_budget = _lwp_ticks_per_timeslice;
-	thethread->suspend_count = 0;
-	thethread->resource_count = 0;
-	_Thread_Set_priority(thethread,prio);
+	the_thread->budget_algorithm = (priority<128 ? LWP_CPU_BUDGET_ALGO_NONE : LWP_CPU_BUDGET_ALGO_TIMESLICE);
+	the_thread->is_preemptible = is_preemptible;
+	the_thread->isr_level = isr_level;
+	the_thread->real_priority = priority;
+	the_thread->current_state = LWP_STATES_DORMANT;
+	the_thread->cpu_time_budget = _lwp_ticks_per_timeslice;
+	the_thread->suspend_count = 0;
+	the_thread->resource_count = 0;
+	_Thread_Set_priority(the_thread,priority);
 
-	libc_create_hook(_thr_executing,thethread);
+	libc_create_hook(_thr_executing,the_thread);
 
 	return 1;
 }
 
-void _Thread_Close(Thread_Control *thethread)
+void _Thread_Close(Thread_Control *the_thread)
 {
 	u32 level;
 	void **value_ptr;
 	Thread_Control *p;
 
-	_Thread_Set_state(thethread,LWP_STATES_TRANSIENT);
+	_Thread_Set_state(the_thread,LWP_STATES_TRANSIENT);
 	
-	if(!_Thread_queue_Extract_with_proxy(thethread)) {
-		if(_Watchdog_Is_active(&thethread->Timer))
-			_Watchdog_Remove_ticks(&thethread->Timer);
+	if(!_Thread_queue_Extract_with_proxy(the_thread)) {
+		if(_Watchdog_Is_active(&the_thread->Timer))
+			_Watchdog_Remove_ticks(&the_thread->Timer);
 	}
 	
 	_CPU_ISR_Disable(level);
-	value_ptr = (void**)thethread->Wait.return_argument;
-	while((p=_Thread_queue_Dequeue(&thethread->join_list))!=NULL) {
+	value_ptr = (void**)the_thread->Wait.return_argument;
+	while((p=_Thread_queue_Dequeue(&the_thread->join_list))!=NULL) {
 		*(void**)p->Wait.return_argument = value_ptr;
 	}
-	thethread->cpu_time_budget = 0;
-	thethread->budget_algorithm = LWP_CPU_BUDGET_ALGO_NONE;
+	the_thread->cpu_time_budget = 0;
+	the_thread->budget_algorithm = LWP_CPU_BUDGET_ALGO_NONE;
 	_CPU_ISR_Restore(level);
 
-	libc_delete_hook(_thr_executing,thethread);
+	libc_delete_hook(_thr_executing,the_thread);
 
-	if(_Thread_Is_allocated_fp(thethread))
+	if(_Thread_Is_allocated_fp(the_thread))
 		_Thread_Deallocate_fp();
 
-	_Thread_Stack_Free(thethread);
+	_Thread_Stack_Free(the_thread);
 
-	_Objects_Close(thethread->Object.information,&thethread->Object);
-	_Objects_Free(thethread->Object.information,&thethread->Object);
+	_Objects_Close(the_thread->Object.information,&the_thread->Object);
+	_Objects_Free(the_thread->Object.information,&the_thread->Object);
 }
 
 void __lwp_thread_closeall()
@@ -667,17 +667,17 @@ void pthread_exit(void *value_ptr)
 	_Thread_Enable_dispatch();
 }
 
-u32 _Thread_Start(Thread_Control *thethread,void* (*entry)(void*),void *arg)
+u32 _Thread_Start(Thread_Control *the_thread,void* (*entry_point)(void*),void *pointer_argument)
 {
 #ifdef _LWPTHREADS_DEBUG
-	kprintf("_Thread_Start(%p,%p,%p,%d)\n",thethread,entry,arg,thethread->cur_state);
+	kprintf("_Thread_Start(%p,%p,%p,%d)\n",the_thread,entry_point,pointer_argument,the_thread->cur_state);
 #endif
-	if(_States_Is_dormant(thethread->current_state)) {
-		thethread->entry_point = entry;
-		thethread->pointer_argument = arg;
-		_Thread_Load_environment(thethread);
-		_Thread_Ready(thethread);
-		libc_start_hook(_thr_executing,thethread);
+	if(_States_Is_dormant(the_thread->current_state)) {
+		the_thread->entry_point = entry_point;
+		the_thread->pointer_argument = pointer_argument;
+		_Thread_Load_environment(the_thread);
+		_Thread_Ready(the_thread);
+		libc_start_hook(_thr_executing,the_thread);
 		return 1;
 	}
 	return 0;
