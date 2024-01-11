@@ -12,7 +12,7 @@
 #define LWP_MAXPRIORITIES		256
 
 /* new one */
-Context_Control core_context;
+Context_Control _Thread_BSP_context;
 
 Thread_Control *_thr_main = NULL;
 Thread_Control *_Thread_Idle = NULL;
@@ -25,7 +25,7 @@ vu32 _Context_Switch_necessary;
 vu32 _Thread_Dispatch_disable_level;
 
 Watchdog_Control _lwp_wd_timeslice;
-u32 _lwp_ticks_per_timeslice = 0;
+u32 _Thread_Ticks_per_timeslice = 0;
 void **_Thread_libc_reent = NULL;
 Chain_Control _Thread_Ready_chain[LWP_MAXPRIORITIES];
 
@@ -130,7 +130,7 @@ void _Thread_Tickle_timeslice(void *arg)
 		case LWP_CPU_BUDGET_ALGO_TIMESLICE:
 			if((--executing->cpu_time_budget)==0) {
 				_Thread_Reset_timeslice();
-				executing->cpu_time_budget = _lwp_ticks_per_timeslice;
+				executing->cpu_time_budget = _Thread_Ticks_per_timeslice;
 			}
 			break;
 	}
@@ -590,7 +590,7 @@ u32 _Thread_Initialize(Thread_Control *the_thread,void *stack_area,u32 stack_siz
 	the_thread->isr_level = isr_level;
 	the_thread->real_priority = priority;
 	the_thread->current_state = LWP_STATES_DORMANT;
-	the_thread->cpu_time_budget = _lwp_ticks_per_timeslice;
+	the_thread->cpu_time_budget = _Thread_Ticks_per_timeslice;
 	the_thread->suspend_count = 0;
 	the_thread->resource_count = 0;
 	_Thread_Set_priority(the_thread,priority);
@@ -696,7 +696,7 @@ void _Thread_Start_multitasking()
 	kprintf("_Thread_Start_multitasking(%p,%p)\n",_Thread_Executing,_Thread_Heir);
 #endif
 	_Watchdog_Insert_ticks(&_lwp_wd_timeslice,millisecs_to_ticks(1));
-	_CPU_Context_switch((void*)&core_context,(void*)&_Thread_Heir->Registers);
+	_CPU_Context_switch((void*)&_Thread_BSP_context,(void*)&_Thread_Heir->Registers);
 
 	if(_lwp_exitfunc) _lwp_exitfunc();
 }
@@ -707,7 +707,7 @@ void _Thread_Stop_multitasking(void (*exitfunc)())
 	if(_System_state_Get()!=SYS_STATE_SHUTDOWN) {
 		_Watchdog_Remove_ticks(&_lwp_wd_timeslice);
 		_System_state_Set(SYS_STATE_SHUTDOWN);
-		_CPU_Context_switch((void*)&_Thread_Executing->Registers,(void*)&core_context);
+		_CPU_Context_switch((void*)&_Thread_Executing->Registers,(void*)&_Thread_BSP_context);
 	}
 }
 
@@ -725,9 +725,9 @@ void _Thread_Handler_initialization()
 	_Thread_Executing = NULL;
 	_Thread_Heir = NULL;
 	_Thread_Allocated_fp = NULL;
-	_lwp_ticks_per_timeslice = 10;
+	_Thread_Ticks_per_timeslice = 10;
 
-	memset(&core_context,0,sizeof(core_context));
+	memset(&_Thread_BSP_context,0,sizeof(_Thread_BSP_context));
 
 	for(index=0;index<=LWP_PRIO_MAX;index++)
 		_Chain_Initialize_empty(&_Thread_Ready_chain[index]);
