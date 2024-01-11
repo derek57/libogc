@@ -106,14 +106,14 @@ static s32 __lwp_cond_waitsupp(cond_t cond,mutex_t mutex,u64 timeout,u8 timedout
 		thecond->lock = mutex;
 		_CPU_ISR_Disable(level);
 		_Thread_queue_Enter_critical_section(&thecond->wait_queue);
-		_thr_executing->Wait.return_code = 0;
-		_thr_executing->Wait.queue = &thecond->wait_queue;
-		_thr_executing->Wait.id = cond;
+		_Thread_Executing->Wait.return_code = 0;
+		_Thread_Executing->Wait.queue = &thecond->wait_queue;
+		_Thread_Executing->Wait.id = cond;
 		_CPU_ISR_Restore(level);
 		_Thread_queue_Enqueue(&thecond->wait_queue,timeout);
 		_Thread_Enable_dispatch();
 		
-		status = _thr_executing->Wait.return_code;
+		status = _Thread_Executing->Wait.return_code;
 		if(status && status!=ETIMEDOUT)
 			return status;
 	} else {

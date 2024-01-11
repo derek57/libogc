@@ -100,7 +100,7 @@ irq_exceptionhandler:
 	isync
 
 	addi	r14,sp,0
-	lis		r15,_thread_dispatch_disable_level@ha
+	lis		r15,_Thread_Dispatch_disable_level@ha
 	
 	mfspr	r3,SPRG0
 	cmpwi	r3,0
@@ -109,25 +109,25 @@ irq_exceptionhandler:
 
 nested:
 	addi	r3,r3,1
-	lwz		r6,_thread_dispatch_disable_level@l(r15)
+	lwz		r6,_Thread_Dispatch_disable_level@l(r15)
 	mtspr	SPRG0,r3
 	addi	r6,r6,1
-	stw		r6,_thread_dispatch_disable_level@l(r15)
+	stw		r6,_Thread_Dispatch_disable_level@l(r15)
 
 	addi	r3,r14,0x08
 	bl		c_irqdispatcher
 	
 	mfspr	r4,SPRG0
-	lwz		r3,_thread_dispatch_disable_level@l(r15)
+	lwz		r3,_Thread_Dispatch_disable_level@l(r15)
 	addi	r4,r4,-1
 	addic.	r3,r3,-1
 	mtspr	SPRG0,r4
-	stw		r3,_thread_dispatch_disable_level@l(r15)
+	stw		r3,_Thread_Dispatch_disable_level@l(r15)
 	addi	sp,r14,0
 	bne		easy_exit
 
-	lis		r4,_context_switch_want@ha
-	lwz		r5,_context_switch_want@l(r4)
+	lis		r4,_Context_Switch_necessary@ha
+	lwz		r5,_Context_Switch_necessary@l(r4)
 	cmpwi	r5,0
 	beq		easy_exit
 

@@ -9,9 +9,9 @@ void _CORE_mutex_Initialize(CORE_mutex_Control *the_mutex,CORE_mutex_Attributes 
 	
 	if(initial_lock==LWP_MUTEX_LOCKED) {
 		the_mutex->nest_count = 1;
-		the_mutex->holder = _thr_executing;
+		the_mutex->holder = _Thread_Executing;
 		if(_CORE_mutex_Is_inherit_priority(the_mutex_attributes) || _CORE_mutex_Is_priority_ceiling(the_mutex_attributes))
-			_thr_executing->resource_count++;
+			_Thread_Executing->resource_count++;
 	} else {
 		the_mutex->nest_count = 0;
 		the_mutex->holder = NULL;
@@ -71,7 +71,7 @@ void _CORE_mutex_Seize_interrupt_blocking(CORE_mutex_Control *the_mutex,u64 time
 {
 	Thread_Control *executing;
 
-	executing = _thr_executing;
+	executing = _Thread_Executing;
 	if(_CORE_mutex_Is_inherit_priority(&the_mutex->Attributes)){
 		if(the_mutex->holder->current_priority>executing->current_priority)
 			_Thread_Change_priority(the_mutex->holder,executing->current_priority,FALSE);
@@ -80,7 +80,7 @@ void _CORE_mutex_Seize_interrupt_blocking(CORE_mutex_Control *the_mutex,u64 time
 	the_mutex->blocked_count++;
 	_Thread_queue_Enqueue(&the_mutex->Wait_queue,timeout);
 
-	if(_thr_executing->Wait.return_code==LWP_MUTEX_SUCCESSFUL) {
+	if(_Thread_Executing->Wait.return_code==LWP_MUTEX_SUCCESSFUL) {
 		if(_CORE_mutex_Is_priority_ceiling(&the_mutex->Attributes)) {
 			if(the_mutex->Attributes.priority_ceiling<executing->current_priority) 
 				_Thread_Change_priority(executing,the_mutex->Attributes.priority_ceiling,FALSE);

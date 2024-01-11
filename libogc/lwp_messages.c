@@ -79,7 +79,7 @@ u32 _CORE_message_queue_Seize(CORE_message_queue_Control *the_message_queue,u32 
 	CORE_message_queue_Buffer_control *the_message;
 	Thread_Control *executing,*the_thread;
 
-	executing = _thr_executing;
+	executing = _Thread_Executing;
 	executing->Wait.return_code = LWP_MQ_STATUS_SUCCESSFUL;
 #ifdef _LWPMQ_DEBUG
 	printf("_CORE_message_queue_Seize(%p,%d,%p,%p,%d,%d)\n",the_message_queue,id,buffer,size,wait,the_message_queue->num_pendingmsgs);
@@ -163,7 +163,7 @@ u32 _CORE_message_queue_Submit(CORE_message_queue_Control *the_message_queue,u32
 	if(_ISR_Is_in_progress()) return LWP_MQ_STATUS_UNSATISFIED;
 
 	{
-		Thread_Control *exec = _thr_executing;
+		Thread_Control *exec = _Thread_Executing;
 
 		_CPU_ISR_Disable(level);
 		_Thread_queue_Enter_critical_section(&the_message_queue->Wait_queue);

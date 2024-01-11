@@ -3,51 +3,51 @@
 
 static __inline__ u32 _Thread_Is_executing(Thread_Control *thethread)
 {
-	return (thethread==_thr_executing);
+	return (thethread==_Thread_Executing);
 }
 
 static __inline__ u32 _Thread_Is_heir(Thread_Control *thethread)
 {
-	return (thethread==_thr_heir);
+	return (thethread==_Thread_Heir);
 }
 
 static __inline__ void _Thread_Calculate_heir()
 {
-	_thr_heir = (Thread_Control*)_lwp_thr_ready[_Priority_Get_highest()].first;
+	_Thread_Heir = (Thread_Control*)_Thread_Ready_chain[_Priority_Get_highest()].first;
 #ifdef _LWPTHREADS_DEBUG
-	printf("_Thread_Calculate_heir(%p)\n",_thr_heir);
+	printf("_Thread_Calculate_heir(%p)\n",_Thread_Heir);
 #endif
 }
 
 static __inline__ u32 _Thread_Is_allocated_fp(Thread_Control *thethread)
 {
-	return (thethread==_thr_allocated_fp);
+	return (thethread==_Thread_Allocated_fp);
 }
 
 static __inline__ void _Thread_Deallocate_fp()
 {
-	_thr_allocated_fp = NULL;
+	_Thread_Allocated_fp = NULL;
 }
 
 static __inline__ void _Thread_Dispatch_initialization()
 {
-	_thread_dispatch_disable_level = 1;
+	_Thread_Dispatch_disable_level = 1;
 }
 
 static __inline__ void _Thread_Enable_dispatch()
 {
-	if((--_thread_dispatch_disable_level)==0)
+	if((--_Thread_Dispatch_disable_level)==0)
 		_Thread_Dispatch();
 }
 
 static __inline__ void _Thread_Disable_dispatch()
 {
-	++_thread_dispatch_disable_level;
+	++_Thread_Dispatch_disable_level;
 }
 
 static __inline__ void _Thread_Unnest_dispatch()
 {
-	--_thread_dispatch_disable_level;
+	--_Thread_Dispatch_disable_level;
 }
 
 static __inline__ void _Thread_Unblock(Thread_Control *thethread)
@@ -57,22 +57,22 @@ static __inline__ void _Thread_Unblock(Thread_Control *thethread)
 
 static __inline__ void** _Thread_Get_libc_reent()
 {
-	return __lwp_thr_libc_reent;
+	return _Thread_libc_reent;
 }
 
 static __inline__ void _Thread_Set_libc_reent(void **libc_reent)
 {
-	__lwp_thr_libc_reent = libc_reent;
+	_Thread_libc_reent = libc_reent;
 }
 
 static __inline__ bool _Thread_Is_context_switch_necessary()
 {
 
-	return _context_switch_want;
+	return _Context_Switch_necessary;
 }
 
 static __inline__ bool _Thread_Is_dispatching_enabled()
 {
-	return (_thread_dispatch_disable_level==0);
+	return (_Thread_Dispatch_disable_level==0);
 }
 #endif

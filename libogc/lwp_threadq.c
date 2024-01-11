@@ -105,7 +105,7 @@ Thread_Control* _Thread_queue_Dequeue_fifo(Thread_queue_Control *the_thread_queu
 		case LWP_THREADQ_TIMEOUT:
 			the_thread_queue->sync_state = LWP_THREADQ_SATISFIED;
 			_CPU_ISR_Restore(level);
-			return _thr_executing;
+			return _Thread_Executing;
 	}
 	return NULL;
 }
@@ -263,7 +263,7 @@ Thread_Control* _Thread_queue_Dequeue_priority(Thread_queue_Control *the_thread_
 		case LWP_THREADQ_TIMEOUT:
 			the_thread_queue->sync_state = LWP_THREADQ_SATISFIED;
 			_CPU_ISR_Restore(level);
-			return _thr_executing;
+			return _Thread_Executing;
 	}
 
 dequeue:
@@ -350,7 +350,7 @@ void _Thread_queue_Enqueue(Thread_queue_Control *the_thread_queue,u64 timeout)
 {
 	Thread_Control *the_thread;
 
-	the_thread = _thr_executing;
+	the_thread = _Thread_Executing;
 	_Thread_Set_state(the_thread,the_thread_queue->state);
 	
 	if(timeout) {
@@ -376,7 +376,7 @@ Thread_Control* _Thread_queue_Dequeue(Thread_queue_Control *the_thread_queue)
 	Thread_Control *the_thread = NULL;
 
 #ifdef _LWPTHRQ_DEBUG
-	printf("_Thread_queue_Dequeue(%p,%p,%d,%d)\n",the_thread_queue,_thr_executing,the_thread_queue->mode,the_thread_queue->sync_state);
+	printf("_Thread_queue_Dequeue(%p,%p,%d,%d)\n",the_thread_queue,_Thread_Executing,the_thread_queue->mode,the_thread_queue->sync_state);
 #endif
 	switch(the_thread_queue->discipline) {
 		case LWP_THREADQ_MODEFIFO:

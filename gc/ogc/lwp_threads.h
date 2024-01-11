@@ -20,7 +20,7 @@ typedef enum
 {
 	LWP_CPU_BUDGET_ALGO_NONE = 0,
 	LWP_CPU_BUDGET_ALGO_TIMESLICE	
-} lwp_cpu_budget_algorithms;
+} Thread_CPU_budget_algorithms;
 
 typedef struct {
 	u32 id;
@@ -42,7 +42,7 @@ struct Thread_Control_struct {
 	u32 isr_level;
 	u32 current_state;
 	u32 cpu_time_budget;
-	lwp_cpu_budget_algorithms budget_algorithm;
+	Thread_CPU_budget_algorithms budget_algorithm;
 	bool is_preemptible;
 	Thread_Wait_information Wait;
 	Priority_Information Priority_map;
@@ -60,16 +60,16 @@ struct Thread_Control_struct {
 };
 
 extern Thread_Control *_thr_main;
-extern Thread_Control *_thr_idle;
-extern Thread_Control *_thr_executing;
-extern Thread_Control *_thr_heir;
-extern Thread_Control *_thr_allocated_fp;
-extern vu32 _context_switch_want;
-extern vu32 _thread_dispatch_disable_level;
+extern Thread_Control *_Thread_Idle;
+extern Thread_Control *_Thread_Executing;
+extern Thread_Control *_Thread_Heir;
+extern Thread_Control *_Thread_Allocated_fp;
+extern vu32 _Context_Switch_necessary;
+extern vu32 _Thread_Dispatch_disable_level;
 
 extern Watchdog_Control _lwp_wd_timeslice;
-extern void **__lwp_thr_libc_reent;
-extern Chain_Control _lwp_thr_ready[];
+extern void **_Thread_libc_reent;
+extern Chain_Control _Thread_Ready_chain[];
 
 void _Thread_Dispatch();
 void _Thread_Yield_processor();

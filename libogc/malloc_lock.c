@@ -65,7 +65,7 @@ void _DEFUN(__libogc_malloc_lock,(ptr),
 
 	_CPU_ISR_Disable(level);
 	_CORE_mutex_Seize(&mem_lock,MEMLOCK_MUTEX_ID,TRUE,LWP_THREADQ_NOTIMEOUT,level);
-	ptr->_errno = _thr_executing->wait.ret_code;
+	ptr->_errno = _Thread_Executing->wait.ret_code;
 }
 
 void _DEFUN(__libogc_malloc_unlock,(ptr),

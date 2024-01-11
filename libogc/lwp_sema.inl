@@ -11,7 +11,7 @@ static __inline__ void _CORE_semaphore_Seize_isr_disable(CORE_semaphore_Control 
 	Thread_Control *exec;
 	u32 level = *isrlevel;
 
-	exec = _thr_executing;
+	exec = _Thread_Executing;
 	exec->Wait.return_code = LWP_SEMA_SUCCESSFUL;
 	if(sema->count!=0) {
 		--sema->count;

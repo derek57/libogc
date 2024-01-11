@@ -135,11 +135,11 @@ void __lwp_sysinit()
 	_Objects_Initialize_information(&_lwp_tqueue_objects,LWP_MAX_TQUEUES,sizeof(tqueue_st));
 
 	// create idle thread, is needed iff all threads are locked on a queue
-	_thr_idle = (Thread_Control*)_Objects_Allocate(&_lwp_thr_objects);
-	_Thread_Initialize(_thr_idle,NULL,0,255,0,TRUE);
-	_thr_executing = _thr_heir = _thr_idle;
-	_Thread_Start(_thr_idle,_Thread_Idle_body,NULL);
-	_Objects_Open(&_lwp_thr_objects,&_thr_idle->Object);
+	_Thread_Idle = (Thread_Control*)_Objects_Allocate(&_lwp_thr_objects);
+	_Thread_Initialize(_Thread_Idle,NULL,0,255,0,TRUE);
+	_Thread_Executing = _Thread_Heir = _Thread_Idle;
+	_Thread_Start(_Thread_Idle,_Thread_Idle_body,NULL);
+	_Objects_Open(&_lwp_thr_objects,&_Thread_Idle->Object);
 
 	// create main thread, as this is our entry point
 	// for every GC application.
@@ -166,7 +166,7 @@ BOOL __lwp_thread_isalive(lwp_t thr_id)
 
 lwp_t pthread_self()
 {
-	return _thr_executing->Object.id;
+	return _Thread_Executing->Object.id;
 }
 
 BOOL __lwp_thread_exists(lwp_t thr_id)
@@ -254,7 +254,7 @@ lwp_t LWP_GetSelf()
 	lwp_t ret;
 
 	_Thread_Disable_dispatch();
-	ret = (lwp_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_THREAD)|LWP_OBJMASKID(_thr_executing->Object.id));
+	ret = (lwp_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_THREAD)|LWP_OBJMASKID(_Thread_Executing->Object.id));
 	_Thread_Unnest_dispatch();
 
 	return ret;
@@ -316,7 +316,7 @@ s32 LWP_JoinThread(lwp_t thethread,void **value_ptr)
 		return EDEADLK;			//EDEADLK
 	}
 
-	exec = _thr_executing;
+	exec = _Thread_Executing;
 	_CPU_ISR_Disable(level);
 	_Thread_queue_Enter_critical_section(&lwp_thread->join_list);
 	exec->Wait.return_code = 0;
@@ -375,7 +375,7 @@ s32 LWP_ThreadSleep(lwpq_t thequeue)
 	tq = __lwp_tqueue_open(thequeue);
 	if(!tq) return -1;
 
-	exec = _thr_executing;
+	exec = _Thread_Executing;
 	_CPU_ISR_Disable(level);
 	_Thread_queue_Enter_critical_section(&tq->tqueue);
 	exec->Wait.return_code = 0;

@@ -31,7 +31,7 @@ static __inline__ u32 _CORE_mutex_Seize_interrupt_trylock(CORE_mutex_Control *mu
 	Thread_Control *exec;
 	u32 level = *isr_level;
 
-	exec = _thr_executing;
+	exec = _Thread_Executing;
 	exec->Wait.return_code = LWP_MUTEX_SUCCESSFUL;
 	if(!_CORE_mutex_Is_locked(mutex)) {
 		mutex->lock = LWP_MUTEX_LOCKED;

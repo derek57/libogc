@@ -32,7 +32,7 @@ u32 _CORE_semaphore_Seize(CORE_semaphore_Control *the_semaphore,u32 id,u32 wait,
 	u32 level;
 	Thread_Control *executing;
 	
-	executing = _thr_executing;
+	executing = _Thread_Executing;
 	executing->Wait.return_code = LWP_SEMA_SUCCESSFUL;
 
 	_CPU_ISR_Disable(level);
