@@ -1,14 +1,14 @@
 #include <gctypes.h>
 
-vu32 _prio_major_bitmap;
-u32 _prio_bitmap[16] __attribute__((aligned(32)));
+vu32 _Priority_Major_bit_map;
+u32 _Priority_Bit_map[16] __attribute__((aligned(32)));
 
 void _Priority_Handler_initialization()
 {
 	u32 index;
 	
-	_prio_major_bitmap = 0;
+	_Priority_Major_bit_map = 0;
 	for(index=0;index<16;index++)
-		_prio_bitmap[index] = 0;
+		_Priority_Bit_map[index] = 0;
 	
 }

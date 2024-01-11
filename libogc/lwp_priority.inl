@@ -8,7 +8,7 @@ static __inline__ void _Priority_Initialize_information(Priority_Information *th
 	major = prio/16;
 	minor = prio%16;
 	
-	theprio->minor = &_prio_bitmap[major];
+	theprio->minor = &_Priority_Bit_map[major];
 	
 	mask = 0x80000000>>major;
 	theprio->ready_major = mask;
@@ -25,21 +25,21 @@ static __inline__ void _Priority_Initialize_information(Priority_Information *th
 static __inline__ void _Priority_Add_to_bit_map(Priority_Information *theprio)
 {
 	*theprio->minor |= theprio->ready_minor;
-	_prio_major_bitmap |= theprio->ready_major;
+	_Priority_Major_bit_map |= theprio->ready_major;
 }
 
 static __inline__ void _Priority_Remove_from_bit_map(Priority_Information *theprio)
 {
 	*theprio->minor &= theprio->block_minor;
 	if(*theprio->minor==0)
-		_prio_major_bitmap &= theprio->block_major;
+		_Priority_Major_bit_map &= theprio->block_major;
 }
 
 static __inline__ u32 _Priority_Get_highest()
 {
 	u32 major,minor;
-	major = cntlzw(_prio_major_bitmap);
-	minor = cntlzw(_prio_bitmap[major]);
+	major = cntlzw(_Priority_Major_bit_map);
+	minor = cntlzw(_Priority_Bit_map[major]);
 #ifdef _LWPPRIO_DEBUG
 	printf("_Priority_Get_highest(%d)\n",((major<<4)+minor));
 #endif
