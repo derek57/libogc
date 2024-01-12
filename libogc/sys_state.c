@@ -1,3 +1,3 @@
 #include "sys_state.h"
 
-u32 _sys_state_curr;
+u32 _System_state_Current;

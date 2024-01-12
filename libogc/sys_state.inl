@@ -3,42 +3,42 @@
 
 static __inline__ void _System_state_Handler_initialization()
 {
-	_sys_state_curr = SYS_STATE_BEFORE_INIT;
+	_System_state_Current = SYS_STATE_BEFORE_INIT;
 }
 
-static __inline__ void _System_state_Set(u32 sys_state)
+static __inline__ void _System_state_Set(u32 state)
 {
-	_sys_state_curr = sys_state;
+	_System_state_Current = state;
 }
 
 static __inline__ u32 _System_state_Get()
 {
-	return _sys_state_curr;
+	return _System_state_Current;
 }
 
-static __inline__ u32 _System_state_Is_before_initialization(u32 statecode)
+static __inline__ u32 _System_state_Is_before_initialization(u32 state)
 {
-	return (statecode==SYS_STATE_BEFORE_INIT);
+	return (state==SYS_STATE_BEFORE_INIT);
 }
 
-static __inline__ u32 _System_state_Is_before_multitasking(u32 statecode)
+static __inline__ u32 _System_state_Is_before_multitasking(u32 state)
 {
-	return (statecode==SYS_STATE_BEFORE_MT);
+	return (state==SYS_STATE_BEFORE_MT);
 }
 
-static __inline__ u32 _System_state_Is_begin_multitasking(u32 statecode)
+static __inline__ u32 _System_state_Is_begin_multitasking(u32 state)
 {
-	return (statecode==SYS_STATE_BEGIN_MT);
+	return (state==SYS_STATE_BEGIN_MT);
 }
 
-static __inline__ u32 _System_state_Is_up(u32 statecode)
+static __inline__ u32 _System_state_Is_up(u32 state)
 {
-	return (statecode==SYS_STATE_UP);
+	return (state==SYS_STATE_UP);
 }
 
-static __inline__ u32 _System_state_Is_failed(u32 statecode)
+static __inline__ u32 _System_state_Is_failed(u32 state)
 {
-	return (statecode==SYS_STATE_FAILED);
+	return (state==SYS_STATE_FAILED);
 }
 
 #endif
