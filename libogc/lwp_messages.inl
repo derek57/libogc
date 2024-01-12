@@ -1,62 +1,62 @@
 #ifndef __MESSAGE_INL__
 #define __MESSAGE_INL__
 
-static __inline__ void _CORE_message_queue_Set_notify(CORE_message_queue_Control *mqueue,CORE_message_queue_Notify_Handler handler,void *arg)
+static __inline__ void _CORE_message_queue_Set_notify(CORE_message_queue_Control *the_message_queue,CORE_message_queue_Notify_Handler the_handler,void *the_argument)
 {
-	mqueue->notify_handler = handler;
-	mqueue->notify_argument = arg;
+	the_message_queue->notify_handler = the_handler;
+	the_message_queue->notify_argument = the_argument;
 }
 
-static __inline__ u32 _CORE_message_queue_Is_priority(CORE_message_queue_Attributes *attr)
+static __inline__ u32 _CORE_message_queue_Is_priority(CORE_message_queue_Attributes *the_attribute)
 {
-	return (attr->discipline==LWP_MQ_PRIORITY);
+	return (the_attribute->discipline==LWP_MQ_PRIORITY);
 }
 
-static __inline__ CORE_message_queue_Buffer_control* _CORE_message_queue_Allocate_message_buffer(CORE_message_queue_Control *mqueue)
+static __inline__ CORE_message_queue_Buffer_control* _CORE_message_queue_Allocate_message_buffer(CORE_message_queue_Control *the_message_queue)
 {
-	return (CORE_message_queue_Buffer_control*)_Chain_Get(&mqueue->Inactive_messages);
+	return (CORE_message_queue_Buffer_control*)_Chain_Get(&the_message_queue->Inactive_messages);
 }
 
-static __inline__ void _CORE_message_queue_Free_message_buffer(CORE_message_queue_Control *mqueue,CORE_message_queue_Buffer_control *msg)
+static __inline__ void _CORE_message_queue_Free_message_buffer(CORE_message_queue_Control *the_message_queue,CORE_message_queue_Buffer_control *the_message)
 {
-	_Chain_Append(&mqueue->Inactive_messages,&msg->Node);
+	_Chain_Append(&the_message_queue->Inactive_messages,&the_message->Node);
 }
 
-static __inline__ void _CORE_message_queue_Append(CORE_message_queue_Control *mqueue,CORE_message_queue_Buffer_control *msg)
+static __inline__ void _CORE_message_queue_Append(CORE_message_queue_Control *the_message_queue,CORE_message_queue_Buffer_control *the_message)
 {
 #ifdef _LWPMQ_DEBUG
-	printf("__lwpmq_msq_append(%p,%p,%p)\n",mqueue,&mqueue->inactive_msgs,msg);
+	printf("__lwpmq_msq_append(%p,%p,%p)\n",the_message_queue,&the_message_queue->inactive_msgs,the_message);
 #endif
-	_Chain_Append(&mqueue->Pending_messages,&msg->Node);
+	_Chain_Append(&the_message_queue->Pending_messages,&the_message->Node);
 }
 
-static __inline__ void _CORE_message_queue_Prepend(CORE_message_queue_Control *mqueue,CORE_message_queue_Buffer_control *msg)
+static __inline__ void _CORE_message_queue_Prepend(CORE_message_queue_Control *the_message_queue,CORE_message_queue_Buffer_control *the_message)
 {
 #ifdef _LWPMQ_DEBUG
-	printf("__lwpmq_msq_prepend(%p,%p,%p)\n",mqueue,&mqueue->inactive_msgs,msg);
+	printf("__lwpmq_msq_prepend(%p,%p,%p)\n",the_message_queue,&the_message_queue->inactive_msgs,the_message);
 #endif
-	_Chain_Prepend(&mqueue->Pending_messages,&msg->Node);
+	_Chain_Prepend(&the_message_queue->Pending_messages,&the_message->Node);
 }
 
-static __inline__ u32 _CORE_message_queue_Send(CORE_message_queue_Control *mqueue,u32 id,void *buffer,u32 size,u32 wait,u32 timeout)
+static __inline__ u32 _CORE_message_queue_Send(CORE_message_queue_Control *the_message_queue,u32 id,void *buffer,u32 size,u32 wait,u32 timeout)
 {
-	return _CORE_message_queue_Submit(mqueue,id,buffer,size,LWP_MQ_SEND_REQUEST,wait,timeout);
+	return _CORE_message_queue_Submit(the_message_queue,id,buffer,size,LWP_MQ_SEND_REQUEST,wait,timeout);
 }
 
-static __inline__ u32 _CORE_message_queue_Urgent(CORE_message_queue_Control *mqueue,void *buffer,u32 size,u32 id,u32 wait,u32 timeout)
+static __inline__ u32 _CORE_message_queue_Urgent(CORE_message_queue_Control *the_message_queue,void *buffer,u32 size,u32 id,u32 wait,u32 timeout)
 {
-	return _CORE_message_queue_Submit(mqueue,id,buffer,size,LWP_MQ_SEND_URGENT,wait,timeout);
+	return _CORE_message_queue_Submit(the_message_queue,id,buffer,size,LWP_MQ_SEND_URGENT,wait,timeout);
 }
 
-static __inline__ CORE_message_queue_Buffer_control* _CORE_message_queue_Get_pending_message(CORE_message_queue_Control *mqueue)
+static __inline__ CORE_message_queue_Buffer_control* _CORE_message_queue_Get_pending_message(CORE_message_queue_Control *the_message_queue)
 {
-	return (CORE_message_queue_Buffer_control*)_Chain_Get_unprotected(&mqueue->Pending_messages);
+	return (CORE_message_queue_Buffer_control*)_Chain_Get_unprotected(&the_message_queue->Pending_messages);
 }
 
-static __inline__ void _CORE_message_queue_Copy_buffer(void *dest,const void *src,u32 size)
+static __inline__ void _CORE_message_queue_Copy_buffer(void *destination,const void *source,u32 size)
 {
-	if(size==sizeof(u32)) *(u32*)dest = *(u32*)src;
-	else memcpy(dest,src,size);
+	if(size==sizeof(u32)) *(u32*)destination = *(u32*)source;
+	else memcpy(destination,source,size);
 }
 
 #endif
