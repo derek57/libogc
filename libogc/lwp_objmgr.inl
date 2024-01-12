@@ -1,19 +1,19 @@
 #ifndef __LWP_OBJMGR_INL__
 #define __LWP_OBJMGR_INL__
 
-static __inline__ void _Objects_Set_local_object(Objects_Information *info,u32 idx,Objects_Control *object)
+static __inline__ void _Objects_Set_local_object(Objects_Information *information,u32 index,Objects_Control *the_object)
 {
-	if(idx<info->maximum) info->local_table[idx] = object;
+	if(index<information->maximum) information->local_table[index] = the_object;
 }
 
-static __inline__ void _Objects_Open(Objects_Information *info,Objects_Control *object)
+static __inline__ void _Objects_Open(Objects_Information *information,Objects_Control *the_object)
 {
-	_Objects_Set_local_object(info,object->id,object);
+	_Objects_Set_local_object(information,the_object->id,the_object);
 }
 
-static __inline__ void _Objects_Close(Objects_Information *info,Objects_Control *object)
+static __inline__ void _Objects_Close(Objects_Information *information,Objects_Control *the_object)
 {
-	_Objects_Set_local_object(info,object->id,NULL);
+	_Objects_Set_local_object(information,the_object->id,NULL);
 }
 
 #endif
