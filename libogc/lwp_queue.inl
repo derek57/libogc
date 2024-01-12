@@ -1,111 +1,111 @@
 #ifndef __LWP_QUEUE_INL__
 #define __LWP_QUEUE_INL__
 
-static __inline__ Chain_Node* _Chain_Head(Chain_Control *queue)
+static __inline__ Chain_Node* _Chain_Head(Chain_Control *the_chain)
 {
-	return (Chain_Node*)queue;
+	return (Chain_Node*)the_chain;
 }
 
-static __inline__ Chain_Node* _Chain_Tail(Chain_Control *queue)
+static __inline__ Chain_Node* _Chain_Tail(Chain_Control *the_chain)
 {
-	return (Chain_Node*)&queue->permanent_null;
+	return (Chain_Node*)&the_chain->permanent_null;
 }
 
-static __inline__ u32 _Chain_Is_tail(Chain_Control *queue,Chain_Node *node)
+static __inline__ u32 _Chain_Is_tail(Chain_Control *the_chain,Chain_Node *the_node)
 {
-	return (node==_Chain_Tail(queue));
+	return (the_node==_Chain_Tail(the_chain));
 }
 
-static __inline__ u32 _Chain_Is_head(Chain_Control *queue,Chain_Node *node)
+static __inline__ u32 _Chain_Is_head(Chain_Control *the_chain,Chain_Node *the_node)
 {
-	return (node==_Chain_Head(queue));
+	return (the_node==_Chain_Head(the_chain));
 }
 
-static __inline__ Chain_Node* _Chain_Get_first_unprotected(Chain_Control *queue)
+static __inline__ Chain_Node* _Chain_Get_first_unprotected(Chain_Control *the_chain)
 {
-	Chain_Node *ret;
+	Chain_Node *return_node;
 	Chain_Node *new_first;
 #ifdef _LWPQ_DEBUG
-	printk("_Chain_Get_first_unprotected(%p)\n",queue);
+	printk("_Chain_Get_first_unprotected(%p)\n",the_chain);
 #endif
 
-	ret = queue->first;
-	new_first = ret->next;
-	queue->first = new_first;
-	new_first->previous = _Chain_Head(queue);
-	return ret;
+	return_node = the_chain->first;
+	new_first = return_node->next;
+	the_chain->first = new_first;
+	new_first->previous = _Chain_Head(the_chain);
+	return return_node;
 }
 
-static __inline__ void _Chain_Initialize_empty(Chain_Control *queue)
+static __inline__ void _Chain_Initialize_empty(Chain_Control *the_chain)
 {
-	queue->first = _Chain_Tail(queue);
-	queue->permanent_null = NULL;
-	queue->last = _Chain_Head(queue);
+	the_chain->first = _Chain_Tail(the_chain);
+	the_chain->permanent_null = NULL;
+	the_chain->last = _Chain_Head(the_chain);
 }
 
-static __inline__ u32 _Chain_Is_empty(Chain_Control *queue)
+static __inline__ u32 _Chain_Is_empty(Chain_Control *the_chain)
 {
-	return (queue->first==_Chain_Tail(queue));
+	return (the_chain->first==_Chain_Tail(the_chain));
 }
 
-static __inline__ u32 _Chain_Has_only_one_node(Chain_Control *queue)
+static __inline__ u32 _Chain_Has_only_one_node(Chain_Control *the_chain)
 {
-	return (queue->first==queue->last);
+	return (the_chain->first==the_chain->last);
 }
 
-static __inline__ void _Chain_Append_unprotected(Chain_Control *queue,Chain_Node *node)
+static __inline__ void _Chain_Append_unprotected(Chain_Control *the_chain,Chain_Node *the_node)
 {
-	Chain_Node *old;
+	Chain_Node *old_last_node;
 #ifdef _LWPQ_DEBUG
-	printk("_Chain_Append_unprotected(%p,%p)\n",queue,node);
+	printk("_Chain_Append_unprotected(%p,%p)\n",the_chain,the_node);
 #endif
-	node->next = _Chain_Tail(queue);
-	old = queue->last;
-	queue->last = node;
-	old->next = node;
-	node->previous = old;
+	the_node->next = _Chain_Tail(the_chain);
+	old_last_node = the_chain->last;
+	the_chain->last = the_node;
+	old_last_node->next = the_node;
+	the_node->previous = old_last_node;
 }
 
-static __inline__ void _Chain_Extract_unprotected(Chain_Node *node)
+static __inline__ void _Chain_Extract_unprotected(Chain_Node *the_node)
 {
 #ifdef _LWPQ_DEBUG
-	printk("_Chain_Extract_unprotected(%p)\n",node);
+	printk("_Chain_Extract_unprotected(%p)\n",the_node);
 #endif
-	Chain_Node *prev,*next;
-	next = node->next;
-	prev = node->previous;
-	next->previous = prev;
-	prev->next = next;
+	Chain_Node *previous,*next;
+	next = the_node->next;
+	previous = the_node->previous;
+	next->previous = previous;
+	previous->next = next;
 }
 
-static __inline__ void _Chain_Insert_unprotected(Chain_Node *after,Chain_Node *node)
+static __inline__ void _Chain_Insert_unprotected(Chain_Node *after,Chain_Node *the_node)
 {
-	Chain_Node *before;
+	Chain_Node *before_node;
 	
 #ifdef _LWPQ_DEBUG
-	printk("_Chain_Insert_unprotected(%p,%p)\n",after,node);
+	printk("_Chain_Insert_unprotected(%p,%p)\n",after,the_node);
 #endif
-	node->previous = after;
-	before = after->next;
-	after->next = node;
-	node->next = before;
-	before->previous = node;
+	the_node->previous = after;
+	before_node = after->next;
+	after->next = the_node;
+	the_node->next = before_node;
+	before_node->previous = the_node;
 }
 
-static __inline__ void _Chain_Prepend(Chain_Control *queue,Chain_Node *node)
+static __inline__ void _Chain_Prepend(Chain_Control *the_chain,Chain_Node *the_node)
 {
-	_Chain_Insert(_Chain_Head(queue),node);
+	_Chain_Insert(_Chain_Head(the_chain),the_node);
 }
 
-static __inline__ void _Chain_Prepend_unprotected(Chain_Control *queue,Chain_Node *node)
+static __inline__ void _Chain_Prepend_unprotected(Chain_Control *the_chain,Chain_Node *the_node)
 {
-	_Chain_Insert_unprotected(_Chain_Head(queue),node);
+	_Chain_Insert_unprotected(_Chain_Head(the_chain),the_node);
 }
 
-static __inline__ Chain_Node* _Chain_Get_unprotected(Chain_Control *queue)
+static __inline__ Chain_Node* _Chain_Get_unprotected(Chain_Control *the_chain)
 {
-	if(!_Chain_Is_empty(queue))
-		return _Chain_Get_first_unprotected(queue);
+	if(!_Chain_Is_empty(the_chain))
+		return _Chain_Get_first_unprotected(the_chain);
 	else
 		return NULL;
 }
