@@ -1,14 +1,14 @@
 #ifndef __LWP_INL__
 #define __LWP_INL__
 
-static __inline__ u32 _Thread_Is_executing(Thread_Control *thethread)
+static __inline__ u32 _Thread_Is_executing(Thread_Control *the_thread)
 {
-	return (thethread==_Thread_Executing);
+	return (the_thread==_Thread_Executing);
 }
 
-static __inline__ u32 _Thread_Is_heir(Thread_Control *thethread)
+static __inline__ u32 _Thread_Is_heir(Thread_Control *the_thread)
 {
-	return (thethread==_Thread_Heir);
+	return (the_thread==_Thread_Heir);
 }
 
 static __inline__ void _Thread_Calculate_heir()
@@ -19,9 +19,9 @@ static __inline__ void _Thread_Calculate_heir()
 #endif
 }
 
-static __inline__ u32 _Thread_Is_allocated_fp(Thread_Control *thethread)
+static __inline__ u32 _Thread_Is_allocated_fp(Thread_Control *the_thread)
 {
-	return (thethread==_Thread_Allocated_fp);
+	return (the_thread==_Thread_Allocated_fp);
 }
 
 static __inline__ void _Thread_Deallocate_fp()
@@ -50,9 +50,9 @@ static __inline__ void _Thread_Unnest_dispatch()
 	--_Thread_Dispatch_disable_level;
 }
 
-static __inline__ void _Thread_Unblock(Thread_Control *thethread)
+static __inline__ void _Thread_Unblock(Thread_Control *the_thread)
 {
-	_Thread_Clear_state(thethread,LWP_STATES_BLOCKED);
+	_Thread_Clear_state(the_thread,LWP_STATES_BLOCKED);
 }
 
 static __inline__ void** _Thread_Get_libc_reent()
