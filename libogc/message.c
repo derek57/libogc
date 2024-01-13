@@ -44,39 +44,39 @@ distribution.
 		return NULL;				\
 }
 
-typedef struct _mqbox_st
+typedef struct
 {
-	Objects_Control object;
-	CORE_message_queue_Control mqueue;
-} mqbox_st;
+	Objects_Control Object;
+	CORE_message_queue_Control Message_queue;
+} POSIX_Message_queue_Control;
 
 Objects_Information _lwp_mqbox_objects;
 
 void __lwp_mqbox_init()
 {
-	_Objects_Initialize_information(&_lwp_mqbox_objects,CONFIGURE_MAXIMUM_POSIX_MESSAGE_QUEUES,sizeof(mqbox_st));
+	_Objects_Initialize_information(&_lwp_mqbox_objects,CONFIGURE_MAXIMUM_POSIX_MESSAGE_QUEUES,sizeof(POSIX_Message_queue_Control));
 }
 
-static __inline__ mqbox_st* __lwp_mqbox_open(mqbox_t mbox)
+static __inline__ POSIX_Message_queue_Control* __lwp_mqbox_open(mqbox_t mbox)
 {
 	LWP_CHECK_MBOX(mbox);
-	return (mqbox_st*)_Objects_Get(&_lwp_mqbox_objects,LWP_OBJMASKID(mbox));
+	return (POSIX_Message_queue_Control*)_Objects_Get(&_lwp_mqbox_objects,LWP_OBJMASKID(mbox));
 }
 
-static __inline__ void __lwp_mqbox_free(mqbox_st *mqbox)
+static __inline__ void __lwp_mqbox_free(POSIX_Message_queue_Control *mqbox)
 {
-	_Objects_Close(&_lwp_mqbox_objects,&mqbox->object);
-	_Objects_Free(&_lwp_mqbox_objects,&mqbox->object);
+	_Objects_Close(&_lwp_mqbox_objects,&mqbox->Object);
+	_Objects_Free(&_lwp_mqbox_objects,&mqbox->Object);
 }
 
-static mqbox_st* __lwp_mqbox_allocate()
+static POSIX_Message_queue_Control* __lwp_mqbox_allocate()
 {
-	mqbox_st *mqbox;
+	POSIX_Message_queue_Control *mqbox;
 
 	_Thread_Disable_dispatch();
-	mqbox = (mqbox_st*)_Objects_Allocate(&_lwp_mqbox_objects);
+	mqbox = (POSIX_Message_queue_Control*)_Objects_Allocate(&_lwp_mqbox_objects);
 	if(mqbox) {
-		_Objects_Open(&_lwp_mqbox_objects,&mqbox->object);
+		_Objects_Open(&_lwp_mqbox_objects,&mqbox->Object);
 		return mqbox;
 	}
 	_Thread_Enable_dispatch();
@@ -86,7 +86,7 @@ static mqbox_st* __lwp_mqbox_allocate()
 s32 MQ_Init(mqbox_t *mqbox,u32 count)
 {
 	CORE_message_queue_Attributes attr;
-	mqbox_st *ret = NULL;
+	POSIX_Message_queue_Control *ret = NULL;
 
 	if(!mqbox) return -1;
 
@@ -94,25 +94,25 @@ s32 MQ_Init(mqbox_t *mqbox,u32 count)
 	if(!ret) return MQ_ERROR_TOOMANY;
 
 	attr.discipline = CORE_MESSAGE_QUEUE_DISCIPLINES_FIFO;
-	if(!_CORE_message_queue_Initialize(&ret->mqueue,&attr,count,sizeof(mqmsg_t))) {
+	if(!_CORE_message_queue_Initialize(&ret->Message_queue,&attr,count,sizeof(mqmsg_t))) {
 		__lwp_mqbox_free(ret);
 		_Thread_Enable_dispatch();
 		return MQ_ERROR_TOOMANY;
 	}
 
-	*mqbox = (mqbox_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_MBOX)|LWP_OBJMASKID(ret->object.id));
+	*mqbox = (mqbox_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_MBOX)|LWP_OBJMASKID(ret->Object.id));
 	_Thread_Enable_dispatch();
 	return MQ_ERROR_SUCCESSFUL;
 }
 
 void MQ_Close(mqbox_t mqbox)
 {
-	mqbox_st *mbox;
+	POSIX_Message_queue_Control *mbox;
 
 	mbox = __lwp_mqbox_open(mqbox);
 	if(!mbox) return;
 
-	_CORE_message_queue_Close(&mbox->mqueue,0);
+	_CORE_message_queue_Close(&mbox->Message_queue,0);
 	_Thread_Enable_dispatch();
 
 	__lwp_mqbox_free(mbox);
@@ -121,14 +121,14 @@ void MQ_Close(mqbox_t mqbox)
 BOOL MQ_Send(mqbox_t mqbox,mqmsg_t msg,u32 flags)
 {
 	BOOL ret;
-	mqbox_st *mbox;
+	POSIX_Message_queue_Control *mbox;
 	u32 wait = (flags==MQ_MSG_BLOCK)?TRUE:FALSE;
 
 	mbox = __lwp_mqbox_open(mqbox);
 	if(!mbox) return FALSE;
 
 	ret = FALSE;
-	if(_CORE_message_queue_Submit(&mbox->mqueue,mbox->object.id,(void*)&msg,sizeof(mqmsg_t),CORE_MESSAGE_QUEUE_SEND_REQUEST,wait,RTEMS_NO_TIMEOUT)==CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL) ret = TRUE;
+	if(_CORE_message_queue_Submit(&mbox->Message_queue,mbox->Object.id,(void*)&msg,sizeof(mqmsg_t),CORE_MESSAGE_QUEUE_SEND_REQUEST,wait,RTEMS_NO_TIMEOUT)==CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL) ret = TRUE;
 	_Thread_Enable_dispatch();
 
 	return ret;
@@ -137,14 +137,14 @@ BOOL MQ_Send(mqbox_t mqbox,mqmsg_t msg,u32 flags)
 BOOL MQ_Receive(mqbox_t mqbox,mqmsg_t *msg,u32 flags)
 {
 	BOOL ret;
-	mqbox_st *mbox;
+	POSIX_Message_queue_Control *mbox;
 	u32 tmp,wait = (flags==MQ_MSG_BLOCK)?TRUE:FALSE;
 
 	mbox = __lwp_mqbox_open(mqbox);
 	if(!mbox) return FALSE;
 
 	ret = FALSE;
-	if(_CORE_message_queue_Seize(&mbox->mqueue,mbox->object.id,(void*)msg,&tmp,wait,RTEMS_NO_TIMEOUT)==CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL) ret = TRUE;
+	if(_CORE_message_queue_Seize(&mbox->Message_queue,mbox->Object.id,(void*)msg,&tmp,wait,RTEMS_NO_TIMEOUT)==CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL) ret = TRUE;
 	_Thread_Enable_dispatch();
 
 	return ret;
@@ -153,14 +153,14 @@ BOOL MQ_Receive(mqbox_t mqbox,mqmsg_t *msg,u32 flags)
 BOOL MQ_Jam(mqbox_t mqbox,mqmsg_t msg,u32 flags)
 {
 	BOOL ret;
-	mqbox_st *mbox;
+	POSIX_Message_queue_Control *mbox;
 	u32 wait = (flags==MQ_MSG_BLOCK)?TRUE:FALSE;
 
 	mbox = __lwp_mqbox_open(mqbox);
 	if(!mbox) return FALSE;
 
 	ret = FALSE;
-	if(_CORE_message_queue_Submit(&mbox->mqueue,mbox->object.id,(void*)&msg,sizeof(mqmsg_t),CORE_MESSAGE_QUEUE_URGENT_REQUEST,wait,RTEMS_NO_TIMEOUT)==CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL) ret = TRUE;
+	if(_CORE_message_queue_Submit(&mbox->Message_queue,mbox->Object.id,(void*)&msg,sizeof(mqmsg_t),CORE_MESSAGE_QUEUE_URGENT_REQUEST,wait,RTEMS_NO_TIMEOUT)==CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL) ret = TRUE;
 	_Thread_Enable_dispatch();
 
 	return ret;
