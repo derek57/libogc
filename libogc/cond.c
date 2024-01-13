@@ -61,7 +61,7 @@ void __lwp_cond_init()
 	_Objects_Initialize_information(&_lwp_cond_objects,CONFIGURE_MAXIMUM_POSIX_CONDITION_VARIABLES,sizeof(POSIX_Condition_variables_Control));
 }
 
-static __inline__ POSIX_Condition_variables_Control* __lwp_cond_open(cond_t cond)
+static __inline__ POSIX_Condition_variables_Control* __lwp_cond_open(pthread_cond_t cond)
 {
 	LWP_CHECK_COND(cond);
 	return (POSIX_Condition_variables_Control*)_Objects_Get(&_lwp_cond_objects,LWP_OBJMASKID(cond));
@@ -87,7 +87,7 @@ static POSIX_Condition_variables_Control* __lwp_cond_allocate()
 	return NULL;
 }
 
-static s32 __lwp_cond_waitsupp(cond_t cond,pthread_mutex_t mutex,u64 timeout,u8 timedout)
+static s32 __lwp_cond_waitsupp(pthread_cond_t cond,pthread_mutex_t mutex,u64 timeout,u8 timedout)
 {
 	u32 status,mstatus,level;
 	POSIX_Condition_variables_Control *thecond;
@@ -128,7 +128,7 @@ static s32 __lwp_cond_waitsupp(cond_t cond,pthread_mutex_t mutex,u64 timeout,u8 
 	return status;
 }
 
-static s32 __lwp_cond_signalsupp(cond_t cond,u8 isbroadcast)
+static s32 __lwp_cond_signalsupp(pthread_cond_t cond,u8 isbroadcast)
 {
 	Thread_Control *thethread;
 	POSIX_Condition_variables_Control *thecond;
@@ -144,7 +144,7 @@ static s32 __lwp_cond_signalsupp(cond_t cond,u8 isbroadcast)
 	return 0;
 }
 
-s32 LWP_CondInit(cond_t *cond)
+s32 LWP_CondInit(pthread_cond_t *cond)
 {
 	POSIX_Condition_variables_Control *ret;
 	
@@ -156,28 +156,28 @@ s32 LWP_CondInit(cond_t *cond)
 	ret->Mutex = LWP_MUTEX_NULL;
 	_Thread_queue_Initialize(&ret->Wait_queue,THREAD_QUEUE_DISCIPLINE_FIFO,STATES_WAITING_FOR_CONDITION_VARIABLE,ETIMEDOUT);
 
-	*cond = (cond_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_COND)|LWP_OBJMASKID(ret->Object.id));
+	*cond = (pthread_cond_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_COND)|LWP_OBJMASKID(ret->Object.id));
 	_Thread_Enable_dispatch();
 
 	return 0;
 }
 
-s32 LWP_CondWait(cond_t cond,pthread_mutex_t mutex)
+s32 LWP_CondWait(pthread_cond_t cond,pthread_mutex_t mutex)
 {
 	return __lwp_cond_waitsupp(cond,mutex,RTEMS_NO_TIMEOUT,FALSE);
 }
 
-s32 LWP_CondSignal(cond_t cond)
+s32 LWP_CondSignal(pthread_cond_t cond)
 {
 	return __lwp_cond_signalsupp(cond,FALSE);
 }
 
-s32 LWP_CondBroadcast(cond_t cond)
+s32 LWP_CondBroadcast(pthread_cond_t cond)
 {
 	return __lwp_cond_signalsupp(cond,TRUE);
 }
 
-s32 LWP_CondTimedWait(cond_t cond,pthread_mutex_t mutex,const struct timespec *abstime)
+s32 LWP_CondTimedWait(pthread_cond_t cond,pthread_mutex_t mutex,const struct timespec *abstime)
 {
 	u64 timeout = RTEMS_NO_TIMEOUT;
 	bool timedout = FALSE;
@@ -186,7 +186,7 @@ s32 LWP_CondTimedWait(cond_t cond,pthread_mutex_t mutex,const struct timespec *a
 	return __lwp_cond_waitsupp(cond,mutex,timeout,timedout);
 }
 
-s32 LWP_CondDestroy(cond_t cond)
+s32 LWP_CondDestroy(pthread_cond_t cond)
 {
 	POSIX_Condition_variables_Control *ptr;
 

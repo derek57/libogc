@@ -46,39 +46,39 @@ distribution.
 }
 
 
-typedef struct _sema_st
+typedef struct
 {
-	Objects_Control object;
-	CORE_semaphore_Control sema;
-} sema_st;
+	Objects_Control Object;
+	CORE_semaphore_Control Semaphore;
+} POSIX_Semaphore_Control;
 
 Objects_Information _lwp_sema_objects;
 
 void __lwp_sema_init()
 {
-	_Objects_Initialize_information(&_lwp_sema_objects,CONFIGURE_MAXIMUM_POSIX_SEMAPHORES,sizeof(sema_st));
+	_Objects_Initialize_information(&_lwp_sema_objects,CONFIGURE_MAXIMUM_POSIX_SEMAPHORES,sizeof(POSIX_Semaphore_Control));
 }
 
-static __inline__ sema_st* __lwp_sema_open(sem_t sem)
+static __inline__ POSIX_Semaphore_Control* __lwp_sema_open(sem_t sem)
 {
 	LWP_CHECK_SEM(sem);
-	return (sema_st*)_Objects_Get(&_lwp_sema_objects,LWP_OBJMASKID(sem));
+	return (POSIX_Semaphore_Control*)_Objects_Get(&_lwp_sema_objects,LWP_OBJMASKID(sem));
 }
 
-static __inline__ void __lwp_sema_free(sema_st *sema)
+static __inline__ void __lwp_sema_free(POSIX_Semaphore_Control *sema)
 {
-	_Objects_Close(&_lwp_sema_objects,&sema->object);
-	_Objects_Free(&_lwp_sema_objects,&sema->object);
+	_Objects_Close(&_lwp_sema_objects,&sema->Object);
+	_Objects_Free(&_lwp_sema_objects,&sema->Object);
 }
 
-static sema_st* __lwp_sema_allocate()
+static POSIX_Semaphore_Control* __lwp_sema_allocate()
 {
-	sema_st *sema;
+	POSIX_Semaphore_Control *sema;
 
 	_Thread_Disable_dispatch();
-	sema = (sema_st*)_Objects_Allocate(&_lwp_sema_objects);
+	sema = (POSIX_Semaphore_Control*)_Objects_Allocate(&_lwp_sema_objects);
 	if(sema) {
-		_Objects_Open(&_lwp_sema_objects,&sema->object);
+		_Objects_Open(&_lwp_sema_objects,&sema->Object);
 		return sema;
 	}
 	_Thread_Enable_dispatch();
@@ -88,7 +88,7 @@ static sema_st* __lwp_sema_allocate()
 s32 LWP_SemInit(sem_t *sem,u32 start,u32 max)
 {
 	CORE_semaphore_Attributes attr;
-	sema_st *ret;
+	POSIX_Semaphore_Control *ret;
 
 	if(!sem) return -1;
 	
@@ -97,21 +97,21 @@ s32 LWP_SemInit(sem_t *sem,u32 start,u32 max)
 
 	attr.maximum_count = max;
 	attr.discipline = CORE_SEMAPHORE_DISCIPLINES_FIFO;
-	CORE_semaphore_Initialize(&ret->sema,&attr,start);
+	CORE_semaphore_Initialize(&ret->Semaphore,&attr,start);
 
-	*sem = (sem_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_SEM)|LWP_OBJMASKID(ret->object.id));
+	*sem = (sem_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_SEM)|LWP_OBJMASKID(ret->Object.id));
 	_Thread_Enable_dispatch();
 	return 0;
 }
 
 s32 LWP_SemWait(sem_t sem)
 {
-	sema_st *lwp_sem;
+	POSIX_Semaphore_Control *lwp_sem;
 
 	lwp_sem = __lwp_sema_open(sem);
 	if(!lwp_sem) return -1;
 
-	_CORE_semaphore_Seize(&lwp_sem->sema,lwp_sem->object.id,TRUE,RTEMS_NO_TIMEOUT);
+	_CORE_semaphore_Seize(&lwp_sem->Semaphore,lwp_sem->Object.id,TRUE,RTEMS_NO_TIMEOUT);
 	_Thread_Enable_dispatch();
 
 	switch(_Thread_Executing->Wait.return_code) {
@@ -130,12 +130,12 @@ s32 LWP_SemWait(sem_t sem)
 
 s32 LWP_SemPost(sem_t sem)
 {
-	sema_st *lwp_sem;
+	POSIX_Semaphore_Control *lwp_sem;
 
 	lwp_sem = __lwp_sema_open(sem);
 	if(!lwp_sem) return -1;
 
-	_CORE_semaphore_Surrender(&lwp_sem->sema,lwp_sem->object.id);
+	_CORE_semaphore_Surrender(&lwp_sem->Semaphore,lwp_sem->Object.id);
 	_Thread_Enable_dispatch();
 
 	return 0;
@@ -143,12 +143,12 @@ s32 LWP_SemPost(sem_t sem)
 
 s32 LWP_SemDestroy(sem_t sem)
 {
-	sema_st *lwp_sem;
+	POSIX_Semaphore_Control *lwp_sem;
 
 	lwp_sem = __lwp_sema_open(sem);
 	if(!lwp_sem) return -1;
 
-	_CORE_semaphore_Flush(&lwp_sem->sema,-1);
+	_CORE_semaphore_Flush(&lwp_sem->Semaphore,-1);
 	_Thread_Enable_dispatch();
 
 	__lwp_sema_free(lwp_sem);
