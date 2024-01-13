@@ -139,12 +139,12 @@ s32 LWP_MutexDestroy(mutex_t mutex)
 
 s32 LWP_MutexLock(mutex_t mutex)
 {
-	return __lwp_mutex_locksupp(mutex,LWP_THREADQ_NOTIMEOUT,TRUE);
+	return __lwp_mutex_locksupp(mutex,RTEMS_NO_TIMEOUT,TRUE);
 }
 
 s32 LWP_MutexTryLock(mutex_t mutex)
 {
-	return __lwp_mutex_locksupp(mutex,LWP_THREADQ_NOTIMEOUT,FALSE);
+	return __lwp_mutex_locksupp(mutex,RTEMS_NO_TIMEOUT,FALSE);
 }
 
 s32 LWP_MutexUnlock(mutex_t mutex)

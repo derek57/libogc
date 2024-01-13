@@ -128,7 +128,7 @@ BOOL MQ_Send(mqbox_t mqbox,mqmsg_t msg,u32 flags)
 	if(!mbox) return FALSE;
 
 	ret = FALSE;
-	if(_CORE_message_queue_Submit(&mbox->mqueue,mbox->object.id,(void*)&msg,sizeof(mqmsg_t),CORE_MESSAGE_QUEUE_SEND_REQUEST,wait,LWP_THREADQ_NOTIMEOUT)==CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL) ret = TRUE;
+	if(_CORE_message_queue_Submit(&mbox->mqueue,mbox->object.id,(void*)&msg,sizeof(mqmsg_t),CORE_MESSAGE_QUEUE_SEND_REQUEST,wait,RTEMS_NO_TIMEOUT)==CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL) ret = TRUE;
 	_Thread_Enable_dispatch();
 
 	return ret;
@@ -144,7 +144,7 @@ BOOL MQ_Receive(mqbox_t mqbox,mqmsg_t *msg,u32 flags)
 	if(!mbox) return FALSE;
 
 	ret = FALSE;
-	if(_CORE_message_queue_Seize(&mbox->mqueue,mbox->object.id,(void*)msg,&tmp,wait,LWP_THREADQ_NOTIMEOUT)==CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL) ret = TRUE;
+	if(_CORE_message_queue_Seize(&mbox->mqueue,mbox->object.id,(void*)msg,&tmp,wait,RTEMS_NO_TIMEOUT)==CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL) ret = TRUE;
 	_Thread_Enable_dispatch();
 
 	return ret;
@@ -160,7 +160,7 @@ BOOL MQ_Jam(mqbox_t mqbox,mqmsg_t msg,u32 flags)
 	if(!mbox) return FALSE;
 
 	ret = FALSE;
-	if(_CORE_message_queue_Submit(&mbox->mqueue,mbox->object.id,(void*)&msg,sizeof(mqmsg_t),CORE_MESSAGE_QUEUE_URGENT_REQUEST,wait,LWP_THREADQ_NOTIMEOUT)==CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL) ret = TRUE;
+	if(_CORE_message_queue_Submit(&mbox->mqueue,mbox->object.id,(void*)&msg,sizeof(mqmsg_t),CORE_MESSAGE_QUEUE_URGENT_REQUEST,wait,RTEMS_NO_TIMEOUT)==CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL) ret = TRUE;
 	_Thread_Enable_dispatch();
 
 	return ret;

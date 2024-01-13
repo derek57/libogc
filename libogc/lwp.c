@@ -384,7 +384,7 @@ s32 LWP_ThreadSleep(lwpq_t thequeue)
 	exec->Wait.queue = &tq->tqueue;
 	exec->Wait.id = thequeue;
 	_CPU_ISR_Restore(level);
-	_Thread_queue_Enqueue(&tq->tqueue,LWP_THREADQ_NOTIMEOUT);
+	_Thread_queue_Enqueue(&tq->tqueue,RTEMS_NO_TIMEOUT);
 	_Thread_Enable_dispatch();
 	return 0;
 }

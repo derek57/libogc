@@ -3,7 +3,7 @@
 
 static __inline__ u32 _CORE_semaphore_Is_priority(CORE_semaphore_Attributes *the_attribute)
 {
-	return (the_attribute->discipline==LWP_SEMA_MODEPRIORITY);
+	return (the_attribute->discipline==CORE_SEMAPHORE_DISCIPLINES_PRIORITY);
 }
 
 static __inline__ void _CORE_semaphore_Seize_isr_disable(CORE_semaphore_Control *the_semaphore,u32 id,u32 wait,u32 *level_p)
@@ -12,7 +12,7 @@ static __inline__ void _CORE_semaphore_Seize_isr_disable(CORE_semaphore_Control 
 	u32 level = *level_p;
 
 	executing = _Thread_Executing;
-	executing->Wait.return_code = LWP_SEMA_SUCCESSFUL;
+	executing->Wait.return_code = CORE_SEMAPHORE_STATUS_SUCCESSFUL;
 	if(the_semaphore->count!=0) {
 		--the_semaphore->count;
 		_CPU_ISR_Restore(level);
@@ -21,7 +21,7 @@ static __inline__ void _CORE_semaphore_Seize_isr_disable(CORE_semaphore_Control 
 
 	if(!wait) {
 		_CPU_ISR_Restore(level);
-		executing->Wait.return_code = LWP_SEMA_UNSATISFIED_NOWAIT;
+		executing->Wait.return_code = CORE_SEMAPHORE_STATUS_UNSATISFIED_NOWAIT;
 		return;
 	}
 

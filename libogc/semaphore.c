@@ -96,7 +96,7 @@ s32 LWP_SemInit(sem_t *sem,u32 start,u32 max)
 	if(!ret) return -1;
 
 	attr.maximum_count = max;
-	attr.discipline = LWP_SEMA_MODEFIFO;
+	attr.discipline = CORE_SEMAPHORE_DISCIPLINES_FIFO;
 	CORE_semaphore_Initialize(&ret->sema,&attr,start);
 
 	*sem = (sem_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_SEM)|LWP_OBJMASKID(ret->object.id));
@@ -111,17 +111,17 @@ s32 LWP_SemWait(sem_t sem)
 	lwp_sem = __lwp_sema_open(sem);
 	if(!lwp_sem) return -1;
 
-	_CORE_semaphore_Seize(&lwp_sem->sema,lwp_sem->object.id,TRUE,LWP_THREADQ_NOTIMEOUT);
+	_CORE_semaphore_Seize(&lwp_sem->sema,lwp_sem->object.id,TRUE,RTEMS_NO_TIMEOUT);
 	_Thread_Enable_dispatch();
 
 	switch(_Thread_Executing->Wait.return_code) {
-		case LWP_SEMA_SUCCESSFUL:
+		case CORE_SEMAPHORE_STATUS_SUCCESSFUL:
 			break;
-		case LWP_SEMA_UNSATISFIED_NOWAIT:
+		case CORE_SEMAPHORE_STATUS_UNSATISFIED_NOWAIT:
 			return EAGAIN;
-		case LWP_SEMA_DELETED:
+		case CORE_SEMAPHORE_WAS_DELETED:
 			return EAGAIN;
-		case LWP_SEMA_TIMEOUT:
+		case CORE_SEMAPHORE_TIMEOUT:
 			return ETIMEDOUT;
 			
 	}

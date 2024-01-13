@@ -42,7 +42,7 @@ void _DEFUN(__libogc_malloc_lock,(r),
 	if(!initialized) return;
 
 	_CPU_ISR_Disable(level);
-	_CORE_mutex_Seize(&mem_lock,MEMLOCK_MUTEX_ID,TRUE,LWP_THREADQ_NOTIMEOUT,level);
+	_CORE_mutex_Seize(&mem_lock,MEMLOCK_MUTEX_ID,TRUE,RTEMS_NO_TIMEOUT,level);
 }
 
 void _DEFUN(__libogc_malloc_unlock,(r),
@@ -64,7 +64,7 @@ void _DEFUN(__libogc_malloc_lock,(ptr),
 	if(!initialized) return;
 
 	_CPU_ISR_Disable(level);
-	_CORE_mutex_Seize(&mem_lock,MEMLOCK_MUTEX_ID,TRUE,LWP_THREADQ_NOTIMEOUT,level);
+	_CORE_mutex_Seize(&mem_lock,MEMLOCK_MUTEX_ID,TRUE,RTEMS_NO_TIMEOUT,level);
 	ptr->_errno = _Thread_Executing->wait.ret_code;
 }
 

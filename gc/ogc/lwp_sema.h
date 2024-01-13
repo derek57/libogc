@@ -4,14 +4,37 @@
 #include <gctypes.h>
 #include <lwp_threadq.h>
 
-#define LWP_SEMA_MODEFIFO				0
-#define LWP_SEMA_MODEPRIORITY			1
+typedef enum {
+  /** This specifies that threads will wait for the semaphore in FIFO order. */
+  CORE_SEMAPHORE_DISCIPLINES_FIFO,
+  /** This specifies that threads will wait for the semaphore in
+   *  priority order.
+   */
+  CORE_SEMAPHORE_DISCIPLINES_PRIORITY
+}   CORE_semaphore_Disciplines;
 
-#define LWP_SEMA_SUCCESSFUL				0
-#define LWP_SEMA_UNSATISFIED_NOWAIT		1
-#define LWP_SEMA_DELETED				2
-#define LWP_SEMA_TIMEOUT				3
-#define LWP_SEMA_MAXCNT_EXCEEDED		4
+typedef enum {
+  /** This status indicates that the operation completed successfully. */
+  CORE_SEMAPHORE_STATUS_SUCCESSFUL,
+  /** This status indicates that the calling task did not want to block
+   *  and the operation was unable to complete immediately because the
+   *  resource was unavailable.
+   */
+  CORE_SEMAPHORE_STATUS_UNSATISFIED_NOWAIT,
+  /** This status indicates that the thread was blocked waiting for an
+   *  operation to complete and the semaphore was deleted.
+   */
+  CORE_SEMAPHORE_WAS_DELETED,
+  /** This status indicates that the calling task was willing to block
+   *  but the operation was unable to complete within the time allotted
+   *  because the resource never became available.
+   */
+  CORE_SEMAPHORE_TIMEOUT,
+  /** This status indicates that an attempt was made to unlock the semaphore
+   *  and this would have made its count greater than that allowed.
+   */
+  CORE_SEMAPHORE_MAXIMUM_COUNT_EXCEEDED
+}   CORE_semaphore_Status;
 
 #ifdef __cplusplus
 extern "C" {
