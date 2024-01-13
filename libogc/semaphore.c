@@ -56,7 +56,7 @@ Objects_Information _lwp_sema_objects;
 
 void __lwp_sema_init()
 {
-	_Objects_Initialize_information(&_lwp_sema_objects,LWP_MAX_SEMAS,sizeof(sema_st));
+	_Objects_Initialize_information(&_lwp_sema_objects,CONFIGURE_MAXIMUM_POSIX_SEMAPHORES,sizeof(sema_st));
 }
 
 static __inline__ sema_st* __lwp_sema_open(sem_t sem)

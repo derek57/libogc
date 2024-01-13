@@ -6,7 +6,7 @@
 #include <lwp_threads.h>
 #include <lwp_watchdog.h>
 
-#define LWP_THREADQ_NOTIMEOUT		LWP_WD_NOTIMEOUT
+#define LWP_THREADQ_NOTIMEOUT		WATCHDOG_NO_TIMEOUT
 
 #ifdef __cplusplus
 extern "C" {

@@ -54,7 +54,7 @@ struct Thread_Control_struct {
 	u32 size;
 	u8 core_allocated_stack;
 	Chain_Control *ready;
-	Thread_queue_Control join_list;
+	Thread_queue_Control Join_List;
 	Context_Control Registers;		//16
 	void *libc_reent;
 };

@@ -580,7 +580,7 @@ u32 _Thread_Initialize(Thread_Control *the_thread,void *stack_area,u32 stack_siz
 	}
 	the_thread->size = actual_stack_size;
 
-	_Thread_queue_Initialize(&the_thread->join_list,THREAD_QUEUE_DISCIPLINE_FIFO,STATES_WAITING_FOR_JOIN_AT_EXIT,0);
+	_Thread_queue_Initialize(&the_thread->Join_List,THREAD_QUEUE_DISCIPLINE_FIFO,STATES_WAITING_FOR_JOIN_AT_EXIT,0);
 
 	memset(&the_thread->Registers,0,sizeof(the_thread->Registers));
 	memset(&the_thread->Wait,0,sizeof(the_thread->Wait));
@@ -615,7 +615,7 @@ void _Thread_Close(Thread_Control *the_thread)
 	
 	_CPU_ISR_Disable(level);
 	value_ptr = (void**)the_thread->Wait.return_argument;
-	while((p=_Thread_queue_Dequeue(&the_thread->join_list))!=NULL) {
+	while((p=_Thread_queue_Dequeue(&the_thread->Join_List))!=NULL) {
 		*(void**)p->Wait.return_argument = value_ptr;
 	}
 	the_thread->cpu_time_budget = 0;

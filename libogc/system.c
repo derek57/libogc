@@ -1055,7 +1055,7 @@ void rtems_initialize_executive_early()
 #endif
 	_Workspace_Handler_initialization(KERNEL_HEAP);
 	_Chain_Initialize_empty(&sys_reset_func_queue);
-	_Objects_Initialize_information(&sys_alarm_objects,LWP_MAX_WATCHDOGS,sizeof(alarm_st));
+	_Objects_Initialize_information(&sys_alarm_objects,CONFIGURE_MAXIMUM_POSIX_TIMERS,sizeof(alarm_st));
 	_System_state_Handler_initialization();
 	_Priority_Handler_initialization();
 	_Watchdog_Handler_initialization();

@@ -131,8 +131,8 @@ static void* _Thread_Idle_body(void *arg)
 
 void __lwp_sysinit()
 {
-	_Objects_Initialize_information(&_lwp_thr_objects,LWP_MAX_THREADS,sizeof(Thread_Control));
-	_Objects_Initialize_information(&_lwp_tqueue_objects,LWP_MAX_TQUEUES,sizeof(tqueue_st));
+	_Objects_Initialize_information(&_lwp_thr_objects,CONFIGURE_MAXIMUM_POSIX_THREADS,sizeof(Thread_Control));
+	_Objects_Initialize_information(&_lwp_tqueue_objects,CONFIGURE_MAXIMUM_POSIX_QUEUED_SIGNALS,sizeof(tqueue_st));
 
 	// create idle thread, is needed iff all threads are locked on a queue
 	_Thread_Idle = (Thread_Control*)_Objects_Allocate(&_lwp_thr_objects);
@@ -318,14 +318,14 @@ s32 LWP_JoinThread(lwp_t thethread,void **value_ptr)
 
 	exec = _Thread_Executing;
 	_CPU_ISR_Disable(level);
-	_Thread_queue_Enter_critical_section(&lwp_thread->join_list);
+	_Thread_queue_Enter_critical_section(&lwp_thread->Join_List);
 	exec->Wait.return_code = 0;
 	exec->Wait.return_argument_1 = NULL;
 	exec->Wait.return_argument = (void*)&return_ptr;
-	exec->Wait.queue = &lwp_thread->join_list;
+	exec->Wait.queue = &lwp_thread->Join_List;
 	exec->Wait.id = thethread;
 	_CPU_ISR_Restore(level);
-	_Thread_queue_Enqueue(&lwp_thread->join_list,LWP_WD_NOTIMEOUT);
+	_Thread_queue_Enqueue(&lwp_thread->Join_List,WATCHDOG_NO_TIMEOUT);
 	_Thread_Enable_dispatch();
 
 	if(value_ptr) *value_ptr = return_ptr;

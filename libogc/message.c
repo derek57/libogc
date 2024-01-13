@@ -54,7 +54,7 @@ Objects_Information _lwp_mqbox_objects;
 
 void __lwp_mqbox_init()
 {
-	_Objects_Initialize_information(&_lwp_mqbox_objects,LWP_MAX_MQUEUES,sizeof(mqbox_st));
+	_Objects_Initialize_information(&_lwp_mqbox_objects,CONFIGURE_MAXIMUM_POSIX_MESSAGE_QUEUES,sizeof(mqbox_st));
 }
 
 static __inline__ mqbox_st* __lwp_mqbox_open(mqbox_t mbox)

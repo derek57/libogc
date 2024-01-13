@@ -58,7 +58,7 @@ extern void timespec_subtract(const struct timespec *tp_start,const struct times
 
 void __lwp_cond_init()
 {
-	_Objects_Initialize_information(&_lwp_cond_objects,LWP_MAX_CONDVARS,sizeof(cond_st));
+	_Objects_Initialize_information(&_lwp_cond_objects,CONFIGURE_MAXIMUM_POSIX_CONDITION_VARIABLES,sizeof(cond_st));
 }
 
 static __inline__ cond_st* __lwp_cond_open(cond_t cond)

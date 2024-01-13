@@ -68,7 +68,7 @@ static s32 __lwp_mutex_locksupp(mutex_t lock,u32 timeout,u8 block)
 
 void __lwp_mutex_init()
 {
-	_Objects_Initialize_information(&_lwp_mutex_objects,LWP_MAX_MUTEXES,sizeof(mutex_st));
+	_Objects_Initialize_information(&_lwp_mutex_objects,CONFIGURE_MAXIMUM_POSIX_MUTEXES,sizeof(mutex_st));
 }
 
 

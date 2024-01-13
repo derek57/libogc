@@ -58,7 +58,7 @@ typedef enum {
   WATCHDOG_BACKWARD      /* adjust delta value backward */
 } Watchdog_Adjust_directions;
 								
-#define LWP_WD_NOTIMEOUT			0
+#define WATCHDOG_NO_TIMEOUT			0
 
 #define LWP_WD_ABS(x)				((s64)(x)>0?(s64)(x):-((s64)(x)))
 
