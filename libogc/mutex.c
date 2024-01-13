@@ -111,7 +111,7 @@ s32 LWP_MutexInit(mutex_t *mutex,bool use_recursive)
 	attr.discipline = LWP_MUTEX_FIFO;
 	attr.lock_nesting_behavior = use_recursive?LWP_MUTEX_NEST_ACQUIRE:LWP_MUTEX_NEST_ERROR;
 	attr.only_owner_release = TRUE;
-	attr.priority_ceiling = 1; //__lwp_priotocore(LWP_PRIO_MAX-1);
+	attr.priority_ceiling = 1; //__lwp_priotocore(PRIORITY_MAXIMUM-1);
 	_CORE_mutex_Initialize(&ret->mutex,&attr,LWP_MUTEX_UNLOCKED);
 
 	*mutex = (mutex_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_MUTEX)|LWP_OBJMASKID(ret->object.id));

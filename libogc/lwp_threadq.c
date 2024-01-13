@@ -135,7 +135,7 @@ void _Thread_queue_Enqueue_priority(Thread_queue_Control *the_thread_queue,Threa
 	printf("_Thread_queue_Enqueue_priority(%p,forward_search)\n",the_thread);
 #endif
 forward_search:
-	search_priority = LWP_PRIO_MIN - 1;
+	search_priority = PRIORITY_MINIMUM - 1;
 	_CPU_ISR_Disable(level);
 	search_thread = (Thread_Control*)header->first;
 	while(!_Chain_Is_tail(header,(Chain_Node*)search_thread)) {
@@ -165,7 +165,7 @@ forward_search:
 	return;
 
 reverse_search:
-	search_priority = LWP_PRIO_MAX + 1;
+	search_priority = PRIORITY_MAXIMUM + 1;
 	_CPU_ISR_Disable(level);
 	search_thread = (Thread_Control*)header->last;
 	while(!_Chain_Is_head(header,(Chain_Node*)search_thread)) {

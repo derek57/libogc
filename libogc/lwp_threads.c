@@ -729,7 +729,7 @@ void _Thread_Handler_initialization()
 
 	memset(&_Thread_BSP_context,0,sizeof(_Thread_BSP_context));
 
-	for(index=0;index<=LWP_PRIO_MAX;index++)
+	for(index=0;index<=PRIORITY_MAXIMUM;index++)
 		_Chain_Initialize_empty(&_Thread_Ready_chain[index]);
 	
 	_System_state_Set(SYSTEM_STATE_BEFORE_MULTITASKING);

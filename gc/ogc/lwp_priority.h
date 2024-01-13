@@ -4,8 +4,8 @@
 #include <gctypes.h>
 #include "machine/processor.h"
 
-#define LWP_PRIO_MIN				0
-#define LWP_PRIO_MAX				255
+#define PRIORITY_MINIMUM      0         /* highest thread priority */
+#define PRIORITY_MAXIMUM      255       /* lowest thread priority */
 
 #ifdef __cplusplus
 extern "C" {
