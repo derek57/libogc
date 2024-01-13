@@ -93,7 +93,7 @@ s32 MQ_Init(mqbox_t *mqbox,u32 count)
 	ret = __lwp_mqbox_allocate();
 	if(!ret) return MQ_ERROR_TOOMANY;
 
-	attr.discipline = LWP_MQ_FIFO;
+	attr.discipline = CORE_MESSAGE_QUEUE_DISCIPLINES_FIFO;
 	if(!_CORE_message_queue_Initialize(&ret->mqueue,&attr,count,sizeof(mqmsg_t))) {
 		__lwp_mqbox_free(ret);
 		_Thread_Enable_dispatch();
@@ -128,7 +128,7 @@ BOOL MQ_Send(mqbox_t mqbox,mqmsg_t msg,u32 flags)
 	if(!mbox) return FALSE;
 
 	ret = FALSE;
-	if(_CORE_message_queue_Submit(&mbox->mqueue,mbox->object.id,(void*)&msg,sizeof(mqmsg_t),LWP_MQ_SEND_REQUEST,wait,LWP_THREADQ_NOTIMEOUT)==LWP_MQ_STATUS_SUCCESSFUL) ret = TRUE;
+	if(_CORE_message_queue_Submit(&mbox->mqueue,mbox->object.id,(void*)&msg,sizeof(mqmsg_t),CORE_MESSAGE_QUEUE_SEND_REQUEST,wait,LWP_THREADQ_NOTIMEOUT)==CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL) ret = TRUE;
 	_Thread_Enable_dispatch();
 
 	return ret;
@@ -144,7 +144,7 @@ BOOL MQ_Receive(mqbox_t mqbox,mqmsg_t *msg,u32 flags)
 	if(!mbox) return FALSE;
 
 	ret = FALSE;
-	if(_CORE_message_queue_Seize(&mbox->mqueue,mbox->object.id,(void*)msg,&tmp,wait,LWP_THREADQ_NOTIMEOUT)==LWP_MQ_STATUS_SUCCESSFUL) ret = TRUE;
+	if(_CORE_message_queue_Seize(&mbox->mqueue,mbox->object.id,(void*)msg,&tmp,wait,LWP_THREADQ_NOTIMEOUT)==CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL) ret = TRUE;
 	_Thread_Enable_dispatch();
 
 	return ret;
@@ -160,7 +160,7 @@ BOOL MQ_Jam(mqbox_t mqbox,mqmsg_t msg,u32 flags)
 	if(!mbox) return FALSE;
 
 	ret = FALSE;
-	if(_CORE_message_queue_Submit(&mbox->mqueue,mbox->object.id,(void*)&msg,sizeof(mqmsg_t),LWP_MQ_SEND_URGENT,wait,LWP_THREADQ_NOTIMEOUT)==LWP_MQ_STATUS_SUCCESSFUL) ret = TRUE;
+	if(_CORE_message_queue_Submit(&mbox->mqueue,mbox->object.id,(void*)&msg,sizeof(mqmsg_t),CORE_MESSAGE_QUEUE_URGENT_REQUEST,wait,LWP_THREADQ_NOTIMEOUT)==CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL) ret = TRUE;
 	_Thread_Enable_dispatch();
 
 	return ret;

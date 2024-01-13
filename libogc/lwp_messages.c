@@ -13,10 +13,10 @@ void _CORE_message_queue_Insert_message(CORE_message_queue_Control *the_message_
 #endif
 
 	switch(submit_type) {
-		case LWP_MQ_SEND_REQUEST:
+		case CORE_MESSAGE_QUEUE_SEND_REQUEST:
 			_CORE_message_queue_Append(the_message_queue,the_message);
 			break;
-		case LWP_MQ_SEND_URGENT:
+		case CORE_MESSAGE_QUEUE_URGENT_REQUEST:
 			_CORE_message_queue_Prepend(the_message_queue,the_message);
 			break;
 		default:
@@ -68,7 +68,7 @@ u32 _CORE_message_queue_Initialize(CORE_message_queue_Control *the_message_queue
 
 	_Chain_Initialize(&the_message_queue->Inactive_messages,the_message_queue->message_buffers,maximum_pending_messages,(allocated_message_size+sizeof(CORE_message_queue_Buffer_control)));
 	_Chain_Initialize_empty(&the_message_queue->Pending_messages);
-	_Thread_queue_Initialize(&the_message_queue->Wait_queue,_CORE_message_queue_Is_priority(the_message_queue_attributes)?THREAD_QUEUE_DISCIPLINE_PRIORITY:THREAD_QUEUE_DISCIPLINE_FIFO,STATES_WAITING_FOR_MESSAGE,LWP_MQ_STATUS_TIMEOUT);
+	_Thread_queue_Initialize(&the_message_queue->Wait_queue,_CORE_message_queue_Is_priority(the_message_queue_attributes)?THREAD_QUEUE_DISCIPLINE_PRIORITY:THREAD_QUEUE_DISCIPLINE_FIFO,STATES_WAITING_FOR_MESSAGE,CORE_MESSAGE_QUEUE_STATUS_TIMEOUT);
 
 	return 1;
 }
@@ -80,7 +80,7 @@ u32 _CORE_message_queue_Seize(CORE_message_queue_Control *the_message_queue,u32 
 	Thread_Control *executing,*the_thread;
 
 	executing = _Thread_Executing;
-	executing->Wait.return_code = LWP_MQ_STATUS_SUCCESSFUL;
+	executing->Wait.return_code = CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL;
 #ifdef _LWPMQ_DEBUG
 	printf("_CORE_message_queue_Seize(%p,%d,%p,%p,%d,%d)\n",the_message_queue,id,buffer,size,wait,the_message_queue->num_pendingmsgs);
 #endif
@@ -98,7 +98,7 @@ u32 _CORE_message_queue_Seize(CORE_message_queue_Control *the_message_queue,u32 
 		the_thread = _Thread_queue_Dequeue(&the_message_queue->Wait_queue);
 		if(!the_thread) {
 			_CORE_message_queue_Free_message_buffer(the_message_queue,the_message);
-			return LWP_MQ_STATUS_SUCCESSFUL;
+			return CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL;
 		}
 
 		the_message->priority = the_thread->Wait.count;
@@ -106,13 +106,13 @@ u32 _CORE_message_queue_Seize(CORE_message_queue_Control *the_message_queue,u32 
 		_CORE_message_queue_Copy_buffer(the_message->Contents.buffer,the_thread->Wait.return_argument,the_message->Contents.size);
 		
 		_CORE_message_queue_Insert_message(the_message_queue,the_message,the_message->priority);
-		return LWP_MQ_STATUS_SUCCESSFUL;
+		return CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL;
 	}
 
 	if(!wait) {
 		_CPU_ISR_Restore(level);
-		executing->Wait.return_code = LWP_MQ_STATUS_UNSATISFIED_NOWAIT;
-		return LWP_MQ_STATUS_UNSATISFIED_NOWAIT;
+		executing->Wait.return_code = CORE_MESSAGE_QUEUE_STATUS_UNSATISFIED_NOWAIT;
+		return CORE_MESSAGE_QUEUE_STATUS_UNSATISFIED_NOWAIT;
 	}
 
 	_Thread_queue_Enter_critical_section(&the_message_queue->Wait_queue);
@@ -123,7 +123,7 @@ u32 _CORE_message_queue_Seize(CORE_message_queue_Control *the_message_queue,u32 
 	_CPU_ISR_Restore(level);
 
 	_Thread_queue_Enqueue(&the_message_queue->Wait_queue,timeout);
-	return LWP_MQ_STATUS_SUCCESSFUL;
+	return CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL;
 }
 
 u32 _CORE_message_queue_Submit(CORE_message_queue_Control *the_message_queue,u32 id,void *buffer,u32 size,u32 submit_type,u32 wait,u64 timeout)
@@ -136,7 +136,7 @@ u32 _CORE_message_queue_Submit(CORE_message_queue_Control *the_message_queue,u32
 	printf("_CORE_message_queue_Submit(%p,%p,%d,%d,%d,%d)\n",the_message_queue,buffer,size,id,submit_type,wait);
 #endif
 	if(size>the_message_queue->maximum_message_size)
-		return LWP_MQ_STATUS_INVALID_SIZE;
+		return CORE_MESSAGE_QUEUE_STATUS_INVALID_SIZE;
 
 	if(the_message_queue->number_of_pending_messages==0) {
 		the_thread = _Thread_queue_Dequeue(&the_message_queue->Wait_queue);
@@ -144,23 +144,23 @@ u32 _CORE_message_queue_Submit(CORE_message_queue_Control *the_message_queue,u32
 			_CORE_message_queue_Copy_buffer(the_thread->Wait.return_argument,buffer,size);
 			*(u32*)the_thread->Wait.return_argument_1 = size;
 			the_thread->Wait.count = submit_type;
-			return LWP_MQ_STATUS_SUCCESSFUL;
+			return CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL;
 		}
 	}
 
 	if(the_message_queue->number_of_pending_messages<the_message_queue->maximum_pending_messages) {
 		the_message = _CORE_message_queue_Allocate_message_buffer(the_message_queue);
-		if(!the_message) return LWP_MQ_STATUS_UNSATISFIED;
+		if(!the_message) return CORE_MESSAGE_QUEUE_STATUS_UNSATISFIED;
 
 		_CORE_message_queue_Copy_buffer(the_message->Contents.buffer,buffer,size);
 		the_message->Contents.size = size;
 		the_message->priority = submit_type;
 		_CORE_message_queue_Insert_message(the_message_queue,the_message,submit_type);
-		return LWP_MQ_STATUS_SUCCESSFUL;
+		return CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL;
 	}
 
-	if(!wait) return LWP_MQ_STATUS_TOO_MANY;
-	if(_ISR_Is_in_progress()) return LWP_MQ_STATUS_UNSATISFIED;
+	if(!wait) return CORE_MESSAGE_QUEUE_STATUS_TOO_MANY;
+	if(_ISR_Is_in_progress()) return CORE_MESSAGE_QUEUE_STATUS_UNSATISFIED;
 
 	{
 		Thread_Control *exec = _Thread_Executing;
@@ -176,7 +176,7 @@ u32 _CORE_message_queue_Submit(CORE_message_queue_Control *the_message_queue,u32
 		
 		_Thread_queue_Enqueue(&the_message_queue->Wait_queue,timeout);
 	}
-	return LWP_MQ_STATUS_UNSATISFIED_WAIT;
+	return CORE_MESSAGE_QUEUE_STATUS_UNSATISFIED_WAIT;
 }
 
 u32 _CORE_message_queue_Broadcast(CORE_message_queue_Control *the_message_queue,void *buffer,u32 size,u32 id,u32 *count)
@@ -190,7 +190,7 @@ u32 _CORE_message_queue_Broadcast(CORE_message_queue_Control *the_message_queue,
 #endif
 	if(the_message_queue->number_of_pending_messages!=0) {
 		*count = 0;
-		return LWP_MQ_STATUS_SUCCESSFUL;
+		return CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL;
 	}
 
 	number_broadcasted = 0;
@@ -206,7 +206,7 @@ u32 _CORE_message_queue_Broadcast(CORE_message_queue_Control *the_message_queue,
 		*(u32*)waitp->return_argument = size;
 	}
 	*count = number_broadcasted;
-	return LWP_MQ_STATUS_SUCCESSFUL;
+	return CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL;
 }
 
 void _CORE_message_queue_Close(CORE_message_queue_Control *the_message_queue,u32 status)
@@ -254,5 +254,5 @@ u32 _CORE_message_queue_Flush_support(CORE_message_queue_Control *the_message_qu
 
 void _CORE_message_queue_Flush_waiting_threads(CORE_message_queue_Control *the_message_queue)
 {
-	_Thread_queue_Flush(&the_message_queue->Wait_queue,LWP_MQ_STATUS_UNSATISFIED_NOWAIT);
+	_Thread_queue_Flush(&the_message_queue->Wait_queue,CORE_MESSAGE_QUEUE_STATUS_UNSATISFIED_NOWAIT);
 }

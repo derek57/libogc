@@ -8,20 +8,38 @@
 
 //#define _LWPMQ_DEBUG
 
-#define LWP_MQ_FIFO							0
-#define LWP_MQ_PRIORITY						1
+typedef enum {
+  /** This value indicates that blocking tasks are in FIFO order. */
+  CORE_MESSAGE_QUEUE_DISCIPLINES_FIFO,
+  /** This value indicates that blocking tasks are in priority order. */
+  CORE_MESSAGE_QUEUE_DISCIPLINES_PRIORITY
+}   CORE_message_queue_Disciplines;
 
-#define LWP_MQ_STATUS_SUCCESSFUL			0
-#define LWP_MQ_STATUS_INVALID_SIZE			1
-#define LWP_MQ_STATUS_TOO_MANY				2
-#define LWP_MQ_STATUS_UNSATISFIED			3
-#define LWP_MQ_STATUS_UNSATISFIED_NOWAIT	4
-#define LWP_MQ_STATUS_DELETED				5
-#define LWP_MQ_STATUS_TIMEOUT				6
-#define LWP_MQ_STATUS_UNSATISFIED_WAIT		7
+typedef enum {
+  /** This value indicates the operation completed sucessfully. */
+  CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL,
+  /** This value indicates that the message was too large for this queue. */
+  CORE_MESSAGE_QUEUE_STATUS_INVALID_SIZE,
+  /** This value indicates that there are too many messages pending. */
+  CORE_MESSAGE_QUEUE_STATUS_TOO_MANY,
+  /** This value indicates that a receive was unsuccessful. */
+  CORE_MESSAGE_QUEUE_STATUS_UNSATISFIED,
+  /** This value indicates that a blocking send was unsuccessful. */
+  CORE_MESSAGE_QUEUE_STATUS_UNSATISFIED_NOWAIT,
+  /** This value indicates that the message queue being blocked upon
+   *  was deleted while the thread was waiting.
+   */
+  CORE_MESSAGE_QUEUE_STATUS_WAS_DELETED,
+  /** This value indicates that the thread had to timeout while waiting
+   *  to receive a message because one did not become available.
+   */
+  CORE_MESSAGE_QUEUE_STATUS_TIMEOUT,
+  /** This value indicates that a blocking receive was unsuccessful. */
+  CORE_MESSAGE_QUEUE_STATUS_UNSATISFIED_WAIT
+}   CORE_message_queue_Status;
 
-#define LWP_MQ_SEND_REQUEST					INT_MAX
-#define LWP_MQ_SEND_URGENT					INT_MIN
+#define CORE_MESSAGE_QUEUE_SEND_REQUEST					INT_MAX
+#define CORE_MESSAGE_QUEUE_URGENT_REQUEST					INT_MIN
 
 #ifdef __cplusplus
 extern "C" {

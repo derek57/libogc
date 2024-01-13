@@ -9,7 +9,7 @@ static __inline__ void _CORE_message_queue_Set_notify(CORE_message_queue_Control
 
 static __inline__ u32 _CORE_message_queue_Is_priority(CORE_message_queue_Attributes *the_attribute)
 {
-	return (the_attribute->discipline==LWP_MQ_PRIORITY);
+	return (the_attribute->discipline==CORE_MESSAGE_QUEUE_DISCIPLINES_PRIORITY);
 }
 
 static __inline__ CORE_message_queue_Buffer_control* _CORE_message_queue_Allocate_message_buffer(CORE_message_queue_Control *the_message_queue)
@@ -40,12 +40,12 @@ static __inline__ void _CORE_message_queue_Prepend(CORE_message_queue_Control *t
 
 static __inline__ u32 _CORE_message_queue_Send(CORE_message_queue_Control *the_message_queue,u32 id,void *buffer,u32 size,u32 wait,u32 timeout)
 {
-	return _CORE_message_queue_Submit(the_message_queue,id,buffer,size,LWP_MQ_SEND_REQUEST,wait,timeout);
+	return _CORE_message_queue_Submit(the_message_queue,id,buffer,size,CORE_MESSAGE_QUEUE_SEND_REQUEST,wait,timeout);
 }
 
 static __inline__ u32 _CORE_message_queue_Urgent(CORE_message_queue_Control *the_message_queue,void *buffer,u32 size,u32 id,u32 wait,u32 timeout)
 {
-	return _CORE_message_queue_Submit(the_message_queue,id,buffer,size,LWP_MQ_SEND_URGENT,wait,timeout);
+	return _CORE_message_queue_Submit(the_message_queue,id,buffer,size,CORE_MESSAGE_QUEUE_URGENT_REQUEST,wait,timeout);
 }
 
 static __inline__ CORE_message_queue_Buffer_control* _CORE_message_queue_Get_pending_message(CORE_message_queue_Control *the_message_queue)
