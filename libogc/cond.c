@@ -154,7 +154,7 @@ s32 LWP_CondInit(cond_t *cond)
 	if(!ret) return ENOMEM;
 
 	ret->lock = LWP_MUTEX_NULL;
-	_Thread_queue_Initialize(&ret->wait_queue,LWP_THREADQ_MODEFIFO,LWP_STATES_WAITING_FOR_CONDVAR,ETIMEDOUT);
+	_Thread_queue_Initialize(&ret->wait_queue,THREAD_QUEUE_DISCIPLINE_FIFO,LWP_STATES_WAITING_FOR_CONDVAR,ETIMEDOUT);
 
 	*cond = (cond_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_COND)|LWP_OBJMASKID(ret->object.id));
 	_Thread_Enable_dispatch();

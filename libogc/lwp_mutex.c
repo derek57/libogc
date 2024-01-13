@@ -17,7 +17,7 @@ void _CORE_mutex_Initialize(CORE_mutex_Control *the_mutex,CORE_mutex_Attributes 
 		the_mutex->holder = NULL;
 	}
 
-	_Thread_queue_Initialize(&the_mutex->Wait_queue,_CORE_mutex_Is_fifo(the_mutex_attributes)?LWP_THREADQ_MODEFIFO:LWP_THREADQ_MODEPRIORITY,LWP_STATES_WAITING_FOR_MUTEX,LWP_MUTEX_TIMEOUT);
+	_Thread_queue_Initialize(&the_mutex->Wait_queue,_CORE_mutex_Is_fifo(the_mutex_attributes)?THREAD_QUEUE_DISCIPLINE_FIFO:THREAD_QUEUE_DISCIPLINE_PRIORITY,LWP_STATES_WAITING_FOR_MUTEX,LWP_MUTEX_TIMEOUT);
 }
 
 u32 _CORE_mutex_Surrender(CORE_mutex_Control *the_mutex)

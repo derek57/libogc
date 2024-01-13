@@ -341,7 +341,7 @@ s32 LWP_InitQueue(lwpq_t *thequeue)
 	tq = __lwp_tqueue_allocate();
 	if(!tq) return -1;
 
-	_Thread_queue_Initialize(&tq->tqueue,LWP_THREADQ_MODEFIFO,LWP_STATES_WAITING_ON_THREADQ,0);
+	_Thread_queue_Initialize(&tq->tqueue,THREAD_QUEUE_DISCIPLINE_FIFO,LWP_STATES_WAITING_ON_THREADQ,0);
 
 	*thequeue = (lwpq_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_TQUEUE)|LWP_OBJMASKID(tq->object.id));
 	_Thread_Enable_dispatch();

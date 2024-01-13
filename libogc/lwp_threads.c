@@ -580,7 +580,7 @@ u32 _Thread_Initialize(Thread_Control *the_thread,void *stack_area,u32 stack_siz
 	}
 	the_thread->size = actual_stack_size;
 
-	_Thread_queue_Initialize(&the_thread->join_list,LWP_THREADQ_MODEFIFO,LWP_STATES_WAITING_FOR_JOINATEXIT,0);
+	_Thread_queue_Initialize(&the_thread->join_list,THREAD_QUEUE_DISCIPLINE_FIFO,LWP_STATES_WAITING_FOR_JOINATEXIT,0);
 
 	memset(&the_thread->Registers,0,sizeof(the_thread->Registers));
 	memset(&the_thread->Wait,0,sizeof(the_thread->Wait));

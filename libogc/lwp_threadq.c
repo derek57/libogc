@@ -13,8 +13,8 @@ static void _Thread_queue_Timeout(void *usr_data)
 	_Thread_Disable_dispatch();
 	the_thread = (Thread_Control*)usr_data;
 	the_thread_queue = the_thread->Wait.queue;
-	if(the_thread_queue->sync_state!=LWP_THREADQ_SYNCHRONIZED && _Thread_Is_executing(the_thread)) {
-		if(the_thread_queue->sync_state!=LWP_THREADQ_SATISFIED) the_thread_queue->sync_state = LWP_THREADQ_TIMEOUT;
+	if(the_thread_queue->sync_state!=THREAD_QUEUE_SYNCHRONIZED && _Thread_Is_executing(the_thread)) {
+		if(the_thread_queue->sync_state!=THREAD_QUEUE_SATISFIED) the_thread_queue->sync_state = THREAD_QUEUE_TIMEOUT;
 	} else {
 		the_thread->Wait.return_code = the_thread->Wait.queue->timeout_status;
 		_Thread_queue_Extract(the_thread->Wait.queue,the_thread);
@@ -34,7 +34,7 @@ Thread_Control* _Thread_queue_First_priority(Thread_queue_Control *the_thread_qu
 {
 	u32 index;
 
-	for(index=0;index<LWP_THREADQ_NUM_PRIOHEADERS;index++) {
+	for(index=0;index<TASK_QUEUE_DATA_NUMBER_OF_PRIORITY_HEADERS;index++) {
 		if(!_Chain_Is_empty(&the_thread_queue->Queues.Priority[index]))
 			return (Thread_Control*)the_thread_queue->Queues.Priority[index].first;
 	}
@@ -48,22 +48,22 @@ void _Thread_queue_Enqueue_fifo(Thread_queue_Control *the_thread_queue,Thread_Co
 	_CPU_ISR_Disable(level);
 	
 	sync_state = the_thread_queue->sync_state;
-	the_thread_queue->sync_state = LWP_THREADQ_SYNCHRONIZED;
+	the_thread_queue->sync_state = THREAD_QUEUE_SYNCHRONIZED;
 #ifdef _LWPTHRQ_DEBUG
 	printf("_Thread_queue_Enqueue_fifo(%p,%d)\n",the_thread,sync_state);
 #endif
 	switch(sync_state) {
-		case LWP_THREADQ_SYNCHRONIZED:
+		case THREAD_QUEUE_SYNCHRONIZED:
 			break;
-		case LWP_THREADQ_NOTHINGHAPPEND:
+		case THREAD_QUEUE_NOTHING_HAPPENED:
 			_Chain_Append_unprotected(&the_thread_queue->Queues.Fifo,&the_thread->Object.Node);
 			_CPU_ISR_Restore(level);
 			return;
-		case LWP_THREADQ_TIMEOUT:
+		case THREAD_QUEUE_TIMEOUT:
 			the_thread->Wait.return_code = the_thread->Wait.queue->timeout_status;
 			_CPU_ISR_Restore(level);
 			break;
-		case LWP_THREADQ_SATISFIED:
+		case THREAD_QUEUE_SATISFIED:
 			if(_Watchdog_Is_active(&the_thread->Timer)) {
 				_Watchdog_Deactivate(&the_thread->Timer);
 				_CPU_ISR_Restore(level);
@@ -97,13 +97,13 @@ Thread_Control* _Thread_queue_Dequeue_fifo(Thread_queue_Control *the_thread_queu
 	}
 	
 	switch(the_thread_queue->sync_state) {
-		case LWP_THREADQ_SYNCHRONIZED:
-		case LWP_THREADQ_SATISFIED:
+		case THREAD_QUEUE_SYNCHRONIZED:
+		case THREAD_QUEUE_SATISFIED:
 			_CPU_ISR_Restore(level);
 			return NULL;
-		case LWP_THREADQ_NOTHINGHAPPEND:
-		case LWP_THREADQ_TIMEOUT:
-			the_thread_queue->sync_state = LWP_THREADQ_SATISFIED;
+		case THREAD_QUEUE_NOTHING_HAPPENED:
+		case THREAD_QUEUE_TIMEOUT:
+			the_thread_queue->sync_state = THREAD_QUEUE_SATISFIED;
 			_CPU_ISR_Restore(level);
 			return _Thread_Executing;
 	}
@@ -120,11 +120,11 @@ void _Thread_queue_Enqueue_priority(Thread_queue_Control *the_thread_queue,Threa
 	_Chain_Initialize_empty(&the_thread->Wait.Block2n);
 	
 	priority = the_thread->current_priority;
-	header_index = priority/LWP_THREADQ_PRIOPERHEADER;
+	header_index = priority/TASK_QUEUE_DATA_PRIORITIES_PER_HEADER;
 	header = &the_thread_queue->Queues.Priority[header_index];
 	block_state = the_thread_queue->state;
 
-	if(priority&LWP_THREADQ_REVERSESEARCHMASK) {
+	if(priority&TASK_QUEUE_DATA_REVERSE_SEARCH_MASK) {
 #ifdef _LWPTHRQ_DEBUG
 		printf("_Thread_queue_Enqueue_priority(%p,reverse_search)\n",the_thread);
 #endif
@@ -149,8 +149,8 @@ forward_search:
 		}
 		search_thread = (Thread_Control*)search_thread->Object.Node.next;
 	}
-	if(the_thread_queue->sync_state!=LWP_THREADQ_NOTHINGHAPPEND) goto synchronize;
-	the_thread_queue->sync_state = LWP_THREADQ_SYNCHRONIZED;
+	if(the_thread_queue->sync_state!=THREAD_QUEUE_NOTHING_HAPPENED) goto synchronize;
+	the_thread_queue->sync_state = THREAD_QUEUE_SYNCHRONIZED;
 	if(priority==search_priority) goto equal_prio;
 
 	search_node = (Chain_Node*)search_thread;
@@ -179,8 +179,8 @@ reverse_search:
 		}
 		search_thread = (Thread_Control*)search_thread->Object.Node.previous;
 	}
-	if(the_thread_queue->sync_state!=LWP_THREADQ_NOTHINGHAPPEND) goto synchronize;
-	the_thread_queue->sync_state = LWP_THREADQ_SYNCHRONIZED;
+	if(the_thread_queue->sync_state!=THREAD_QUEUE_NOTHING_HAPPENED) goto synchronize;
+	the_thread_queue->sync_state = THREAD_QUEUE_SYNCHRONIZED;
 	if(priority==search_priority) goto equal_prio;
 
 	search_node = (Chain_Node*)search_thread;
@@ -211,21 +211,21 @@ equal_prio:
 
 synchronize:
 	sync_state = the_thread_queue->sync_state;
-	the_thread_queue->sync_state = LWP_THREADQ_SYNCHRONIZED;
+	the_thread_queue->sync_state = THREAD_QUEUE_SYNCHRONIZED;
 
 #ifdef _LWPTHRQ_DEBUG
 	printf("_Thread_queue_Enqueue_priority(%p,sync_state = %d)\n",the_thread,sync_state);
 #endif
 	switch(sync_state) {
-		case LWP_THREADQ_SYNCHRONIZED:
+		case THREAD_QUEUE_SYNCHRONIZED:
 			break;
-		case LWP_THREADQ_NOTHINGHAPPEND:
+		case THREAD_QUEUE_NOTHING_HAPPENED:
 			break;
-		case LWP_THREADQ_TIMEOUT:
+		case THREAD_QUEUE_TIMEOUT:
 			the_thread->Wait.return_code = the_thread->Wait.queue->timeout_status;
 			_CPU_ISR_Restore(level);
 			break;
-		case LWP_THREADQ_SATISFIED:
+		case THREAD_QUEUE_SATISFIED:
 			if(_Watchdog_Is_active(&the_thread->Timer)) {
 				_Watchdog_Deactivate(&the_thread->Timer);
 				_CPU_ISR_Restore(level);
@@ -244,7 +244,7 @@ Thread_Control* _Thread_queue_Dequeue_priority(Thread_queue_Control *the_thread_
 	Chain_Node *new_first_node,*new_second_node,*last_node,*next_node,*previous_node;
 
 	_CPU_ISR_Disable(level);
-	for(index=0;index<LWP_THREADQ_NUM_PRIOHEADERS;index++) {
+	for(index=0;index<TASK_QUEUE_DATA_NUMBER_OF_PRIORITY_HEADERS;index++) {
 		if(!_Chain_Is_empty(&the_thread_queue->Queues.Priority[index])) {
 			the_thread	 = (Thread_Control*)the_thread_queue->Queues.Priority[index].first;
 			goto dequeue;
@@ -255,13 +255,13 @@ Thread_Control* _Thread_queue_Dequeue_priority(Thread_queue_Control *the_thread_
 	printf("_Thread_queue_Dequeue_priority(%p,sync_state = %d)\n",the_thread,the_thread_queue->sync_state);
 #endif
 	switch(the_thread_queue->sync_state) {
-		case LWP_THREADQ_SYNCHRONIZED:
-		case LWP_THREADQ_SATISFIED:
+		case THREAD_QUEUE_SYNCHRONIZED:
+		case THREAD_QUEUE_SATISFIED:
 			_CPU_ISR_Restore(level);
 			return NULL;
-		case LWP_THREADQ_NOTHINGHAPPEND:
-		case LWP_THREADQ_TIMEOUT:
-			the_thread_queue->sync_state = LWP_THREADQ_SATISFIED;
+		case THREAD_QUEUE_NOTHING_HAPPENED:
+		case THREAD_QUEUE_TIMEOUT:
+			the_thread_queue->sync_state = THREAD_QUEUE_SATISFIED;
 			_CPU_ISR_Restore(level);
 			return _Thread_Executing;
 	}
@@ -312,16 +312,16 @@ void _Thread_queue_Initialize(Thread_queue_Control *the_thread_queue,u32 the_dis
 	the_thread_queue->state = state;
 	the_thread_queue->discipline = the_discipline;
 	the_thread_queue->timeout_status = timeout_status;
-	the_thread_queue->sync_state = LWP_THREADQ_SYNCHRONIZED;
+	the_thread_queue->sync_state = THREAD_QUEUE_SYNCHRONIZED;
 #ifdef _LWPTHRQ_DEBUG
 	printf("_Thread_queue_Initialize(%p,%08x,%d,%d)\n",the_thread_queue,state,timeout_status,the_discipline);
 #endif
 	switch(the_discipline) {
-		case LWP_THREADQ_MODEFIFO:
+		case THREAD_QUEUE_DISCIPLINE_FIFO:
 			_Chain_Initialize_empty(&the_thread_queue->Queues.Fifo);
 			break;
-		case LWP_THREADQ_MODEPRIORITY:
-			for(index=0;index<LWP_THREADQ_NUM_PRIOHEADERS;index++)
+		case THREAD_QUEUE_DISCIPLINE_PRIORITY:
+			for(index=0;index<TASK_QUEUE_DATA_NUMBER_OF_PRIORITY_HEADERS;index++)
 				_Chain_Initialize_empty(&the_thread_queue->Queues.Priority[index]);
 			break;
 	}
@@ -332,10 +332,10 @@ Thread_Control* _Thread_queue_First(Thread_queue_Control *the_thread_queue)
 	Thread_Control *the_thread;
 
 	switch(the_thread_queue->discipline) {
-		case LWP_THREADQ_MODEFIFO:
+		case THREAD_QUEUE_DISCIPLINE_FIFO:
 			the_thread = _Thread_queue_First_fifo(the_thread_queue);
 			break;
-		case LWP_THREADQ_MODEPRIORITY:
+		case THREAD_QUEUE_DISCIPLINE_PRIORITY:
 			the_thread = _Thread_queue_First_priority(the_thread_queue);
 			break;
 		default:
@@ -362,10 +362,10 @@ void _Thread_queue_Enqueue(Thread_queue_Control *the_thread_queue,u64 timeout)
 	printf("_Thread_queue_Enqueue(%p,%p,%d)\n",the_thread_queue,the_thread,the_thread_queue->mode);
 #endif
 	switch(the_thread_queue->discipline) {
-		case LWP_THREADQ_MODEFIFO:
+		case THREAD_QUEUE_DISCIPLINE_FIFO:
 			_Thread_queue_Enqueue_fifo(the_thread_queue,the_thread,timeout);
 			break;
-		case LWP_THREADQ_MODEPRIORITY:
+		case THREAD_QUEUE_DISCIPLINE_PRIORITY:
 			_Thread_queue_Enqueue_priority(the_thread_queue,the_thread,timeout);
 			break;
 	}
@@ -379,10 +379,10 @@ Thread_Control* _Thread_queue_Dequeue(Thread_queue_Control *the_thread_queue)
 	printf("_Thread_queue_Dequeue(%p,%p,%d,%d)\n",the_thread_queue,_Thread_Executing,the_thread_queue->mode,the_thread_queue->sync_state);
 #endif
 	switch(the_thread_queue->discipline) {
-		case LWP_THREADQ_MODEFIFO:
+		case THREAD_QUEUE_DISCIPLINE_FIFO:
 			the_thread = _Thread_queue_Dequeue_fifo(the_thread_queue);
 			break;
-		case LWP_THREADQ_MODEPRIORITY:
+		case THREAD_QUEUE_DISCIPLINE_PRIORITY:
 			the_thread = _Thread_queue_Dequeue_priority(the_thread_queue);
 			break;
 		default:
@@ -406,10 +406,10 @@ void _Thread_queue_Flush(Thread_queue_Control *the_thread_queue,u32 status)
 void _Thread_queue_Extract(Thread_queue_Control *the_thread_queue,Thread_Control *the_thread)
 {
 	switch(the_thread_queue->discipline) {
-		case LWP_THREADQ_MODEFIFO:
+		case THREAD_QUEUE_DISCIPLINE_FIFO:
 			_Thread_queue_Extract_fifo(the_thread_queue,the_thread);
 			break;
-		case LWP_THREADQ_MODEPRIORITY:
+		case THREAD_QUEUE_DISCIPLINE_PRIORITY:
 			_Thread_queue_Extract_priority(the_thread_queue,the_thread);
 			break;
 	}

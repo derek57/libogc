@@ -1,17 +1,21 @@
 #ifndef __LWP_TQDATA_H__
 #define __LWP_TQDATA_H__
 
-#define LWP_THREADQ_NUM_PRIOHEADERS		4
-#define LWP_THREADQ_PRIOPERHEADER		64
-#define LWP_THREADQ_REVERSESEARCHMASK	0x20
+#define TASK_QUEUE_DATA_NUMBER_OF_PRIORITY_HEADERS 4   
+#define TASK_QUEUE_DATA_PRIORITIES_PER_HEADER      64
+#define TASK_QUEUE_DATA_REVERSE_SEARCH_MASK        0x20 
 
-#define LWP_THREADQ_SYNCHRONIZED		0
-#define LWP_THREADQ_NOTHINGHAPPEND		1
-#define LWP_THREADQ_TIMEOUT				2
-#define LWP_THREADQ_SATISFIED			3
+typedef enum {
+  THREAD_QUEUE_SYNCHRONIZED,
+  THREAD_QUEUE_NOTHING_HAPPENED,
+  THREAD_QUEUE_TIMEOUT,
+  THREAD_QUEUE_SATISFIED
+}  Thread_queue_States;
 
-#define LWP_THREADQ_MODEFIFO			0
-#define LWP_THREADQ_MODEPRIORITY		1
+typedef enum {
+  THREAD_QUEUE_DISCIPLINE_FIFO,     /* FIFO queue discipline */
+  THREAD_QUEUE_DISCIPLINE_PRIORITY  /* PRIORITY queue discipline */
+}   Thread_queue_Disciplines;
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,7 +27,7 @@ extern "C" {
 typedef struct {
 	union {
 		Chain_Control Fifo;
-		Chain_Control Priority[LWP_THREADQ_NUM_PRIOHEADERS];
+		Chain_Control Priority[TASK_QUEUE_DATA_NUMBER_OF_PRIORITY_HEADERS];
 	} Queues;
 	u32 sync_state;
 	u32 discipline;

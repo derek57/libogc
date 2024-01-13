@@ -68,7 +68,7 @@ u32 _CORE_message_queue_Initialize(CORE_message_queue_Control *the_message_queue
 
 	_Chain_Initialize(&the_message_queue->Inactive_messages,the_message_queue->message_buffers,maximum_pending_messages,(allocated_message_size+sizeof(CORE_message_queue_Buffer_control)));
 	_Chain_Initialize_empty(&the_message_queue->Pending_messages);
-	_Thread_queue_Initialize(&the_message_queue->Wait_queue,_CORE_message_queue_Is_priority(the_message_queue_attributes)?LWP_THREADQ_MODEPRIORITY:LWP_THREADQ_MODEFIFO,LWP_STATES_WAITING_FOR_MESSAGE,LWP_MQ_STATUS_TIMEOUT);
+	_Thread_queue_Initialize(&the_message_queue->Wait_queue,_CORE_message_queue_Is_priority(the_message_queue_attributes)?THREAD_QUEUE_DISCIPLINE_PRIORITY:THREAD_QUEUE_DISCIPLINE_FIFO,LWP_STATES_WAITING_FOR_MESSAGE,LWP_MQ_STATUS_TIMEOUT);
 
 	return 1;
 }
