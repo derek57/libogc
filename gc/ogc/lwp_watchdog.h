@@ -99,7 +99,7 @@ u32 _Watchdog_Remove(Chain_Control *header,Watchdog_Control *wd);
 void _Watchdog_Tickle(Chain_Control *queue);
 void _Watchdog_Adjust(Chain_Control *queue,u32 dir,s64 interval);
 
-#ifdef LIBOGC_INTERNAL
+#ifdef __RTEMS_APPLICATION__
 #include <libogc/lwp_watchdog.inl>
 #endif
 

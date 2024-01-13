@@ -12,7 +12,7 @@ extern Heap_Control _Workspace_Area;
 
 void _Workspace_Handler_initialization(u32 size);
 
-#ifdef LIBOGC_INTERNAL
+#ifdef __RTEMS_APPLICATION__
 #include <libogc/lwp_wkspace.inl>
 #endif
 

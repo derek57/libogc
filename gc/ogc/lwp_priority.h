@@ -22,7 +22,7 @@ extern u32 _Priority_Bit_map[];
 
 void _Priority_Handler_initialization();
 
-#ifdef LIBOGC_INTERNAL
+#ifdef __RTEMS_APPLICATION__
 #include <libogc/lwp_priority.inl>
 #endif
 

@@ -98,7 +98,7 @@ void _Thread_Rotate_Ready_Queue(u32);
 void _Thread_Delay_ended(void *);
 void _Thread_Tickle_timeslice(void *);
 
-#ifdef LIBOGC_INTERNAL
+#ifdef __RTEMS_APPLICATION__
 #include <libogc/lwp_threads.inl>
 #endif
 

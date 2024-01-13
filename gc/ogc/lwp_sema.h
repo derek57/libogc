@@ -56,7 +56,7 @@ u32 _CORE_semaphore_Surrender(CORE_semaphore_Control *sema,u32 id);
 u32 _CORE_semaphore_Seize(CORE_semaphore_Control *sema,u32 id,u32 wait,u64 timeout);
 void _CORE_semaphore_Flush(CORE_semaphore_Control *sema,u32 status);
 
-#ifdef LIBOGC_INTERNAL
+#ifdef __RTEMS_APPLICATION__
 #include <libogc/lwp_sema.inl>
 #endif
 

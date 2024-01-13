@@ -48,7 +48,7 @@ void* _Heap_Allocate(Heap_Control *theheap,u32 size);
 BOOL _Heap_Free(Heap_Control *theheap,void *ptr);
 u32 _Heap_Get_information(Heap_Control *theheap,Heap_Information_block *theinfo);
 
-#ifdef LIBOGC_INTERNAL
+#ifdef __RTEMS_APPLICATION__
 #include <libogc/lwp_heap.inl>
 #endif
 

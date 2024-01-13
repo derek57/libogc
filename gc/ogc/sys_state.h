@@ -18,7 +18,7 @@ extern "C" {
 
 extern u32 _System_state_Current;
 
-#ifdef LIBOGC_INTERNAL
+#ifdef __RTEMS_APPLICATION__
 #include <libogc/sys_state.inl>
 #endif
 

@@ -38,7 +38,7 @@ Objects_Control* _Objects_Get(Objects_Information *info,u32 id);
 Objects_Control* _Objects_Get_isr_disable(Objects_Information *info,u32 id,u32 *p_level);
 Objects_Control* _Objects_Get_no_protection(Objects_Information *info,u32 id);
 
-#ifdef LIBOGC_INTERNAL
+#ifdef __RTEMS_APPLICATION__
 #include <libogc/lwp_objmgr.inl>
 #endif
 

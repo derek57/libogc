@@ -47,7 +47,7 @@
 extern "C" {
 #endif
 
-#ifdef LIBOGC_INTERNAL
+#ifdef __RTEMS_APPLICATION__
 #include <libogc/lwp_states.inl>
 #endif
 	

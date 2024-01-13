@@ -16,7 +16,7 @@ extern "C" {
 u32 _Thread_Stack_Allocate(Thread_Control *,u32);
 void _Thread_Stack_Free(Thread_Control *);
 
-#ifdef LIBOGC_INTERNAL
+#ifdef __RTEMS_APPLICATION__
 #include <libogc/lwp_stack.inl>
 #endif
 	

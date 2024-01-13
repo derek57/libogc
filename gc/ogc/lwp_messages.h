@@ -86,7 +86,7 @@ u32 _CORE_message_queue_Flush(CORE_message_queue_Control *mqueue);
 u32 _CORE_message_queue_Flush_support(CORE_message_queue_Control *mqueue);
 void _CORE_message_queue_Flush_waiting_threads(CORE_message_queue_Control *mqueue);
 
-#ifdef LIBOGC_INTERNAL
+#ifdef __RTEMS_APPLICATION__
 #include <libogc/lwp_messages.inl>
 #endif
 

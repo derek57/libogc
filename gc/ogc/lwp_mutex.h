@@ -71,7 +71,7 @@ static __inline__ u32 _CORE_mutex_Seize_interrupt_trylock(CORE_mutex_Control *mu
 		} \
 	} while(0)
 
-#ifdef LIBOGC_INTERNAL
+#ifdef __RTEMS_APPLICATION__
 #include <libogc/lwp_mutex.inl>
 #endif
 

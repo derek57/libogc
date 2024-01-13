@@ -32,7 +32,7 @@ void _Chain_Append(Chain_Control *,Chain_Node *);
 void _Chain_Extract(Chain_Node *);
 void _Chain_Insert(Chain_Node *,Chain_Node *);
 
-#ifdef LIBOGC_INTERNAL
+#ifdef __RTEMS_APPLICATION__
 #include <libogc/lwp_queue.inl>
 #endif
 

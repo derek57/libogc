@@ -28,7 +28,7 @@ void _Thread_queue_Extract_fifo(Thread_queue_Control *queue,Thread_Control *thet
 void _Thread_queue_Extract_priority(Thread_queue_Control *queue,Thread_Control *thethread);
 u32 _Thread_queue_Extract_with_proxy(Thread_Control *thethread);
 
-#ifdef LIBOGC_INTERNAL
+#ifdef __RTEMS_APPLICATION__
 #include <libogc/lwp_threadq.inl>
 #endif
 
