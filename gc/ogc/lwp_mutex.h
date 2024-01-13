@@ -4,25 +4,31 @@
 #include <gctypes.h>
 #include <lwp_threadq.h>
 
-#define LWP_MUTEX_LOCKED				0
-#define LWP_MUTEX_UNLOCKED				1
+#define CORE_MUTEX_UNLOCKED 1
+#define CORE_MUTEX_LOCKED   0
 
-#define LWP_MUTEX_NEST_ACQUIRE			0
-#define LWP_MUTEX_NEST_ERROR			1
-#define LWP_MUTEX_NEST_BLOCK			2
+typedef enum {
+  CORE_MUTEX_NESTING_ACQUIRES,
+  CORE_MUTEX_NESTING_IS_ERROR,
+  CORE_MUTEX_NESTING_BLOCKS
+}  CORE_mutex_Nesting_behaviors;
 
-#define LWP_MUTEX_FIFO					0
-#define LWP_MUTEX_PRIORITY				1
-#define LWP_MUTEX_INHERITPRIO			2
-#define LWP_MUTEX_PRIORITYCEIL			3
+typedef enum {
+  CORE_MUTEX_DISCIPLINES_FIFO,
+  CORE_MUTEX_DISCIPLINES_PRIORITY,
+  CORE_MUTEX_DISCIPLINES_PRIORITY_INHERIT,
+  CORE_MUTEX_DISCIPLINES_PRIORITY_CEILING
+}   CORE_mutex_Disciplines;
 
-#define LWP_MUTEX_SUCCESSFUL			0
-#define LWP_MUTEX_UNSATISFIED_NOWAIT	1
-#define LWP_MUTEX_NEST_NOTALLOWED		2
-#define LWP_MUTEX_NOTOWNER				3
-#define LWP_MUTEX_DELETED				4	
-#define LWP_MUTEX_TIMEOUT				5
-#define LWP_MUTEX_CEILINGVIOL			6
+typedef enum {
+  CORE_MUTEX_STATUS_SUCCESSFUL,
+  CORE_MUTEX_STATUS_UNSATISFIED_NOWAIT,
+  CORE_MUTEX_STATUS_NESTING_NOT_ALLOWED,
+  CORE_MUTEX_STATUS_NOT_OWNER_OF_RESOURCE,
+  CORE_MUTEX_WAS_DELETED,
+  CORE_MUTEX_TIMEOUT,
+  CORE_MUTEX_STATUS_CEILING_VIOLATED
+}   CORE_mutex_Status;
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,7 +59,7 @@ static __inline__ u32 _CORE_mutex_Seize_interrupt_trylock(CORE_mutex_Control *mu
 		if(_CORE_mutex_Seize_interrupt_trylock(_mutex_t,&_level)) { \
 			if(!_wait) {	\
 				_CPU_ISR_Restore(_level); \
-				_Thread_Executing->Wait.return_code = LWP_MUTEX_UNSATISFIED_NOWAIT; \
+				_Thread_Executing->Wait.return_code = CORE_MUTEX_STATUS_UNSATISFIED_NOWAIT; \
 			} else { \
 				_Thread_queue_Enter_critical_section(&(_mutex_t)->Wait_queue); \
 				_Thread_Executing->Wait.queue = &(_mutex_t)->Wait_queue; \

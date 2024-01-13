@@ -108,11 +108,11 @@ s32 LWP_MutexInit(mutex_t *mutex,bool use_recursive)
 	ret = __lwp_mutex_allocate();
 	if(!ret) return -1;
 
-	attr.discipline = LWP_MUTEX_FIFO;
-	attr.lock_nesting_behavior = use_recursive?LWP_MUTEX_NEST_ACQUIRE:LWP_MUTEX_NEST_ERROR;
+	attr.discipline = CORE_MUTEX_DISCIPLINES_FIFO;
+	attr.lock_nesting_behavior = use_recursive?CORE_MUTEX_NESTING_ACQUIRES:CORE_MUTEX_NESTING_IS_ERROR;
 	attr.only_owner_release = TRUE;
 	attr.priority_ceiling = 1; //__lwp_priotocore(PRIORITY_MAXIMUM-1);
-	_CORE_mutex_Initialize(&ret->mutex,&attr,LWP_MUTEX_UNLOCKED);
+	_CORE_mutex_Initialize(&ret->mutex,&attr,CORE_MUTEX_UNLOCKED);
 
 	*mutex = (mutex_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_MUTEX)|LWP_OBJMASKID(ret->object.id));
 	_Thread_Unnest_dispatch();

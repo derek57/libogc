@@ -7,7 +7,7 @@ void _CORE_mutex_Initialize(CORE_mutex_Control *the_mutex,CORE_mutex_Attributes 
 	the_mutex->lock = initial_lock;
 	the_mutex->blocked_count = 0;
 	
-	if(initial_lock==LWP_MUTEX_LOCKED) {
+	if(initial_lock==CORE_MUTEX_LOCKED) {
 		the_mutex->nest_count = 1;
 		the_mutex->holder = _Thread_Executing;
 		if(_CORE_mutex_Is_inherit_priority(the_mutex_attributes) || _CORE_mutex_Is_priority_ceiling(the_mutex_attributes))
@@ -17,7 +17,7 @@ void _CORE_mutex_Initialize(CORE_mutex_Control *the_mutex,CORE_mutex_Attributes 
 		the_mutex->holder = NULL;
 	}
 
-	_Thread_queue_Initialize(&the_mutex->Wait_queue,_CORE_mutex_Is_fifo(the_mutex_attributes)?THREAD_QUEUE_DISCIPLINE_FIFO:THREAD_QUEUE_DISCIPLINE_PRIORITY,STATES_WAITING_FOR_MUTEX,LWP_MUTEX_TIMEOUT);
+	_Thread_queue_Initialize(&the_mutex->Wait_queue,_CORE_mutex_Is_fifo(the_mutex_attributes)?THREAD_QUEUE_DISCIPLINE_FIFO:THREAD_QUEUE_DISCIPLINE_PRIORITY,STATES_WAITING_FOR_MUTEX,CORE_MUTEX_TIMEOUT);
 }
 
 u32 _CORE_mutex_Surrender(CORE_mutex_Control *the_mutex)
@@ -29,20 +29,20 @@ u32 _CORE_mutex_Surrender(CORE_mutex_Control *the_mutex)
 
 	if(the_mutex->Attributes.only_owner_release) {
 		if(!_Thread_Is_executing(holder))
-			return LWP_MUTEX_NOTOWNER;
+			return CORE_MUTEX_STATUS_NOT_OWNER_OF_RESOURCE;
 	}
 
 	if(!the_mutex->nest_count)
-		return LWP_MUTEX_SUCCESSFUL;
+		return CORE_MUTEX_STATUS_SUCCESSFUL;
 
 	the_mutex->nest_count--;
 	if(the_mutex->nest_count!=0) {
 		switch(the_mutex->Attributes.lock_nesting_behavior) {
-			case LWP_MUTEX_NEST_ACQUIRE:
-				return LWP_MUTEX_SUCCESSFUL;
-			case LWP_MUTEX_NEST_ERROR:
-				return LWP_MUTEX_NEST_NOTALLOWED;
-			case LWP_MUTEX_NEST_BLOCK:
+			case CORE_MUTEX_NESTING_ACQUIRES:
+				return CORE_MUTEX_STATUS_SUCCESSFUL;
+			case CORE_MUTEX_NESTING_IS_ERROR:
+				return CORE_MUTEX_STATUS_NESTING_NOT_ALLOWED;
+			case CORE_MUTEX_NESTING_BLOCKS:
 				break;
 		}
 	}
@@ -62,9 +62,9 @@ u32 _CORE_mutex_Surrender(CORE_mutex_Control *the_mutex)
 		if(_CORE_mutex_Is_inherit_priority(&the_mutex->Attributes) || _CORE_mutex_Is_priority_ceiling(&the_mutex->Attributes))
 			the_thread->resource_count++;
 	} else
-		the_mutex->lock = LWP_MUTEX_UNLOCKED;
+		the_mutex->lock = CORE_MUTEX_UNLOCKED;
 
-	return LWP_MUTEX_SUCCESSFUL;
+	return CORE_MUTEX_STATUS_SUCCESSFUL;
 }
 
 void _CORE_mutex_Seize_interrupt_blocking(CORE_mutex_Control *the_mutex,u64 timeout)
@@ -80,7 +80,7 @@ void _CORE_mutex_Seize_interrupt_blocking(CORE_mutex_Control *the_mutex,u64 time
 	the_mutex->blocked_count++;
 	_Thread_queue_Enqueue(&the_mutex->Wait_queue,timeout);
 
-	if(_Thread_Executing->Wait.return_code==LWP_MUTEX_SUCCESSFUL) {
+	if(_Thread_Executing->Wait.return_code==CORE_MUTEX_STATUS_SUCCESSFUL) {
 		if(_CORE_mutex_Is_priority_ceiling(&the_mutex->Attributes)) {
 			if(the_mutex->Attributes.priority_ceiling<executing->current_priority) 
 				_Thread_Change_priority(executing,the_mutex->Attributes.priority_ceiling,FALSE);

@@ -24,11 +24,11 @@ void __memlock_init()
 
 		initialized = 1;
 		
-		attr.discipline = LWP_MUTEX_FIFO;
-		attr.lock_nesting_behavior = LWP_MUTEX_NEST_ACQUIRE;
+		attr.discipline = CORE_MUTEX_DISCIPLINES_FIFO;
+		attr.lock_nesting_behavior = CORE_MUTEX_NESTING_ACQUIRES;
 		attr.only_owner_release = TRUE;
 		attr.priority_ceiling = 1;
-		_CORE_mutex_Initialize(&mem_lock,&attr,LWP_MUTEX_UNLOCKED);
+		_CORE_mutex_Initialize(&mem_lock,&attr,CORE_MUTEX_UNLOCKED);
 	}
 	_Thread_Unnest_dispatch();
 }
