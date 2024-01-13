@@ -61,14 +61,14 @@ typedef u32 cond_t;
 s32 LWP_CondInit(cond_t *cond);
 
 
-/*! \fn s32 LWP_CondWait(cond_t cond,mutex_t mutex)
+/*! \fn s32 LWP_CondWait(cond_t cond,pthread_mutex_t mutex)
 \brief Wait on condition variable. 
 \param[in] cond handle to the cond_t structure
-\param[in] mutex handle to the mutex_t structure
+\param[in] mutex handle to the pthread_mutex_t structure
 
 \return 0 on success, <0 on error
 */
-s32 LWP_CondWait(cond_t cond,mutex_t mutex);
+s32 LWP_CondWait(cond_t cond,pthread_mutex_t mutex);
 
 
 /*! \fn s32 LWP_CondSignal(cond_t cond)
@@ -89,15 +89,15 @@ s32 LWP_CondSignal(cond_t cond);
 s32 LWP_CondBroadcast(cond_t cond);
 
 
-/*! \fn s32 LWP_CondTimedWait(cond_t cond,mutex_t mutex,const struct timespec *abstime)
+/*! \fn s32 LWP_CondTimedWait(cond_t cond,pthread_mutex_t mutex,const struct timespec *abstime)
 \brief Timed wait on a conditionvariable.
 \param[in] cond handle to the cond_t structure
-\param[in] mutex handle to the mutex_t structure
+\param[in] mutex handle to the pthread_mutex_t structure
 \param[in] abstime pointer to a timespec structure holding the abs time for the timeout.
 
 \return 0 on success, <0 on error
 */
-s32 LWP_CondTimedWait(cond_t cond,mutex_t mutex,const struct timespec *abstime);
+s32 LWP_CondTimedWait(cond_t cond,pthread_mutex_t mutex,const struct timespec *abstime);
 
 
 /*! \fn s32 LWP_CondDestroy(cond_t cond)

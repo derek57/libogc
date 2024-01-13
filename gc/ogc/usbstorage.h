@@ -40,7 +40,7 @@ typedef struct
 
 	s32 usb_fd;
 
-	mutex_t lock;
+	pthread_mutex_t lock;
 	syswd_t alarm;
 	s32 retval;
 

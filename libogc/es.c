@@ -774,7 +774,7 @@ typedef struct {
 	u64 titleID;
 	tmd_content content;
 	void *iobuf;
-	mutex_t mutex;
+	pthread_mutex_t mutex;
 } es_fd;
 
 // valid path formats:

@@ -52,7 +52,7 @@ typedef struct _mutex_st
 
 Objects_Information _lwp_mutex_objects;
 
-static s32 __lwp_mutex_locksupp(mutex_t lock,u32 timeout,u8 block)
+static s32 __lwp_mutex_locksupp(pthread_mutex_t lock,u32 timeout,u8 block)
 {
 	u32 level;
 	mutex_st *p;
@@ -72,7 +72,7 @@ void __lwp_mutex_init()
 }
 
 
-static __inline__ mutex_st* __lwp_mutex_open(mutex_t lock)
+static __inline__ mutex_st* __lwp_mutex_open(pthread_mutex_t lock)
 {
 	LWP_CHECK_MUTEX(lock);
 	return (mutex_st*)_Objects_Get(&_lwp_mutex_objects,LWP_OBJMASKID(lock));
@@ -98,7 +98,7 @@ static mutex_st* __lwp_mutex_allocate()
 	return NULL;
 }
 
-s32 LWP_MutexInit(mutex_t *mutex,bool use_recursive)
+s32 LWP_MutexInit(pthread_mutex_t *mutex,bool use_recursive)
 {
 	CORE_mutex_Attributes attr;
 	mutex_st *ret;
@@ -114,12 +114,12 @@ s32 LWP_MutexInit(mutex_t *mutex,bool use_recursive)
 	attr.priority_ceiling = 1; //__lwp_priotocore(PRIORITY_MAXIMUM-1);
 	_CORE_mutex_Initialize(&ret->mutex,&attr,CORE_MUTEX_UNLOCKED);
 
-	*mutex = (mutex_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_MUTEX)|LWP_OBJMASKID(ret->object.id));
+	*mutex = (pthread_mutex_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_MUTEX)|LWP_OBJMASKID(ret->object.id));
 	_Thread_Unnest_dispatch();
 	return 0;
 }
 
-s32 LWP_MutexDestroy(mutex_t mutex)
+s32 LWP_MutexDestroy(pthread_mutex_t mutex)
 {
 	mutex_st *p;
 
@@ -137,17 +137,17 @@ s32 LWP_MutexDestroy(mutex_t mutex)
 	return 0;
 }
 
-s32 LWP_MutexLock(mutex_t mutex)
+s32 LWP_MutexLock(pthread_mutex_t mutex)
 {
 	return __lwp_mutex_locksupp(mutex,RTEMS_NO_TIMEOUT,TRUE);
 }
 
-s32 LWP_MutexTryLock(mutex_t mutex)
+s32 LWP_MutexTryLock(pthread_mutex_t mutex)
 {
 	return __lwp_mutex_locksupp(mutex,RTEMS_NO_TIMEOUT,FALSE);
 }
 
-s32 LWP_MutexUnlock(mutex_t mutex)
+s32 LWP_MutexUnlock(pthread_mutex_t mutex)
 {
 	u32 ret;
 	mutex_st *lock;
