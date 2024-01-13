@@ -1,12 +1,14 @@
 #ifndef __SYS_STATE_H__
 #define __SYS_STATE_H__
 
-#define SYS_STATE_BEFORE_INIT		0
-#define SYS_STATE_BEFORE_MT			1
-#define SYS_STATE_BEGIN_MT			2
-#define SYS_STATE_UP				3
-#define SYS_STATE_SHUTDOWN			4
-#define SYS_STATE_FAILED			5
+typedef enum {
+  SYSTEM_STATE_BEFORE_INITIALIZATION,   /* start -> end of 1st init part */
+  SYSTEM_STATE_BEFORE_MULTITASKING,     /* end of 1st -> beginning of 2nd */
+  SYSTEM_STATE_BEGIN_MULTITASKING,      /* just before multitasking starts */
+  SYSTEM_STATE_UP,                      /* normal operation */
+  SYSTEM_STATE_SHUTDOWN,                /* shutdown */
+  SYSTEM_STATE_FAILED                   /* fatal error occurred */
+} System_state_Codes; 
 
 #include <gctypes.h>
 

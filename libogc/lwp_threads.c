@@ -687,8 +687,8 @@ void _Thread_Start_multitasking()
 {
 	_lwp_exitfunc = NULL;
 
-	_System_state_Set(SYS_STATE_BEGIN_MT);
-	_System_state_Set(SYS_STATE_UP);
+	_System_state_Set(SYSTEM_STATE_BEGIN_MULTITASKING);
+	_System_state_Set(SYSTEM_STATE_UP);
 
 	_Context_Switch_necessary = FALSE;
 	_Thread_Executing = _Thread_Heir;
@@ -704,9 +704,9 @@ void _Thread_Start_multitasking()
 void _Thread_Stop_multitasking(void (*exitfunc)())
 {
 	_lwp_exitfunc = exitfunc;
-	if(_System_state_Get()!=SYS_STATE_SHUTDOWN) {
+	if(_System_state_Get()!=SYSTEM_STATE_SHUTDOWN) {
 		_Watchdog_Remove_ticks(&_lwp_wd_timeslice);
-		_System_state_Set(SYS_STATE_SHUTDOWN);
+		_System_state_Set(SYSTEM_STATE_SHUTDOWN);
 		_CPU_Context_switch((void*)&_Thread_Executing->Registers,(void*)&_Thread_BSP_context);
 	}
 }
@@ -732,6 +732,6 @@ void _Thread_Handler_initialization()
 	for(index=0;index<=LWP_PRIO_MAX;index++)
 		_Chain_Initialize_empty(&_Thread_Ready_chain[index]);
 	
-	_System_state_Set(SYS_STATE_BEFORE_MT);
+	_System_state_Set(SYSTEM_STATE_BEFORE_MULTITASKING);
 }
 
