@@ -44,54 +44,54 @@ distribution.
 		return NULL;				\
 }
 
-typedef struct _mutex_st
+typedef struct
 {
-	Objects_Control object;
-	CORE_mutex_Control mutex;
-} mutex_st;
+	Objects_Control Object;
+	CORE_mutex_Control Mutex;
+} POSIX_Mutex_Control;
 
 Objects_Information _lwp_mutex_objects;
 
 static s32 __lwp_mutex_locksupp(pthread_mutex_t lock,u32 timeout,u8 block)
 {
 	u32 level;
-	mutex_st *p;
+	POSIX_Mutex_Control *p;
 
 	if(lock==LWP_MUTEX_NULL || LWP_OBJTYPE(lock)!=LWP_OBJTYPE_MUTEX) return -1;
 	
-	p = (mutex_st*)_Objects_Get_isr_disable(&_lwp_mutex_objects,LWP_OBJMASKID(lock),&level);
+	p = (POSIX_Mutex_Control*)_Objects_Get_isr_disable(&_lwp_mutex_objects,LWP_OBJMASKID(lock),&level);
 	if(!p) return -1;
 
-	_CORE_mutex_Seize(&p->mutex,p->object.id,block,timeout,level);
+	_CORE_mutex_Seize(&p->Mutex,p->Object.id,block,timeout,level);
 	return _Thread_Executing->Wait.return_code;
 }
 
 void __lwp_mutex_init()
 {
-	_Objects_Initialize_information(&_lwp_mutex_objects,CONFIGURE_MAXIMUM_POSIX_MUTEXES,sizeof(mutex_st));
+	_Objects_Initialize_information(&_lwp_mutex_objects,CONFIGURE_MAXIMUM_POSIX_MUTEXES,sizeof(POSIX_Mutex_Control));
 }
 
 
-static __inline__ mutex_st* __lwp_mutex_open(pthread_mutex_t lock)
+static __inline__ POSIX_Mutex_Control* __lwp_mutex_open(pthread_mutex_t lock)
 {
 	LWP_CHECK_MUTEX(lock);
-	return (mutex_st*)_Objects_Get(&_lwp_mutex_objects,LWP_OBJMASKID(lock));
+	return (POSIX_Mutex_Control*)_Objects_Get(&_lwp_mutex_objects,LWP_OBJMASKID(lock));
 }
 
-static __inline__ void __lwp_mutex_free(mutex_st *lock)
+static __inline__ void __lwp_mutex_free(POSIX_Mutex_Control *lock)
 {
-	_Objects_Close(&_lwp_mutex_objects,&lock->object);
-	_Objects_Free(&_lwp_mutex_objects,&lock->object);
+	_Objects_Close(&_lwp_mutex_objects,&lock->Object);
+	_Objects_Free(&_lwp_mutex_objects,&lock->Object);
 }
 
-static mutex_st* __lwp_mutex_allocate()
+static POSIX_Mutex_Control* __lwp_mutex_allocate()
 {
-	mutex_st *lock;
+	POSIX_Mutex_Control *lock;
 
 	_Thread_Disable_dispatch();
-	lock = (mutex_st*)_Objects_Allocate(&_lwp_mutex_objects);
+	lock = (POSIX_Mutex_Control*)_Objects_Allocate(&_lwp_mutex_objects);
 	if(lock) {
-		_Objects_Open(&_lwp_mutex_objects,&lock->object);
+		_Objects_Open(&_lwp_mutex_objects,&lock->Object);
 		return lock;
 	}
 	_Thread_Unnest_dispatch();
@@ -101,7 +101,7 @@ static mutex_st* __lwp_mutex_allocate()
 s32 LWP_MutexInit(pthread_mutex_t *mutex,bool use_recursive)
 {
 	CORE_mutex_Attributes attr;
-	mutex_st *ret;
+	POSIX_Mutex_Control *ret;
 	
 	if(!mutex) return -1;
 
@@ -112,25 +112,25 @@ s32 LWP_MutexInit(pthread_mutex_t *mutex,bool use_recursive)
 	attr.lock_nesting_behavior = use_recursive?CORE_MUTEX_NESTING_ACQUIRES:CORE_MUTEX_NESTING_IS_ERROR;
 	attr.only_owner_release = TRUE;
 	attr.priority_ceiling = 1; //__lwp_priotocore(PRIORITY_MAXIMUM-1);
-	_CORE_mutex_Initialize(&ret->mutex,&attr,CORE_MUTEX_UNLOCKED);
+	_CORE_mutex_Initialize(&ret->Mutex,&attr,CORE_MUTEX_UNLOCKED);
 
-	*mutex = (pthread_mutex_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_MUTEX)|LWP_OBJMASKID(ret->object.id));
+	*mutex = (pthread_mutex_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_MUTEX)|LWP_OBJMASKID(ret->Object.id));
 	_Thread_Unnest_dispatch();
 	return 0;
 }
 
 s32 LWP_MutexDestroy(pthread_mutex_t mutex)
 {
-	mutex_st *p;
+	POSIX_Mutex_Control *p;
 
 	p = __lwp_mutex_open(mutex);
 	if(!p) return 0;
 
-	if(_CORE_mutex_Is_locked(&p->mutex)) {
+	if(_CORE_mutex_Is_locked(&p->Mutex)) {
 		_Thread_Enable_dispatch();
 		return EBUSY;
 	}
-	_CORE_mutex_Flush(&p->mutex,EINVAL);
+	_CORE_mutex_Flush(&p->Mutex,EINVAL);
 	_Thread_Enable_dispatch();
 
 	__lwp_mutex_free(p);
@@ -150,12 +150,12 @@ s32 LWP_MutexTryLock(pthread_mutex_t mutex)
 s32 LWP_MutexUnlock(pthread_mutex_t mutex)
 {
 	u32 ret;
-	mutex_st *lock;
+	POSIX_Mutex_Control *lock;
 
 	lock = __lwp_mutex_open(mutex);
 	if(!lock) return -1;
 
-	ret = _CORE_mutex_Surrender(&lock->mutex);
+	ret = _CORE_mutex_Surrender(&lock->Mutex);
 	_Thread_Enable_dispatch();
 
 	return ret;
