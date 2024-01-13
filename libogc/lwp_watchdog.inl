@@ -31,7 +31,7 @@ static __inline__ Watchdog_Control* _Watchdog_Previous(Watchdog_Control *the_wat
 
 static __inline__ void _Watchdog_Activate(Watchdog_Control *the_watchdog)
 {
-	the_watchdog->state = WATCHDOG_INACTIVE;
+	the_watchdog->state = WATCHDOG_ACTIVE;
 }
 
 static __inline__ void _Watchdog_Deactivate(Watchdog_Control *the_watchdog)

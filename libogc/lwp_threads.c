@@ -125,9 +125,9 @@ void _Thread_Tickle_timeslice(void *arg)
 	}
 
 	switch(executing->budget_algorithm) {
-		case LWP_CPU_BUDGET_ALGO_NONE:
+		case THREAD_CPU_BUDGET_ALGORITHM_NONE:
 			break;
-		case LWP_CPU_BUDGET_ALGO_TIMESLICE:
+		case THREAD_CPU_BUDGET_ALGORITHM_RESET_TIMESLICE:
 			if((--executing->cpu_time_budget)==0) {
 				_Thread_Reset_timeslice();
 				executing->cpu_time_budget = _Thread_Ticks_per_timeslice;
@@ -374,7 +374,7 @@ void _Thread_Change_priority(Thread_Control *the_thread,u32 new_priority,u32 pre
 
 	_CPU_ISR_Disable(level);
 
-	the_thread->current_state = _States_Clear(the_thread->current_state,LWP_STATES_TRANSIENT);
+	the_thread->current_state = _States_Clear(the_thread->current_state,STATES_TRANSIENT);
 	if(!_States_Is_ready(the_thread->current_state)) {
 		_CPU_ISR_Restore(level);
 		return;
@@ -417,12 +417,12 @@ void _Thread_Suspend(Thread_Control *the_thread)
 	_CPU_ISR_Disable(level);
 	the_thread->suspend_count++;
 	if(!_States_Is_ready(the_thread->current_state)) {
-		the_thread->current_state = _States_Set(the_thread->current_state,LWP_STATES_SUSPENDED);
+		the_thread->current_state = _States_Set(the_thread->current_state,STATES_SUSPENDED);
 		_CPU_ISR_Restore(level);
 		return;
 	}
 	
-	the_thread->current_state = LWP_STATES_SUSPENDED;
+	the_thread->current_state = STATES_SUSPENDED;
 	if(_Chain_Has_only_one_node(ready)) {
 		_Chain_Initialize_empty(ready);
 		_Priority_Remove_from_bit_map(&the_thread->Priority_map);
@@ -450,7 +450,7 @@ void _Thread_Set_transient(Thread_Control *the_thread)
 	_CPU_ISR_Disable(level);
 	
 	old_state = the_thread->current_state;
-	the_thread->current_state = _States_Set(old_state,LWP_STATES_TRANSIENT);
+	the_thread->current_state = _States_Set(old_state,STATES_TRANSIENT);
 
 	if(_States_Is_ready(old_state)) {
 		if(_Chain_Has_only_one_node(ready)) {
@@ -481,8 +481,8 @@ void _Thread_Resume(Thread_Control *the_thread,u32 force)
 	}
 
 	current_state = the_thread->current_state;
-	if(current_state&LWP_STATES_SUSPENDED) {
-		current_state = the_thread->current_state = _States_Clear(the_thread->current_state,LWP_STATES_SUSPENDED);
+	if(current_state&STATES_SUSPENDED) {
+		current_state = the_thread->current_state = _States_Clear(the_thread->current_state,STATES_SUSPENDED);
 		if(_States_Is_ready(current_state)) {
 			_Priority_Add_to_bit_map(&the_thread->Priority_map);
 			_Chain_Append_unprotected(the_thread->ready,&the_thread->Object.Node);
@@ -542,7 +542,7 @@ void _Thread_Ready(Thread_Control *the_thread)
 #ifdef _LWPTHREADS_DEBUG
 	kprintf("_Thread_Ready(%p)\n",the_thread);
 #endif
-	the_thread->current_state = LWP_STATES_READY;
+	the_thread->current_state = STATES_READY;
 	_Priority_Add_to_bit_map(&the_thread->Priority_map);
 	_Chain_Append_unprotected(the_thread->ready,&the_thread->Object.Node);
 	_CPU_ISR_Flash(level);
@@ -580,16 +580,16 @@ u32 _Thread_Initialize(Thread_Control *the_thread,void *stack_area,u32 stack_siz
 	}
 	the_thread->size = actual_stack_size;
 
-	_Thread_queue_Initialize(&the_thread->join_list,THREAD_QUEUE_DISCIPLINE_FIFO,LWP_STATES_WAITING_FOR_JOINATEXIT,0);
+	_Thread_queue_Initialize(&the_thread->join_list,THREAD_QUEUE_DISCIPLINE_FIFO,STATES_WAITING_FOR_JOIN_AT_EXIT,0);
 
 	memset(&the_thread->Registers,0,sizeof(the_thread->Registers));
 	memset(&the_thread->Wait,0,sizeof(the_thread->Wait));
 
-	the_thread->budget_algorithm = (priority<128 ? LWP_CPU_BUDGET_ALGO_NONE : LWP_CPU_BUDGET_ALGO_TIMESLICE);
+	the_thread->budget_algorithm = (priority<128 ? THREAD_CPU_BUDGET_ALGORITHM_NONE : THREAD_CPU_BUDGET_ALGORITHM_RESET_TIMESLICE);
 	the_thread->is_preemptible = is_preemptible;
 	the_thread->isr_level = isr_level;
 	the_thread->real_priority = priority;
-	the_thread->current_state = LWP_STATES_DORMANT;
+	the_thread->current_state = STATES_DORMANT;
 	the_thread->cpu_time_budget = _Thread_Ticks_per_timeslice;
 	the_thread->suspend_count = 0;
 	the_thread->resource_count = 0;
@@ -606,7 +606,7 @@ void _Thread_Close(Thread_Control *the_thread)
 	void **value_ptr;
 	Thread_Control *p;
 
-	_Thread_Set_state(the_thread,LWP_STATES_TRANSIENT);
+	_Thread_Set_state(the_thread,STATES_TRANSIENT);
 	
 	if(!_Thread_queue_Extract_with_proxy(the_thread)) {
 		if(_Watchdog_Is_active(&the_thread->Timer))
@@ -619,7 +619,7 @@ void _Thread_Close(Thread_Control *the_thread)
 		*(void**)p->Wait.return_argument = value_ptr;
 	}
 	the_thread->cpu_time_budget = 0;
-	the_thread->budget_algorithm = LWP_CPU_BUDGET_ALGO_NONE;
+	the_thread->budget_algorithm = THREAD_CPU_BUDGET_ALGORITHM_NONE;
 	_CPU_ISR_Restore(level);
 
 	libc_delete_hook(_Thread_Executing,the_thread);

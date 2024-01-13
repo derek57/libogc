@@ -52,7 +52,7 @@ static __inline__ void _Thread_Unnest_dispatch()
 
 static __inline__ void _Thread_Unblock(Thread_Control *the_thread)
 {
-	_Thread_Clear_state(the_thread,LWP_STATES_BLOCKED);
+	_Thread_Clear_state(the_thread,STATES_BLOCKED);
 }
 
 static __inline__ void** _Thread_Get_libc_reent()

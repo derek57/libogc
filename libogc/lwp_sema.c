@@ -6,7 +6,7 @@ void CORE_semaphore_Initialize(CORE_semaphore_Control *the_semaphore,CORE_semaph
 	the_semaphore->Attributes = *the_semaphore_attributes;
 	the_semaphore->count = initial_value;
 
-	_Thread_queue_Initialize(&the_semaphore->Wait_queue,_CORE_semaphore_Is_priority(the_semaphore_attributes)?THREAD_QUEUE_DISCIPLINE_PRIORITY:THREAD_QUEUE_DISCIPLINE_FIFO,LWP_STATES_WAITING_FOR_SEMAPHORE,LWP_SEMA_TIMEOUT);
+	_Thread_queue_Initialize(&the_semaphore->Wait_queue,_CORE_semaphore_Is_priority(the_semaphore_attributes)?THREAD_QUEUE_DISCIPLINE_PRIORITY:THREAD_QUEUE_DISCIPLINE_FIFO,STATES_WAITING_FOR_SEMAPHORE,LWP_SEMA_TIMEOUT);
 }
 
 u32 _CORE_semaphore_Surrender(CORE_semaphore_Control *the_semaphore,u32 id)

@@ -18,8 +18,8 @@ extern "C" {
 
 typedef enum
 {
-	LWP_CPU_BUDGET_ALGO_NONE = 0,
-	LWP_CPU_BUDGET_ALGO_TIMESLICE	
+	THREAD_CPU_BUDGET_ALGORITHM_NONE = 0,
+	THREAD_CPU_BUDGET_ALGORITHM_RESET_TIMESLICE	
 } Thread_CPU_budget_algorithms;
 
 typedef struct {

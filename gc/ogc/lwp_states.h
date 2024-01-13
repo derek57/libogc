@@ -3,36 +3,46 @@
 
 #include <gctypes.h>
 
-#define LWP_STATES_READY					0x00000000
-#define LWP_STATES_DORMANT					0x00000001
-#define LWP_STATES_SUSPENDED				0x00000002
-#define LWP_STATES_TRANSIENT				0x00000004
-#define LWP_STATES_DELAYING					0x00000008
-#define LWP_STATES_WAITING_FOR_TIME			0x00000010
-#define LWP_STATES_WAITING_FOR_BUFFER		0x00000020
-#define LWP_STATES_WAITING_FOR_SEGMENT		0x00000040
-#define LWP_STATES_WAITING_FOR_MESSAGE		0x00000080
-#define LWP_STATES_WAITING_FOR_EVENT		0x00000100
-#define LWP_STATES_WAITING_FOR_MUTEX		0x00000200
-#define LWP_STATES_WAITING_FOR_SEMAPHORE	0x00000400
-#define LWP_STATES_WAITING_FOR_CONDVAR		0x00000800
-#define LWP_STATES_WAITING_FOR_JOINATEXIT	0x00001000
-#define LWP_STATES_WAITING_FOR_RPCREPLAY	0x00002000
-#define LWP_STATES_WAITING_FOR_PERIOD		0x00004000
-#define LWP_STATES_WAITING_FOR_SIGNAL		0x00008000
-#define LWP_STATES_INTERRUPTIBLE_BY_SIGNAL	0x00010000
+#define STATES_ALL_SET                         0xfffff /* all states */
+#define STATES_READY                           0x00000 /* ready to run */
+#define STATES_DORMANT                         0x00001 /* created not started */
+#define STATES_SUSPENDED                       0x00002 /* waiting for resume */
+#define STATES_TRANSIENT                       0x00004 /* in transition */
+#define STATES_DELAYING                        0x00008 /* wait for timeout */
+#define STATES_WAITING_FOR_TIME                0x00010 /* wait for TOD */
+#define STATES_WAITING_FOR_BUFFER              0x00020 
+#define STATES_WAITING_FOR_SEGMENT             0x00040
+#define STATES_WAITING_FOR_MESSAGE             0x00080
+#define STATES_WAITING_FOR_EVENT               0x00100
+#define STATES_WAITING_FOR_SEMAPHORE           0x00200
+#define STATES_WAITING_FOR_MUTEX               0x00400
+#define STATES_WAITING_FOR_CONDITION_VARIABLE  0x00800
+#define STATES_WAITING_FOR_JOIN_AT_EXIT        0x01000
+#define STATES_WAITING_FOR_RPC_REPLY           0x02000
+#define STATES_WAITING_FOR_PERIOD              0x04000
+#define STATES_WAITING_FOR_SIGNAL              0x08000
+#define STATES_INTERRUPTIBLE_BY_SIGNAL         0x10000  
 
-#define LWP_STATES_LOCALLY_BLOCKED			(LWP_STATES_WAITING_FOR_BUFFER | LWP_STATES_WAITING_FOR_SEGMENT |	\
-											 LWP_STATES_WAITING_FOR_MESSAGE | LWP_STATES_WAITING_FOR_SEMAPHORE |	\
-											 LWP_STATES_WAITING_FOR_MUTEX | LWP_STATES_WAITING_FOR_CONDVAR |	\
-											 LWP_STATES_WAITING_FOR_JOINATEXIT | LWP_STATES_WAITING_FOR_SIGNAL)
-
-#define LWP_STATES_WAITING_ON_THREADQ		(LWP_STATES_LOCALLY_BLOCKED | LWP_STATES_WAITING_FOR_RPCREPLAY)
-
-#define LWP_STATES_BLOCKED					(LWP_STATES_DELAYING | LWP_STATES_WAITING_FOR_TIME |	\
-											 LWP_STATES_WAITING_FOR_PERIOD | LWP_STATES_WAITING_FOR_EVENT |	\
-											 LWP_STATES_WAITING_ON_THREADQ | LWP_STATES_INTERRUPTIBLE_BY_SIGNAL)
-
+#define STATES_LOCALLY_BLOCKED ( STATES_WAITING_FOR_BUFFER             | \
+                                 STATES_WAITING_FOR_SEGMENT            | \
+                                 STATES_WAITING_FOR_MESSAGE            | \
+                                 STATES_WAITING_FOR_SEMAPHORE          | \
+                                 STATES_WAITING_FOR_MUTEX              | \
+                                 STATES_WAITING_FOR_CONDITION_VARIABLE | \
+                                 STATES_WAITING_FOR_JOIN_AT_EXIT       | \
+                                 STATES_WAITING_FOR_SIGNAL             )
+ 
+#define STATES_WAITING_ON_THREAD_QUEUE \
+                               ( STATES_LOCALLY_BLOCKED         | \
+                                 STATES_WAITING_FOR_RPC_REPLY   ) 
+                                 
+#define STATES_BLOCKED         ( STATES_DELAYING                | \
+                                 STATES_WAITING_FOR_TIME        | \
+                                 STATES_WAITING_FOR_PERIOD      | \
+                                 STATES_WAITING_FOR_EVENT       | \
+                                 STATES_WAITING_ON_THREAD_QUEUE | \
+                                 STATES_INTERRUPTIBLE_BY_SIGNAL ) 
+                                 
 #ifdef __cplusplus
 extern "C" {
 #endif
