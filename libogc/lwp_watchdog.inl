@@ -3,7 +3,7 @@
 
 static __inline__ void _Watchdog_Initialize(Watchdog_Control *the_watchdog,Watchdog_Service_routine_entry routine,u32 id,void *user_data)
 {
-	the_watchdog->state = LWP_WD_INACTIVE;
+	the_watchdog->state = WATCHDOG_INACTIVE;
 	the_watchdog->id = id;
 	the_watchdog->routine = routine;
 	the_watchdog->user_data = user_data;
@@ -31,17 +31,17 @@ static __inline__ Watchdog_Control* _Watchdog_Previous(Watchdog_Control *the_wat
 
 static __inline__ void _Watchdog_Activate(Watchdog_Control *the_watchdog)
 {
-	the_watchdog->state = LWP_WD_ACTIVE;
+	the_watchdog->state = WATCHDOG_INACTIVE;
 }
 
 static __inline__ void _Watchdog_Deactivate(Watchdog_Control *the_watchdog)
 {
-	the_watchdog->state = LWP_WD_REMOVE;
+	the_watchdog->state = WATCHDOG_REMOVE_IT;
 }
 
 static __inline__ u32 _Watchdog_Is_active(Watchdog_Control *the_watchdog)
 {
-	return (the_watchdog->state==LWP_WD_ACTIVE);
+	return (the_watchdog->state==WATCHDOG_ACTIVE);
 }
 
 static __inline__ u64 _POSIX_Timespec_to_interval(const struct timespec *time)

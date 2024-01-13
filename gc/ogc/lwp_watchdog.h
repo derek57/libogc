@@ -46,13 +46,17 @@
 
 #define diff_ticks(tick0,tick1)		(((u64)(tick1)<(u64)(tick0))?((u64)-1-(u64)(tick0)+(u64)(tick1)):((u64)(tick1)-(u64)(tick0)))
 
-#define LWP_WD_INACTIVE				0
-#define LWP_WD_INSERTED				1
-#define LWP_WD_ACTIVE				2
-#define LWP_WD_REMOVE				3
-								
-#define LWP_WD_FORWARD				0
-#define LWP_WD_BACKWARD				1
+typedef enum {
+  WATCHDOG_INACTIVE,       /* off all chains */
+  WATCHDOG_BEING_INSERTED, /* off all chains, searching for insertion point */
+  WATCHDOG_ACTIVE,         /* on chain, allowed to fire */
+  WATCHDOG_REMOVE_IT       /* on chain, remove without firing if expires */
+} Watchdog_States;
+
+typedef enum {
+  WATCHDOG_FORWARD,      /* adjust delta value forward */
+  WATCHDOG_BACKWARD      /* adjust delta value backward */
+} Watchdog_Adjust_directions;
 								
 #define LWP_WD_NOTIMEOUT			0
 

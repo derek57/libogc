@@ -68,7 +68,7 @@ void _Watchdog_Insert(Chain_Control *header,Watchdog_Control *the_watchdog)
 	printf("_Watchdog_Insert(%p,%llu,%llu)\n",the_watchdog,the_watchdog->start,the_watchdog->delta_interval);
 #endif
 	insert_isr_nest_level = _ISR_Is_in_progress();
-	the_watchdog->state = LWP_WD_INSERTED;
+	the_watchdog->state = WATCHDOG_BEING_INSERTED;
 
 	_Watchdog_Sync_count++;
 restart:
@@ -79,7 +79,7 @@ restart:
 		if(delta_interval<after->delta_interval) break;
 
 		_CPU_ISR_Flash(level);
-		if(the_watchdog->state!=LWP_WD_INSERTED) goto exit_insert;
+		if(the_watchdog->state!=WATCHDOG_BEING_INSERTED) goto exit_insert;
 		if(_Watchdog_Sync_level>insert_isr_nest_level) {
 			_Watchdog_Sync_level = insert_isr_nest_level;
 			_CPU_ISR_Restore(level);
@@ -109,14 +109,14 @@ u32 _Watchdog_Remove(Chain_Control *header,Watchdog_Control *the_watchdog)
 	_CPU_ISR_Disable(level);
 	previous_state = the_watchdog->state;
 	switch(previous_state) {
-		case LWP_WD_INACTIVE:
+		case WATCHDOG_INACTIVE:
 			break;
-		case  LWP_WD_INSERTED:
-			the_watchdog->state = LWP_WD_INACTIVE;
+		case  WATCHDOG_BEING_INSERTED:
+			the_watchdog->state = WATCHDOG_INACTIVE;
 			break;
-		case LWP_WD_ACTIVE:
-		case LWP_WD_REMOVE:
-			the_watchdog->state = LWP_WD_INACTIVE;
+		case WATCHDOG_ACTIVE:
+		case WATCHDOG_REMOVE_IT:
+			the_watchdog->state = WATCHDOG_INACTIVE;
 			next_watchdog = _Watchdog_Next(the_watchdog);
 			if(_Watchdog_Sync_count) _Watchdog_Sync_level = _ISR_Is_in_progress();
 			_Chain_Extract_unprotected(&the_watchdog->node);
@@ -144,14 +144,14 @@ void _Watchdog_Tickle(Chain_Control *header)
 	if(diff<=0) {
 		do {
 			switch(_Watchdog_Remove(header,the_watchdog)) {
-				case LWP_WD_ACTIVE:	
+				case WATCHDOG_ACTIVE:	
 					the_watchdog->routine(the_watchdog->user_data);
 					break;
-				case LWP_WD_INACTIVE:
+				case WATCHDOG_INACTIVE:
 					break;
-				case LWP_WD_INSERTED:
+				case WATCHDOG_BEING_INSERTED:
 					break;
-				case LWP_WD_REMOVE:
+				case WATCHDOG_REMOVE_IT:
 					break;
 			}
 			the_watchdog = _Watchdog_First(header);
@@ -170,10 +170,10 @@ void _Watchdog_Adjust(Chain_Control *header,u32 direction,s64 units)
 	abs_int = gettime()+LWP_WD_ABS(units);
 	if(!_Chain_Is_empty(header)) {
 		switch(direction) {
-			case LWP_WD_BACKWARD:
+			case WATCHDOG_BACKWARD:
 				_Watchdog_First(header)->delta_interval += LWP_WD_ABS(units);
 				break;
-			case LWP_WD_FORWARD:
+			case WATCHDOG_FORWARD:
 				while(abs_int) {
 					if(abs_int<_Watchdog_First(header)->delta_interval) {
 						_Watchdog_First(header)->delta_interval -= LWP_WD_ABS(units);
