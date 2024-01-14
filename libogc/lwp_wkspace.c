@@ -1,3 +1,20 @@
+/*
+ *  Workspace Handler
+ *
+ *  XXX
+ *
+ *  NOTE:
+ *
+ *  COPYRIGHT (c) 1989-1999.
+ *  On-Line Applications Research Corporation (OAR).
+ *
+ *  The license and distribution terms for this file may be
+ *  found in the file LICENSE in this distribution or at
+ *  http://www.OARcorp.com/rtems/license.html.
+ *
+ *  $Id$
+ */
+
 #include <stdlib.h>
 #include <system.h>
 #include <string.h>
@@ -29,6 +46,11 @@ u32 __lwp_wkspace_heapused()
 	return __wkspace_iblock.used_size;
 }
 
+/*PAGE
+ *
+ *  _Workspace_Handler_initialization
+ */
+
 void _Workspace_Handler_initialization(u32 size)
 {
 	u32 starting_address,level,dsize;
@@ -41,5 +63,5 @@ void _Workspace_Handler_initialization(u32 size)
 	_ISR_Enable(level);
 
 	memset((void*)starting_address,0,dsize);
-	memory_available += _Heap_Initialize(&_Workspace_Area,(void*)starting_address,dsize,PPC_ALIGNMENT);
+	memory_available += _Heap_Initialize(&_Workspace_Area,(void*)starting_address,dsize,CPU_HEAP_ALIGNMENT);
 }
