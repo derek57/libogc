@@ -1,3 +1,18 @@
+/*  inline/coremutex.inl
+ *
+ *  This include file contains all of the inlined routines associated
+ *  with the CORE mutexes.
+ *
+ *  COPYRIGHT (c) 1989-1999.
+ *  On-Line Applications Research Corporation (OAR).
+ *
+ *  The license and distribution terms for this file may be
+ *  found in the file LICENSE in this distribution or at
+ *  http://www.OARcorp.com/rtems/license.html.
+ *
+ *  $Id$
+ */
+
 #ifndef __LWP_MUTEX_INL__
 #define __LWP_MUTEX_INL__
 
@@ -95,7 +110,7 @@ RTEMS_INLINE_ROUTINE boolean _CORE_mutex_Is_priority_ceiling(
  *  NOTE: The Doxygen for this routine is in the .h file.
  */
 
-RTEMS_INLINE_ROUTINE int _CORE_mutex_Seize_interrupt_trylock_body(
+RTEMS_INLINE_ROUTINE int _CORE_mutex_Seize_interrupt_trylock(
   CORE_mutex_Control  *the_mutex,
   ISR_Level           *level_p
 )

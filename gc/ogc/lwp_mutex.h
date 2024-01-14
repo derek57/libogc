@@ -1,3 +1,20 @@
+/*  mutex.h
+ *
+ *  This include file contains all the constants and structures associated
+ *  with the Mutex Handler.  A mutex is an enhanced version of the standard
+ *  Dijkstra binary semaphore used to provide synchronization and mutual 
+ *  exclusion capabilities.
+ *
+ *  COPYRIGHT (c) 1989-1999.
+ *  On-Line Applications Research Corporation (OAR).
+ *
+ *  The license and distribution terms for this file may be
+ *  found in the file LICENSE in this distribution or at
+ *  http://www.OARcorp.com/rtems/license.html.
+ *
+ *  $Id$
+ */
+
 #ifndef __LWP_MUTEX_H__
 #define __LWP_MUTEX_H__
 
