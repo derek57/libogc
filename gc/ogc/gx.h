@@ -1917,7 +1917,7 @@ void GX_SetChanMatColor(s32 channel,GXColor color);
  * \note Indexed data is loaded into a vertex cache in the graphics processor. The vertex cache fetches 32B of data for each cache miss;
  * therefore, there is a small performance benefit to aligning attribute arrays to 32B, and possibly for arranging vertex data so that it
  * doesn't span 32B boundaries. Conveniently enough, memalign() returns 32-byte aligned pointers. For static data arrays, you can use the
- * ATTRIBUTE_ALIGN(32) attribute macro to align the \a ptr to 32B.
+ * CPU_STRUCTURE_ALIGNMENT attribute macro to align the \a ptr to 32B.
  *
  * \param[in] attr \ref vtxattr that the array is storing
  * \param[in] ptr pointer to the array itself
@@ -2068,7 +2068,7 @@ void GX_Begin(u8 primitve,u8 vtxfmt,u16 vtxcnt);
  *
  * \note The application is expected to allocate the memory for the display list buffer. If the display list exceeds the maximum size
  * of the buffer, GX_EndDispList() will return 0. The address of the buffer must be 32-byte aligned; memalign() can return 32-byte-aligned
- * pointers. You can use the macro ATTRIBUTE_ALIGN(32) to align statically allocated buffers.<br><br>
+ * pointers. You can use the macro CPU_STRUCTURE_ALIGNMENT to align statically allocated buffers.<br><br>
  *
  * \note The CPU's write-gather pipe is used to write graphics commands to the display list. Therefore, the display list buffer must be
  * forced out of the CPU cache prior to being filled. DCInvalidateRange() may be used for this purpose. In addition, due to the mechanics

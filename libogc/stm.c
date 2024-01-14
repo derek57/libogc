@@ -61,13 +61,13 @@ static u32 __stm_initialized= 0;
 static u32 __stm_ehregistered= 0;
 static u32 __stm_ehclear= 0;
 
-static u32 __stm_ehbufin[0x08] ATTRIBUTE_ALIGN(32) = {0,0,0,0,0,0,0,0};
-static u32 __stm_ehbufout[0x08] ATTRIBUTE_ALIGN(32) = {0,0,0,0,0,0,0,0};
-static u32 __stm_immbufin[0x08] ATTRIBUTE_ALIGN(32) = {0,0,0,0,0,0,0,0};
-static u32 __stm_immbufout[0x08] ATTRIBUTE_ALIGN(32) = {0,0,0,0,0,0,0,0};
+static u32 __stm_ehbufin[0x08] CPU_STRUCTURE_ALIGNMENT = {0,0,0,0,0,0,0,0};
+static u32 __stm_ehbufout[0x08] CPU_STRUCTURE_ALIGNMENT = {0,0,0,0,0,0,0,0};
+static u32 __stm_immbufin[0x08] CPU_STRUCTURE_ALIGNMENT = {0,0,0,0,0,0,0,0};
+static u32 __stm_immbufout[0x08] CPU_STRUCTURE_ALIGNMENT = {0,0,0,0,0,0,0,0};
 
-static char __stm_eh_fs[] ATTRIBUTE_ALIGN(32) = "/dev/stm/eventhook";
-static char __stm_imm_fs[] ATTRIBUTE_ALIGN(32) = "/dev/stm/immediate";
+static char __stm_eh_fs[] CPU_STRUCTURE_ALIGNMENT = "/dev/stm/eventhook";
+static char __stm_imm_fs[] CPU_STRUCTURE_ALIGNMENT = "/dev/stm/immediate";
 
 s32 __STM_SetEventHook();
 s32 __STM_ReleaseEventHook();

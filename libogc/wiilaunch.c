@@ -40,9 +40,10 @@ distribution.
 #include "video.h"
 #include "network.h"
 #include "wiilaunch.h"
+#include "lwp_config.h"
 
-static char __nandbootinfo[] ATTRIBUTE_ALIGN(32) = "/shared2/sys/NANDBOOTINFO";
-static char __stateflags[] ATTRIBUTE_ALIGN(32) = "/title/00000001/00000002/data/state.dat";
+static char __nandbootinfo[] CPU_STRUCTURE_ALIGNMENT = "/shared2/sys/NANDBOOTINFO";
+static char __stateflags[] CPU_STRUCTURE_ALIGNMENT = "/title/00000001/00000002/data/state.dat";
 
 static int __initialized = 0;
 static char args_set = 0;
@@ -77,9 +78,9 @@ typedef struct {
 #define RETURN_TO_ARGS 2
 
 
-static NANDBootInfo nandboot ATTRIBUTE_ALIGN(32);
+static NANDBootInfo nandboot CPU_STRUCTURE_ALIGNMENT;
 
-static StateFlags stateflags ATTRIBUTE_ALIGN(32);
+static StateFlags stateflags CPU_STRUCTURE_ALIGNMENT;
 
 static u32 __CalcChecksum(u32 *buf, int len)
 {

@@ -21,13 +21,13 @@
 #ifndef __LWP_HEAP_H__
 #define __LWP_HEAP_H__
 
-#include <gctypes.h>
-#include "machine/asm.h"
-#include "lwp_config.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <gctypes.h>
+#include "machine/asm.h"
+#include "lwp_config.h"
 
 /*
  *  Status codes for heap_extend

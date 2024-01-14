@@ -35,14 +35,15 @@ distribution.
 #include "asm.h"
 #include "processor.h"
 #include "conf.h"
+#include "lwp_config.h"
 
 
 static int __conf_inited = 0;
-static u8 __conf_buffer[0x4000] ATTRIBUTE_ALIGN(32);
-static char __conf_txt_buffer[0x101] ATTRIBUTE_ALIGN(32);
+static u8 __conf_buffer[0x4000] CPU_STRUCTURE_ALIGNMENT;
+static char __conf_txt_buffer[0x101] CPU_STRUCTURE_ALIGNMENT;
 
-static const char __conf_file[] ATTRIBUTE_ALIGN(32) = "/shared2/sys/SYSCONF";
-static const char __conf_txt_file[] ATTRIBUTE_ALIGN(32) = "/title/00000001/00000002/data/setting.txt";
+static const char __conf_file[] CPU_STRUCTURE_ALIGNMENT = "/shared2/sys/SYSCONF";
+static const char __conf_txt_file[] CPU_STRUCTURE_ALIGNMENT = "/title/00000001/00000002/data/setting.txt";
 
 void __CONF_DecryptTextBuffer(void)
 {

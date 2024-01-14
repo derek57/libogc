@@ -56,7 +56,7 @@ static u32 __ARQMStackLocation;
 static u32 __ARQMFreeBytes;
 static u32 __ARQMStackPointer[ARQM_STACKENTRIES];
 static ARQM_Info __ARQMInfo[ARQM_STACKENTRIES];
-static u8 __ARQMZeroBuffer[ARQM_ZEROBYTES] ATTRIBUTE_ALIGN(32);
+static u8 __ARQMZeroBuffer[ARQM_ZEROBYTES] CPU_STRUCTURE_ALIGNMENT;
 
 static void __ARQMPollCallback(ARQRequest *req)
 {

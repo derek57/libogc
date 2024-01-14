@@ -149,7 +149,7 @@ typedef struct _card_block {
 
 #if defined(HW_RVL)
 
-static u32 _cardunlockdata[0x160] ATTRIBUTE_ALIGN(32) =
+static u32 _cardunlockdata[0x160] CPU_STRUCTURE_ALIGNMENT =
 {
 	0x00000000,0x00000000,0x00000000,0x00000000,
 	0x00000000,0x00000000,0x00000021,0x02ff0021,
@@ -177,7 +177,7 @@ static u32 _cardunlockdata[0x160] ATTRIBUTE_ALIGN(32) =
 
 #elif defined(HW_DOL)
 
-static u32 _cardunlockdata[0x160] ATTRIBUTE_ALIGN(32) =
+static u32 _cardunlockdata[0x160] CPU_STRUCTURE_ALIGNMENT =
 {
 	0x00000000,0x00000000,0x00000000,0x00000000,
 	0x00000000,0x00000000,0x00000021,0x02ff0021,
@@ -2220,7 +2220,7 @@ static void __dsp_initcallback(dsptask_t *task)
 	while(DSP_CheckMailTo());
 }
 
-static u8 tmp_buffer[64] ATTRIBUTE_ALIGN(32);
+static u8 tmp_buffer[64] CPU_STRUCTURE_ALIGNMENT;
 static void __dsp_donecallback(dsptask_t *task)
 {
 

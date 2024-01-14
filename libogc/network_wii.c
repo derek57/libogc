@@ -242,9 +242,9 @@ static u8 __net_heap_inited = 0;
 static s32 __net_hid=-1;
 static Heap_Control __net_heap;
 
-static char __manage_fs[] ATTRIBUTE_ALIGN(32) = "/dev/net/ncd/manage";
-static char __iptop_fs[] ATTRIBUTE_ALIGN(32) = "/dev/net/ip/top";
-static char __kd_fs[] ATTRIBUTE_ALIGN(32) = "/dev/net/kd/request";
+static char __manage_fs[] CPU_STRUCTURE_ALIGNMENT = "/dev/net/ncd/manage";
+static char __iptop_fs[] CPU_STRUCTURE_ALIGNMENT = "/dev/net/ip/top";
+static char __kd_fs[] CPU_STRUCTURE_ALIGNMENT = "/dev/net/kd/request";
 
 #define ROUNDDOWN32(v)				(((u32)(v)-0x1f)&~0x1f)
 
@@ -699,7 +699,7 @@ struct hostent * net_gethostbyname(const char *addrString)
 	u8 *params;
 	struct hostent *ipData;
 	u32 addrOffset;
-	static u8 ipBuffer[0x460] ATTRIBUTE_ALIGN(32);
+	static u8 ipBuffer[0x460] CPU_STRUCTURE_ALIGNMENT;
 
 	memset(ipBuffer, 0, 0x460);
 

@@ -39,6 +39,7 @@ distribution.
 #include <ipc.h>
 
 #include "isfs.h"
+#include "lwp_config.h"
 
 #define ISFS_STRUCTSIZE				(sizeof(struct isfs_cb))
 #define ISFS_HEAPSIZE				(ISFS_STRUCTSIZE<<4)
@@ -111,7 +112,7 @@ struct isfs_cb
 
 static s32 hId = -1;
 static s32 _fs_fd = -1;
-static char _dev_fs[] ATTRIBUTE_ALIGN(32) = "/dev/fs";
+static char _dev_fs[] CPU_STRUCTURE_ALIGNMENT = "/dev/fs";
 
 static s32 __isfsGetStatsCB(s32 result,void *usrdata)
 {

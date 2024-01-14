@@ -96,7 +96,7 @@ struct _sramcntrl {
 	s32 enabled;
 	s32 locked;
 	s32 sync;
-} sramcntrl ATTRIBUTE_ALIGN(32);
+} sramcntrl CPU_STRUCTURE_ALIGNMENT;
 
 typedef struct _alarm_st
 {

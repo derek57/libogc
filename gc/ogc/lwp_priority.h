@@ -1,15 +1,31 @@
+/*  priority.h
+ *
+ *  This include file contains all thread priority manipulation routines.
+ *  This Handler provides mechanisms which can be used to
+ *  initialize and manipulate thread priorities.
+ *
+ *  COPYRIGHT (c) 1989-1999.
+ *  On-Line Applications Research Corporation (OAR).
+ *
+ *  The license and distribution terms for this file may be
+ *  found in the file LICENSE in this distribution or at
+ *  http://www.OARcorp.com/rtems/license.html.
+ *
+ *  $Id$
+ */
+
 #ifndef __LWP_PRIORITY_H__
 #define __LWP_PRIORITY_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <gctypes.h>
 #include "machine/processor.h"
 
 #define PRIORITY_MINIMUM      0         /* highest thread priority */
 #define PRIORITY_MAXIMUM      255       /* lowest thread priority */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef struct {
 	u32 *minor;

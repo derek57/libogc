@@ -16,6 +16,10 @@
 #ifndef __LWP_QUEUE_H__
 #define __LWP_QUEUE_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <gctypes.h>
 
 #include "lwp_config.h"
@@ -24,10 +28,6 @@
 
 #ifdef _LWPQ_DEBUG
 extern int printk(const char *fmt,...);
-#endif
-
-#ifdef __cplusplus
-extern "C" {
 #endif
 
 /*

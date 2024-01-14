@@ -43,6 +43,7 @@ distribution.
 #include "processor.h"
 #include "mutex.h"
 #include "es.h"
+#include "lwp_config.h"
 
 //#define DEBUG_ES
 
@@ -107,7 +108,7 @@ distribution.
 
 #define ISALIGNED(x) ((((u32)x)&0x1F)==0)
 
-static char __es_fs[] ATTRIBUTE_ALIGN(32) = "/dev/es";
+static char __es_fs[] CPU_STRUCTURE_ALIGNMENT = "/dev/es";
 
 static s32 __es_fd = -1;
 static s32 __es_hid = -1;
@@ -912,7 +913,7 @@ static int _ES_open_r (struct _reent *r, void *fileStruct, const char *path, int
 		file->cfd = ES_OpenContent(file->content.index);
 	else
 	{
-		u32 cnt ATTRIBUTE_ALIGN(32);
+		u32 cnt CPU_STRUCTURE_ALIGNMENT;
 		ES_GetNumTicketViews(file->titleID, &cnt);
 		tikview *views = (tikview *)memalign( 32, sizeof(tikview)*cnt );
 		if(views == NULL)

@@ -46,6 +46,8 @@
 #include <asm.h>
 #include <processor.h>
 
+#include "lwp_config.h"
+
 #define SDIO_HEAPSIZE				(5*1024)
  
 #define PAGE_SIZE512				512
@@ -149,7 +151,7 @@ static u8 __sd0_cid[16];
  
 static s32 __sdio_initialized = 0;
  
-static char _sd0_fs[] ATTRIBUTE_ALIGN(32) = "/dev/sdio/slot0";
+static char _sd0_fs[] CPU_STRUCTURE_ALIGNMENT = "/dev/sdio/slot0";
 
 static s32 __sdio_sendcommand(u32 cmd,u32 cmd_type,u32 rsp_type,u32 arg,u32 blk_cnt,u32 blk_size,void *buffer,void *reply,u32 rlen)
 {

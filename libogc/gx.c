@@ -133,7 +133,7 @@ static u32 _gxtexregionaddrtable[48] =
 
 extern u8 __gxregs[];
 static struct __gx_regdef *__gx = (struct __gx_regdef*)__gxregs;
-static u8 _gx_saved_data[STRUCT_REGDEF_SIZE] ATTRIBUTE_ALIGN(32);
+static u8 _gx_saved_data[STRUCT_REGDEF_SIZE] CPU_STRUCTURE_ALIGNMENT;
 
 static s32 __gx_onreset(s32 final);
 

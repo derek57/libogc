@@ -293,7 +293,7 @@ static void __ARWriteDMA(u32 memaddr,u32 aramaddr,u32 len)
 static void __ARClearArea(u32 aramaddr,u32 len)
 {
 	u32 currlen,curraddr,endaddr;
-	static u8 zero_buffer[2048] ATTRIBUTE_ALIGN(32);
+	static u8 zero_buffer[2048] CPU_STRUCTURE_ALIGNMENT;
 
 	while(!(_dspReg[11]&0x0001));
 
@@ -314,9 +314,9 @@ static void __ARClearArea(u32 aramaddr,u32 len)
 static void __ARCheckSize()
 {
 	u32 i,arsize,arszflag;
-	static u32 test_data[8] ATTRIBUTE_ALIGN(32);
-	static u32 dummy_data[8] ATTRIBUTE_ALIGN(32);
-	static u32 buffer[8] ATTRIBUTE_ALIGN(32);
+	static u32 test_data[8] CPU_STRUCTURE_ALIGNMENT;
+	static u32 dummy_data[8] CPU_STRUCTURE_ALIGNMENT;
+	static u32 buffer[8] CPU_STRUCTURE_ALIGNMENT;
 
 #ifdef _AR_DEBUG
 	printf("__ARCheckSize()\n");
