@@ -565,7 +565,7 @@ u32 _Thread_Initialize(Thread_Control *the_thread,void *stack_area,u32 stack_siz
 
 	if(!stack_area) {
 		if(!_Stack_Is_enough(stack_size))
-			actual_stack_size = CPU_MINIMUM_STACK_SIZE;
+			actual_stack_size = CPU_STACK_MINIMUM_SIZE;
 		else
 			actual_stack_size = stack_size;
 
