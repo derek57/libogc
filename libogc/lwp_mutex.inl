@@ -1,32 +1,32 @@
 #ifndef __LWP_MUTEX_INL__
 #define __LWP_MUTEX_INL__
 
-static __inline__ u32 _CORE_mutex_Is_locked(CORE_mutex_Control *the_mutex)
+RTEMS_INLINE_ROUTINE u32 _CORE_mutex_Is_locked(CORE_mutex_Control *the_mutex)
 {
 	return (the_mutex->lock==CORE_MUTEX_LOCKED);
 }
 
-static __inline__ u32 _CORE_mutex_Is_priority(CORE_mutex_Attributes *the_attribute)
+RTEMS_INLINE_ROUTINE u32 _CORE_mutex_Is_priority(CORE_mutex_Attributes *the_attribute)
 {
 	return (the_attribute->discipline==CORE_MUTEX_DISCIPLINES_PRIORITY);
 }
 
-static __inline__ u32 _CORE_mutex_Is_fifo(CORE_mutex_Attributes *the_attribute)
+RTEMS_INLINE_ROUTINE u32 _CORE_mutex_Is_fifo(CORE_mutex_Attributes *the_attribute)
 {
 	return (the_attribute->discipline==CORE_MUTEX_DISCIPLINES_FIFO);
 }
 
-static __inline__ u32 _CORE_mutex_Is_inherit_priority(CORE_mutex_Attributes *the_attribute)
+RTEMS_INLINE_ROUTINE u32 _CORE_mutex_Is_inherit_priority(CORE_mutex_Attributes *the_attribute)
 {
 	return (the_attribute->discipline==CORE_MUTEX_DISCIPLINES_PRIORITY_INHERIT);
 }
 
-static __inline__ u32 _CORE_mutex_Is_priority_ceiling(CORE_mutex_Attributes *the_attribute)
+RTEMS_INLINE_ROUTINE u32 _CORE_mutex_Is_priority_ceiling(CORE_mutex_Attributes *the_attribute)
 {
 	return (the_attribute->discipline==CORE_MUTEX_DISCIPLINES_PRIORITY_CEILING);
 }
 
-static __inline__ u32 _CORE_mutex_Seize_interrupt_trylock(CORE_mutex_Control *the_mutex,u32 *level_p)
+RTEMS_INLINE_ROUTINE u32 _CORE_mutex_Seize_interrupt_trylock(CORE_mutex_Control *the_mutex,u32 *level_p)
 {
 	Thread_Control *executing;
 	u32 level = *level_p;

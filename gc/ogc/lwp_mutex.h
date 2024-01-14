@@ -52,7 +52,7 @@ u32 _CORE_mutex_Surrender(CORE_mutex_Control *mutex);
 void _CORE_mutex_Seize_interrupt_blocking(CORE_mutex_Control *mutex,u64 timeout);
 void _CORE_mutex_Flush(CORE_mutex_Control *mutex,u32 status);
 
-static __inline__ u32 _CORE_mutex_Seize_interrupt_trylock(CORE_mutex_Control *mutex,u32 *isr_level);
+RTEMS_INLINE_ROUTINE u32 _CORE_mutex_Seize_interrupt_trylock(CORE_mutex_Control *mutex,u32 *isr_level);
 
 #define _CORE_mutex_Seize(_mutex_t,_id,_wait,_timeout,_level) \
 	do { \

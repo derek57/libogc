@@ -240,13 +240,13 @@ static sys_resetinfo mem_resetinfo = {
 static const char *__sys_versiondate;
 static const char *__sys_versionbuild;
 
-static __inline__ alarm_st* __lwp_syswd_open(syswd_t wd)
+RTEMS_INLINE_ROUTINE alarm_st* __lwp_syswd_open(syswd_t wd)
 {
 	LWP_CHECK_SYSWD(wd);
 	return (alarm_st*)_Objects_Get(&sys_alarm_objects,LWP_OBJMASKID(wd));
 }
 
-static __inline__ void __lwp_syswd_free(alarm_st *alarm)
+RTEMS_INLINE_ROUTINE void __lwp_syswd_free(alarm_st *alarm)
 {
 	_Objects_Close(&sys_alarm_objects,&alarm->object);
 	_Objects_Free(&sys_alarm_objects,&alarm->object);
@@ -535,7 +535,7 @@ static void __memprotect_init()
 	_CPU_ISR_Restore(level);
 }
 
-static __inline__ u32 __get_fontsize(void *buffer)
+RTEMS_INLINE_ROUTINE u32 __get_fontsize(void *buffer)
 {
 	u8 *ptr = (u8*)buffer;
 

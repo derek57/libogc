@@ -36,6 +36,7 @@ distribution.
 #include "aram.h"
 #include "irq.h"
 #include "cache.h"
+#include "lwp_config.h"
 
 //#define _AR_DEBUG
 
@@ -228,7 +229,7 @@ u32 AR_GetInternalSize()
 	return __ARInternalSize;
 }
 
-static __inline__ void __ARClearInterrupt()
+RTEMS_INLINE_ROUTINE void __ARClearInterrupt()
 {
 	u16 cause;
 
@@ -239,7 +240,7 @@ static __inline__ void __ARClearInterrupt()
 	_dspReg[5] = (cause|DSPCR_ARINT);
 }
 
-static __inline__ void __ARWaitDma()
+RTEMS_INLINE_ROUTINE void __ARWaitDma()
 {
 	while(_dspReg[5]&DSPCR_DSPDMA);
 }

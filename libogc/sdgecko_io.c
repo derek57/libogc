@@ -90,7 +90,7 @@ static u32 _ioAddressingType[MAX_DRIVE];
 
 extern unsigned long gettick();
 
-static __inline__ u32 __check_response(s32 drv_no,u8 res)
+RTEMS_INLINE_ROUTINE u32 __check_response(s32 drv_no,u8 res)
 {
 	if(drv_no<0 || drv_no>=MAX_DRIVE) return CARDIO_ERROR_NOCARD;
 

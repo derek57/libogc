@@ -57,13 +57,13 @@ void __lwp_mqbox_init()
 	_Objects_Initialize_information(&_lwp_mqbox_objects,CONFIGURE_MAXIMUM_POSIX_MESSAGE_QUEUES,sizeof(POSIX_Message_queue_Control));
 }
 
-static __inline__ POSIX_Message_queue_Control* __lwp_mqbox_open(mqbox_t mbox)
+RTEMS_INLINE_ROUTINE POSIX_Message_queue_Control* __lwp_mqbox_open(mqbox_t mbox)
 {
 	LWP_CHECK_MBOX(mbox);
 	return (POSIX_Message_queue_Control*)_Objects_Get(&_lwp_mqbox_objects,LWP_OBJMASKID(mbox));
 }
 
-static __inline__ void __lwp_mqbox_free(POSIX_Message_queue_Control *mqbox)
+RTEMS_INLINE_ROUTINE void __lwp_mqbox_free(POSIX_Message_queue_Control *mqbox)
 {
 	_Objects_Close(&_lwp_mqbox_objects,&mqbox->Object);
 	_Objects_Free(&_lwp_mqbox_objects,&mqbox->Object);

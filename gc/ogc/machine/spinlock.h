@@ -12,7 +12,7 @@ typedef struct {
 
 #define spin_lock_init(x)		do { *(x) = SPIN_LOCK_UNLOCKED; }while(0)
 
-static __inline__ u32 _test_and_set(u32 *atomic)
+RTEMS_INLINE_ROUTINE u32 _test_and_set(u32 *atomic)
 {
 	 register u32 ret;
 
@@ -29,7 +29,7 @@ static __inline__ u32 _test_and_set(u32 *atomic)
 	return ret;
 }
 
-static __inline__ u32 atomic_inc(u32 *pint)
+RTEMS_INLINE_ROUTINE u32 atomic_inc(u32 *pint)
 {
 	register u32 ret;
 	__asm__ __volatile__(
@@ -43,7 +43,7 @@ static __inline__ u32 atomic_inc(u32 *pint)
 	return ret;
 }
 
-static __inline__ u32 atomic_dec(u32 *pint)
+RTEMS_INLINE_ROUTINE u32 atomic_dec(u32 *pint)
 {
 	register u32 ret;
 	__asm__ __volatile__(
@@ -57,7 +57,7 @@ static __inline__ u32 atomic_dec(u32 *pint)
 	return ret;
 }
 
-static __inline__ void spin_lock(spinlock_t *lock)
+RTEMS_INLINE_ROUTINE void spin_lock(spinlock_t *lock)
 {
         register u32 tmp;
 
@@ -77,7 +77,7 @@ static __inline__ void spin_lock(spinlock_t *lock)
         : "cr0", "memory");
 }
 
-static __inline__ void spin_lock_irqsave(spinlock_t *lock,register u32 *p_isr_level)
+RTEMS_INLINE_ROUTINE void spin_lock_irqsave(spinlock_t *lock,register u32 *p_isr_level)
 {
 	register u32 level;
     register u32 tmp;
@@ -102,13 +102,13 @@ static __inline__ void spin_lock_irqsave(spinlock_t *lock,register u32 *p_isr_le
 	*p_isr_level = level;
 }
 
-static __inline__ void spin_unlock(spinlock_t *lock)
+RTEMS_INLINE_ROUTINE void spin_unlock(spinlock_t *lock)
 {
         __asm__ __volatile__("eieio             # spin_unlock": : :"memory");
         lock->lock = 0;
 }
 
-static __inline__ void spin_unlock_irqrestore(spinlock_t *lock,register u32 isr_level)
+RTEMS_INLINE_ROUTINE void spin_unlock_irqrestore(spinlock_t *lock,register u32 isr_level)
 {
     __asm__ __volatile__(
 		"eieio             # spin_unlock"
@@ -126,7 +126,7 @@ typedef struct {
 
 #define read_lock_init(lp)		do { *(lp) = RW_LOCK_UNLOCKED; }while(0)
 
-static __inline__ void read_lock(rwlock_t *rw)
+RTEMS_INLINE_ROUTINE void read_lock(rwlock_t *rw)
 {
         register u32 tmp;
 
@@ -146,7 +146,7 @@ static __inline__ void read_lock(rwlock_t *rw)
         : "cr0", "memory");
 }
 
-static __inline__ void read_unlock(rwlock_t *rw)
+RTEMS_INLINE_ROUTINE void read_unlock(rwlock_t *rw)
 {
         register u32 tmp;
 
@@ -161,7 +161,7 @@ static __inline__ void read_unlock(rwlock_t *rw)
         : "cr0", "memory");
 }
 
-static __inline__ void write_lock(rwlock_t *rw)
+RTEMS_INLINE_ROUTINE void write_lock(rwlock_t *rw)
 {
         register u32 tmp;
 
@@ -181,7 +181,7 @@ static __inline__ void write_lock(rwlock_t *rw)
         : "cr0", "memory");
 }
 
-static __inline__ void write_unlock(rwlock_t *rw)
+RTEMS_INLINE_ROUTINE void write_unlock(rwlock_t *rw)
 {
         __asm__ __volatile__("eieio             # write_unlock": : :"memory");
         rw->lock = 0;

@@ -1,12 +1,12 @@
 #ifndef __LWP_SEMA_INL__
 #define __LWP_SEMA_INL__
 
-static __inline__ u32 _CORE_semaphore_Is_priority(CORE_semaphore_Attributes *the_attribute)
+RTEMS_INLINE_ROUTINE u32 _CORE_semaphore_Is_priority(CORE_semaphore_Attributes *the_attribute)
 {
 	return (the_attribute->discipline==CORE_SEMAPHORE_DISCIPLINES_PRIORITY);
 }
 
-static __inline__ void _CORE_semaphore_Seize_isr_disable(CORE_semaphore_Control *the_semaphore,u32 id,u32 wait,u32 *level_p)
+RTEMS_INLINE_ROUTINE void _CORE_semaphore_Seize_isr_disable(CORE_semaphore_Control *the_semaphore,u32 id,u32 wait,u32 *level_p)
 {
 	Thread_Control *executing;
 	u32 level = *level_p;

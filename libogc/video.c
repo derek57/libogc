@@ -1435,7 +1435,7 @@ static void printDebugCalculations()
 }
 #endif
 
-static __inline__ u32 cntlzd(u64 bit)
+RTEMS_INLINE_ROUTINE u32 cntlzd(u64 bit)
 {
 	u32 hi,lo,value = 0;
 

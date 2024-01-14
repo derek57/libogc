@@ -177,37 +177,37 @@ extern void* __SYS_GetIPCBufferHi(void);
 
 extern u32 gettick();
 
-static __inline__ u32 IPC_ReadReg(u32 reg)
+RTEMS_INLINE_ROUTINE u32 IPC_ReadReg(u32 reg)
 {
 	return _ipcReg[reg];
 }
 
-static __inline__ void IPC_WriteReg(u32 reg,u32 val)
+RTEMS_INLINE_ROUTINE void IPC_WriteReg(u32 reg,u32 val)
 {
 	_ipcReg[reg] = val;
 }
 
-static __inline__ void ACR_WriteReg(u32 reg,u32 val)
+RTEMS_INLINE_ROUTINE void ACR_WriteReg(u32 reg,u32 val)
 {
 	_ipcReg[reg>>2] = val;
 }
 
-static __inline__ void* __ipc_allocreq()
+RTEMS_INLINE_ROUTINE void* __ipc_allocreq()
 {
 	return iosAlloc(_ipc_hid,IPC_REQUESTSIZE);
 }
 
-static __inline__ void __ipc_freereq(void *ptr)
+RTEMS_INLINE_ROUTINE void __ipc_freereq(void *ptr)
 {
 	iosFree(_ipc_hid,ptr);
 }
 
-static __inline__ void __ipc_srand(u32 seed)
+RTEMS_INLINE_ROUTINE void __ipc_srand(u32 seed)
 {
 	_ipc_seed = seed;
 }
 
-static __inline__ u32 __ipc_rand()
+RTEMS_INLINE_ROUTINE u32 __ipc_rand()
 {
 	_ipc_seed = (214013*_ipc_seed) + 2531011;
 	return _ipc_seed;

@@ -72,13 +72,13 @@ void __lwp_mutex_init()
 }
 
 
-static __inline__ POSIX_Mutex_Control* __lwp_mutex_open(pthread_mutex_t lock)
+RTEMS_INLINE_ROUTINE POSIX_Mutex_Control* __lwp_mutex_open(pthread_mutex_t lock)
 {
 	LWP_CHECK_MUTEX(lock);
 	return (POSIX_Mutex_Control*)_Objects_Get(&_lwp_mutex_objects,LWP_OBJMASKID(lock));
 }
 
-static __inline__ void __lwp_mutex_free(POSIX_Mutex_Control *lock)
+RTEMS_INLINE_ROUTINE void __lwp_mutex_free(POSIX_Mutex_Control *lock)
 {
 	_Objects_Close(&_lwp_mutex_objects,&lock->Object);
 	_Objects_Free(&_lwp_mutex_objects,&lock->Object);

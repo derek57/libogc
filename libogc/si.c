@@ -125,7 +125,7 @@ static vu16* const _viReg = (u16*)0xCC002000;
 
 static u32 __si_transfer(s32 chan,void *out,u32 out_len,void *in,u32 in_len,SICallback cb);
 
-static __inline__ struct _xy* __si_getxy()
+RTEMS_INLINE_ROUTINE struct _xy* __si_getxy()
 {
 	switch(VIDEO_GetCurrentTvMode()) {
 		case VI_NTSC:
@@ -140,7 +140,7 @@ static __inline__ struct _xy* __si_getxy()
 	return NULL;
 }
 
-static __inline__ void __si_cleartcinterrupt()
+RTEMS_INLINE_ROUTINE void __si_cleartcinterrupt()
 {
 	_siReg[13] = (_siReg[13]|SICOMCSR_TCINT)&SICOMCSR_TCINT;
 }

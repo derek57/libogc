@@ -105,7 +105,7 @@ static void __ext_irq_handler(u32,void *);
 	#error HW model unknown.
 #endif
 
-static __inline__ void __exi_clearirqs(s32 nChn,u32 nEXIIrq,u32 nTCIrq,u32 nEXTIrq)
+RTEMS_INLINE_ROUTINE void __exi_clearirqs(s32 nChn,u32 nEXIIrq,u32 nTCIrq,u32 nEXTIrq)
 {
 	u32 d;
 #ifdef _EXI_DEBUG
@@ -118,7 +118,7 @@ static __inline__ void __exi_clearirqs(s32 nChn,u32 nEXIIrq,u32 nTCIrq,u32 nEXTI
 	_exiReg[nChn*5] = d;
 }
 
-static __inline__ void __exi_setinterrupts(s32 nChn,exibus_priv *exi)
+RTEMS_INLINE_ROUTINE void __exi_setinterrupts(s32 nChn,exibus_priv *exi)
 {
 	exibus_priv *pexi = &eximap[EXI_CHANNEL_2];
 #ifdef _EXI_DEBUG

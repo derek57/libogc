@@ -326,12 +326,12 @@ static s32 __card_getcntrlblock(s32 chn,card_block **card)
 	return ret;
 }
 
-static __inline__ struct card_dat* __card_getdirblock(card_block *card)
+RTEMS_INLINE_ROUTINE struct card_dat* __card_getdirblock(card_block *card)
 {
 	return card->curr_dir;
 }
 
-static __inline__ struct card_bat* __card_getbatblock(card_block *card)
+RTEMS_INLINE_ROUTINE struct card_bat* __card_getbatblock(card_block *card)
 {
 	return card->curr_fat;
 }
@@ -2051,12 +2051,12 @@ static void __card_mountcallback(s32 chn,s32 result)
 	if(cb) cb(chn,ret);
 }
 
-static __inline__ void __card_srand(u32 val)
+RTEMS_INLINE_ROUTINE void __card_srand(u32 val)
 {
 	crand_next = val;	
 }
 
-static __inline__ u32 __card_rand()
+RTEMS_INLINE_ROUTINE u32 __card_rand()
 {
 	crand_next = (crand_next*0x41C64E6D)+12345;
 	return _SHIFTR(crand_next,16,15);

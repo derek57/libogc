@@ -34,7 +34,7 @@ static void __usbgecko_init()
 	usbgecko_inited = 1;
 }
 
-static __inline__ void __usbgecko_exi_wait(s32 chn)
+RTEMS_INLINE_ROUTINE void __usbgecko_exi_wait(s32 chn)
 {
 	u32 level;
 
@@ -46,7 +46,7 @@ static __inline__ void __usbgecko_exi_wait(s32 chn)
 	_CPU_ISR_Restore(level);
 }
 
-static __inline__ int __send_command(s32 chn,u16 *cmd)
+RTEMS_INLINE_ROUTINE int __send_command(s32 chn,u16 *cmd)
 {
 	s32 ret = 0;
 
@@ -59,7 +59,7 @@ static __inline__ int __send_command(s32 chn,u16 *cmd)
 	return 1;
 }
 
-static __inline__ int __flashwritecommand(s32 chn, u32 flashaddress, u8 flashdata)
+RTEMS_INLINE_ROUTINE int __flashwritecommand(s32 chn, u32 flashaddress, u8 flashdata)
 {
 	s32 ret = 0;
 	u32 val = 0xE0000000|(flashaddress<<9)|(flashdata<<1);
@@ -76,7 +76,7 @@ static __inline__ int __flashwritecommand(s32 chn, u32 flashaddress, u8 flashdat
 	return 1;
 }
 
-static __inline__ int __flashreadcommand(s32 chn, u32 flashaddress, u8 *flashdata)
+RTEMS_INLINE_ROUTINE int __flashreadcommand(s32 chn, u32 flashaddress, u8 *flashdata)
 {
 	s32 ret = 0;
 	u32 val = 0xF0000000|(flashaddress<<9);

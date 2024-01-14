@@ -49,7 +49,7 @@ static ARQRequest *__ARQReqPendingHi;
 static ARQCallback __ARQCallbackLo = NULL;
 static ARQCallback __ARQCallbackHi = NULL;
 
-static __inline__ void __ARQPopTaskQueueHi()
+RTEMS_INLINE_ROUTINE void __ARQPopTaskQueueHi()
 {
 	ARQRequest *req;
 

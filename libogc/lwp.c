@@ -66,18 +66,18 @@ extern int __crtmain();
 
 extern u8 __stack_addr[],__stack_end[];
 
-static __inline__ u32 __lwp_priotocore(u32 prio)
+RTEMS_INLINE_ROUTINE u32 __lwp_priotocore(u32 prio)
 {
 	return (255 - prio);
 }
 
-static __inline__ Thread_Control* __lwp_cntrl_open(lwp_t thr_id)
+RTEMS_INLINE_ROUTINE Thread_Control* __lwp_cntrl_open(lwp_t thr_id)
 {
 	LWP_CHECK_THREAD(thr_id);
 	return (Thread_Control*)_Objects_Get(&_lwp_thr_objects,LWP_OBJMASKID(thr_id));
 }
 
-static __inline__ tqueue_st* __lwp_tqueue_open(lwpq_t tqueue)
+RTEMS_INLINE_ROUTINE tqueue_st* __lwp_tqueue_open(lwpq_t tqueue)
 {
 	LWP_CHECK_TQUEUE(tqueue);
 	return (tqueue_st*)_Objects_Get(&_lwp_tqueue_objects,LWP_OBJMASKID(tqueue));
@@ -111,13 +111,13 @@ static tqueue_st* __lwp_tqueue_allocate()
 	return NULL;
 }
 
-static __inline__ void __lwp_cntrl_free(Thread_Control *thethread)
+RTEMS_INLINE_ROUTINE void __lwp_cntrl_free(Thread_Control *thethread)
 {
 	_Objects_Close(&_lwp_thr_objects,&thethread->Object);
 	_Objects_Free(&_lwp_thr_objects,&thethread->Object);
 }
 
-static __inline__ void __lwp_tqueue_free(tqueue_st *tq)
+RTEMS_INLINE_ROUTINE void __lwp_tqueue_free(tqueue_st *tq)
 {
 	_Objects_Close(&_lwp_tqueue_objects,&tq->object);
 	_Objects_Free(&_lwp_tqueue_objects,&tq->object);

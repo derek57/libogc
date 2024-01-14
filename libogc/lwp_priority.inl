@@ -1,7 +1,7 @@
 #ifndef __LWP_PRIORITY_INL__
 #define __LWP_PRIORITY_INL__
 
-static __inline__ void _Priority_Initialize_information(Priority_Information *the_priority_map,u32 new_priority)
+RTEMS_INLINE_ROUTINE void _Priority_Initialize_information(Priority_Information *the_priority_map,u32 new_priority)
 {
 	u32 major,minor,mask;
 	
@@ -22,20 +22,20 @@ static __inline__ void _Priority_Initialize_information(Priority_Information *th
 #endif
 }
 
-static __inline__ void _Priority_Add_to_bit_map(Priority_Information *the_priority_map)
+RTEMS_INLINE_ROUTINE void _Priority_Add_to_bit_map(Priority_Information *the_priority_map)
 {
 	*the_priority_map->minor |= the_priority_map->ready_minor;
 	_Priority_Major_bit_map |= the_priority_map->ready_major;
 }
 
-static __inline__ void _Priority_Remove_from_bit_map(Priority_Information *the_priority_map)
+RTEMS_INLINE_ROUTINE void _Priority_Remove_from_bit_map(Priority_Information *the_priority_map)
 {
 	*the_priority_map->minor &= the_priority_map->block_minor;
 	if(*the_priority_map->minor==0)
 		_Priority_Major_bit_map &= the_priority_map->block_major;
 }
 
-static __inline__ u32 _Priority_Get_highest()
+RTEMS_INLINE_ROUTINE u32 _Priority_Get_highest()
 {
 	u32 major,minor;
 	major = cntlzw(_Priority_Major_bit_map);

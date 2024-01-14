@@ -147,53 +147,53 @@ static sys_resetinfo __gx_resetinfo = {
 extern int printk(const char *fmt,...);
 #endif
 
-static __inline__ BOOL IsWriteGatherBufferEmpty()
+RTEMS_INLINE_ROUTINE BOOL IsWriteGatherBufferEmpty()
 {
 	return !(mfwpar()&1);
 }
 
-static __inline__ void DisableWriteGatherPipe()
+RTEMS_INLINE_ROUTINE void DisableWriteGatherPipe()
 {
 	mthid2((mfhid2()&~0x40000000));
 }
 
-static __inline__ void EnableWriteGatherPipe()
+RTEMS_INLINE_ROUTINE void EnableWriteGatherPipe()
 {
 	mtwpar(0x0C008000);
 	mthid2((mfhid2()|0x40000000));
 }
 
-static __inline__ void __GX_ResetWriteGatherPipe()
+RTEMS_INLINE_ROUTINE void __GX_ResetWriteGatherPipe()
 {
 	while(mfwpar()&1);
 	mtwpar(0x0C008000);
 }
 
-static __inline__ void __GX_FifoLink(u8 enable)
+RTEMS_INLINE_ROUTINE void __GX_FifoLink(u8 enable)
 {
 	__gx->cpCRreg = ((__gx->cpCRreg&~0x10)|(_SHIFTL(enable,4,1)));
 	_cpReg[1] = __gx->cpCRreg;
 }
 
-static __inline__ void __GX_WriteFifoIntReset(u8 inthi,u8 intlo)
+RTEMS_INLINE_ROUTINE void __GX_WriteFifoIntReset(u8 inthi,u8 intlo)
 {
 	__gx->cpCLreg = ((__gx->cpCLreg&~0x03)|(_SHIFTL(intlo,1,1))|(inthi&1));
 	_cpReg[2] = __gx->cpCLreg;
 }
 
-static __inline__ void __GX_WriteFifoIntEnable(u8 inthi, u8 intlo)
+RTEMS_INLINE_ROUTINE void __GX_WriteFifoIntEnable(u8 inthi, u8 intlo)
 {
 	__gx->cpCRreg = ((__gx->cpCRreg&~0x0C)|(_SHIFTL(intlo,3,1))|(_SHIFTL(inthi,2,1)));
 	_cpReg[1] = __gx->cpCRreg;
 }
 
-static __inline__ void __GX_FifoReadEnable()
+RTEMS_INLINE_ROUTINE void __GX_FifoReadEnable()
 {
 	__gx->cpCRreg = ((__gx->cpCRreg&~0x01)|1);
 	_cpReg[1] = __gx->cpCRreg;
 }
 
-static __inline__ void __GX_FifoReadDisable()
+RTEMS_INLINE_ROUTINE void __GX_FifoReadDisable()
 {
 	__gx->cpCRreg = ((__gx->cpCRreg&~0x01)|0);
 	_cpReg[1] = __gx->cpCRreg;
@@ -2291,7 +2291,7 @@ void GX_SetArray(u32 attr,void *ptr,u8 stride)
 	}
 }
 
-static __inline__ void __SETVCDATTR(u8 attr,u8 type)
+RTEMS_INLINE_ROUTINE void __SETVCDATTR(u8 attr,u8 type)
 {
 	switch(attr) {
 		case GX_VA_PTNMTXIDX:
@@ -2529,7 +2529,7 @@ void GX_GetVtxDescv(GXVtxDesc *attr_list)
 	}
 }
 
-static __inline__ void __SETVCDFMT(u8 vtxfmt,u32 vtxattr,u32 comptype,u32 compsize,u32 frac)
+RTEMS_INLINE_ROUTINE void __SETVCDFMT(u8 vtxfmt,u32 vtxattr,u32 comptype,u32 compsize,u32 frac)
 {
 	u8 vat = (vtxfmt&7);
 

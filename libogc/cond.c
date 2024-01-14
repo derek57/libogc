@@ -61,13 +61,13 @@ void __lwp_cond_init()
 	_Objects_Initialize_information(&_lwp_cond_objects,CONFIGURE_MAXIMUM_POSIX_CONDITION_VARIABLES,sizeof(POSIX_Condition_variables_Control));
 }
 
-static __inline__ POSIX_Condition_variables_Control* __lwp_cond_open(pthread_cond_t cond)
+RTEMS_INLINE_ROUTINE POSIX_Condition_variables_Control* __lwp_cond_open(pthread_cond_t cond)
 {
 	LWP_CHECK_COND(cond);
 	return (POSIX_Condition_variables_Control*)_Objects_Get(&_lwp_cond_objects,LWP_OBJMASKID(cond));
 }
 
-static __inline__ void __lwp_cond_free(POSIX_Condition_variables_Control *cond)
+RTEMS_INLINE_ROUTINE void __lwp_cond_free(POSIX_Condition_variables_Control *cond)
 {
 	_Objects_Close(&_lwp_cond_objects,&cond->Object);
 	_Objects_Free(&_lwp_cond_objects,&cond->Object);

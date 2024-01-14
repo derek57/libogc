@@ -59,13 +59,13 @@ void __lwp_sema_init()
 	_Objects_Initialize_information(&_lwp_sema_objects,CONFIGURE_MAXIMUM_POSIX_SEMAPHORES,sizeof(POSIX_Semaphore_Control));
 }
 
-static __inline__ POSIX_Semaphore_Control* __lwp_sema_open(sem_t sem)
+RTEMS_INLINE_ROUTINE POSIX_Semaphore_Control* __lwp_sema_open(sem_t sem)
 {
 	LWP_CHECK_SEM(sem);
 	return (POSIX_Semaphore_Control*)_Objects_Get(&_lwp_sema_objects,LWP_OBJMASKID(sem));
 }
 
-static __inline__ void __lwp_sema_free(POSIX_Semaphore_Control *sema)
+RTEMS_INLINE_ROUTINE void __lwp_sema_free(POSIX_Semaphore_Control *sema)
 {
 	_Objects_Close(&_lwp_sema_objects,&sema->Object);
 	_Objects_Free(&_lwp_sema_objects,&sema->Object);
