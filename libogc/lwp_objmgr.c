@@ -68,14 +68,14 @@ Objects_Control* _Objects_Get_isr_disable(Objects_Information *information,u32 i
 	u32 level;
 	Objects_Control *the_object = NULL;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(information->maximum_id>=id) {
 		if((the_object=information->local_table[id])!=NULL) {
 			*level_p = level;
 			return the_object;
 		}
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return NULL;
 }
 
@@ -106,13 +106,13 @@ Objects_Control* _Objects_Allocate(Objects_Information *information)
 	u32 level;
 	Objects_Control* the_object;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	 the_object = (Objects_Control*)_Chain_Get_unprotected(&information->Inactive);
 	 if(the_object) {
 		 the_object->information = information;
 		 information->inactive--;
 	 }
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return the_object;
 }
@@ -121,9 +121,9 @@ void _Objects_Free(Objects_Information *information,Objects_Control *the_object)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	_Chain_Append_unprotected(&information->Inactive,&the_object->Node);
 	the_object->information	= NULL;
 	information->inactive++;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }

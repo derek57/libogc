@@ -349,7 +349,7 @@ static void __dohotreset(u32 resetcode)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	_viReg[1] = 0;
 	ICFlashInvalidate();
 	__reset(resetcode<<3);
@@ -379,7 +379,7 @@ static void __doreboot(u32 resetcode,s32 force_menu)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	*((u32*)0x817ffffc) = 0;
 	*((u32*)0x817ffff8) = 0;
@@ -435,17 +435,17 @@ static void __STMEventHandler(u32 event)
 	if(event==STM_EVENT_RESET) {
 		ret = SYS_ResetButtonDown();
 		if(ret) {
-			_CPU_ISR_Disable(level);
+			_ISR_Disable(level);
 			__sys_resetdown = 1;
 			__RSWCallback();
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 		}
 	}
 
 	if(event==STM_EVENT_POWER) {
-		_CPU_ISR_Disable(level);
+		_ISR_Disable(level);
 		__POWCallback();
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 	}
 }
 #endif
@@ -516,7 +516,7 @@ static void __memprotect_init()
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	__MaskIrq((IM_MEM0|IM_MEM1|IM_MEM2|IM_MEM3));
 
@@ -532,7 +532,7 @@ static void __memprotect_init()
 	SYS_RegisterResetFunc(&mem_resetinfo);
 	__UnmaskIrq(IM_MEMADDRESS);		//only enable memaddress irq atm
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 RTEMS_INLINE_ROUTINE u32 __get_fontsize(void *buffer)
@@ -687,13 +687,13 @@ static void* __locksram(u32 loc)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(!sramcntrl.locked) {
 		sramcntrl.enabled = level;
 		sramcntrl.locked = 1;
 		return (void*)((u32)sramcntrl.srambuf+loc);
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return NULL;
 }
 
@@ -712,7 +712,7 @@ static u32 __unlocksram(u32 write,u32 loc)
 		if(sramcntrl.sync) sramcntrl.offset = 64;
 	}
 	sramcntrl.locked = 0;
-	_CPU_ISR_Restore(sramcntrl.enabled);
+	_ISR_Enable(sramcntrl.enabled);
 	return sramcntrl.sync;
 }
 
@@ -944,14 +944,14 @@ void __SYS_SetTime(s64 time)
 	s64 now;
 	s64 *pBootTime = (s64*)0x800030d8;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	now = gettime();
 	now -= time;
 	now += *pBootTime;
 	*pBootTime = now;
 	settime(now);
 	EXI_ProbeReset();
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 s64 __SYS_GetSystemTime()
@@ -960,10 +960,10 @@ s64 __SYS_GetSystemTime()
 	s64 now;
 	s64 *pBootTime = (s64*)0x800030d8;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	now = gettime();
 	now += *pBootTime;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return now;
 }
 
@@ -1013,11 +1013,11 @@ void __SYS_DoPowerCB(void)
 	u32 level;
 	powercallback powcb;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	powcb = __POWCallback;
 	__POWCallback = __POWDefaultHandler;
 	powcb();
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 #endif
 
@@ -1039,7 +1039,7 @@ void rtems_initialize_executive_early()
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	__SYS_PreInit();
 
@@ -1092,7 +1092,7 @@ void rtems_initialize_executive_early()
 #endif
 	libc_init(1);
 	_Thread_Start_multitasking();
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 // This function gets called inside the main thread, prior to the application's main() function
@@ -1235,33 +1235,33 @@ void SYS_RegisterResetFunc(sys_resetinfo *info)
 	sys_resetinfo *after;
 	Chain_Control *header = &sys_reset_func_queue;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	for(after=(sys_resetinfo*)header->first;after->node.next!=NULL && info->prio>=after->prio;after=(sys_resetinfo*)after->node.next);
 	_Chain_Insert_unprotected(after->node.previous,&info->node);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void SYS_UnregisterResetFunc(sys_resetinfo *info) {
 	u32 level;
 	Chain_Node *n;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	for (n = sys_reset_func_queue.first; n->next; n = n->next) {
 		if (n == &info->node) {
 			_Chain_Extract_unprotected(n);
 			break;
 		}
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void SYS_SetArena1Lo(void *newLo)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	__sysarena1lo = newLo;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void* SYS_GetArena1Lo()
@@ -1269,9 +1269,9 @@ void* SYS_GetArena1Lo()
 	u32 level;
 	void *arenalo;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	arenalo = __sysarena1lo;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return arenalo;
 }
@@ -1280,9 +1280,9 @@ void SYS_SetArena1Hi(void *newHi)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	__sysarena1hi = newHi;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void* SYS_GetArena1Hi()
@@ -1290,9 +1290,9 @@ void* SYS_GetArena1Hi()
 	u32 level;
 	void *arenahi;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	arenahi = __sysarena1hi;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return arenahi;
 }
@@ -1301,9 +1301,9 @@ u32 SYS_GetArena1Size()
 {
 	u32 level,size;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	size = ((u32)__sysarena1hi - (u32)__sysarena1lo);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return size;
 }
@@ -1326,9 +1326,9 @@ void SYS_SetArena2Lo(void *newLo)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	__sysarena2lo = newLo;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void* SYS_GetArena2Lo()
@@ -1336,9 +1336,9 @@ void* SYS_GetArena2Lo()
 	u32 level;
 	void *arenalo;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	arenalo = __sysarena2lo;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return arenalo;
 }
@@ -1347,9 +1347,9 @@ void SYS_SetArena2Hi(void *newHi)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	__sysarena2hi = newHi;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void* SYS_GetArena2Hi()
@@ -1357,9 +1357,9 @@ void* SYS_GetArena2Hi()
 	u32 level;
 	void *arenahi;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	arenahi = __sysarena2hi;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return arenahi;
 }
@@ -1368,9 +1368,9 @@ u32 SYS_GetArena2Size()
 {
 	u32 level,size;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	size = ((u32)__sysarena2hi - (u32)__sysarena2lo);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return size;
 }
@@ -1399,7 +1399,7 @@ void SYS_ProtectRange(u32 chan,void *addr,u32 bytes,u32 cntrl)
 		pend = ((((u32)addr)+bytes)+1023)&~0x3ff;
 		DCFlushRange((void*)pstart,(pend-pstart));
 
-		_CPU_ISR_Disable(level);
+		_ISR_Disable(level);
 
 		__UnmaskIrq(IRQMASK(chan));
 		_memReg[chan<<2] = _SHIFTR(pstart,10,16);
@@ -1413,7 +1413,7 @@ void SYS_ProtectRange(u32 chan,void *addr,u32 bytes,u32 cntrl)
 			__MaskIrq(IRQMASK(chan));
 
 
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 	}
 }
 
@@ -1617,7 +1617,7 @@ resetcallback SYS_SetResetCallback(resetcallback cb)
 	u32 level;
 	resetcallback old;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	old = __RSWCallback;
 	__RSWCallback = cb;
 #if defined(HW_DOL)
@@ -1627,7 +1627,7 @@ resetcallback SYS_SetResetCallback(resetcallback cb)
 	} else
 		__MaskIrq(IRQMASK(IRQ_PI_RSW));
 #endif
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return old;
 }
 
@@ -1637,10 +1637,10 @@ powercallback SYS_SetPowerCallback(powercallback cb)
 	u32 level;
 	powercallback old;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	old = __POWCallback;
 	__POWCallback = cb;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return old;
 }
 #endif

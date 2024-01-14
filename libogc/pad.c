@@ -435,7 +435,7 @@ static void __pad_disable(u32 chan)
 #ifdef _PAD_DEBUG
 	printf("__pad_disable(%d)\n",chan);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	mask = PAD_ENABLEDMASK(chan);
 	SI_DisablePolling(mask);
 	__pad_enabledbits &= ~mask;
@@ -443,7 +443,7 @@ static void __pad_disable(u32 chan)
 	__pad_pendingbits &= ~mask;
 	__pad_checkingbits &= ~mask;
 	SYS_SetWirelessID(chan,0);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 static void __pad_doreset()
@@ -468,7 +468,7 @@ u32 __PADDisableRecalibration(s32 disable)
 	u32 level,ret;
 	u8 *ram_recaldis = (u8*)0x800030e3;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	ret = 0;
 	if(ram_recaldis[0]&0x40) ret = 1;
@@ -476,7 +476,7 @@ u32 __PADDisableRecalibration(s32 disable)
 	ram_recaldis[0] &= 0xbf;
 	if(disable) ram_recaldis[0] |= 0x40;
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return ret;
 }
@@ -518,7 +518,7 @@ u32 PAD_Read(PADStatus *status)
 #ifdef _PAD_DEBUG
 	printf("PAD_Read(%p)\n",status);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	chan = 0;
 	ret = 0;
 	while(chan<4) {
@@ -598,7 +598,7 @@ u32 PAD_Read(PADStatus *status)
 		chan++;
 
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return ret;
 }
@@ -608,7 +608,7 @@ u32 PAD_Reset(u32 mask)
 	u32 level;
 	u32 pend_bits,en_bits;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	pend_bits = (__pad_pendingbits|mask);
 	__pad_pendingbits = 0;
 
@@ -622,7 +622,7 @@ u32 PAD_Reset(u32 mask)
 
 	SI_DisablePolling(en_bits);
 	if(__pad_resettingchan==32) __pad_doreset();
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return 1;
 }
@@ -631,9 +631,9 @@ u32 PAD_Recalibrate(u32 mask)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return 1;
 }
 
@@ -664,7 +664,7 @@ void PAD_ControlMotor(s32 chan,u32 cmd)
 	u32 level;
 	u32 mask,type;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	mask = PAD_ENABLEDMASK(chan);
 	if(__pad_enabledbits&mask) {
@@ -677,7 +677,7 @@ void PAD_ControlMotor(s32 chan,u32 cmd)
 			SI_TransferCommands();
 		}
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 sampling_callback PAD_SetSamplingCallback(sampling_callback cb)

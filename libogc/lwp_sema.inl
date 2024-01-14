@@ -15,12 +15,12 @@ RTEMS_INLINE_ROUTINE void _CORE_semaphore_Seize_isr_disable(CORE_semaphore_Contr
 	executing->Wait.return_code = CORE_SEMAPHORE_STATUS_SUCCESSFUL;
 	if(the_semaphore->count!=0) {
 		--the_semaphore->count;
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return;
 	}
 
 	if(!wait) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		executing->Wait.return_code = CORE_SEMAPHORE_STATUS_UNSATISFIED_NOWAIT;
 		return;
 	}
@@ -29,7 +29,7 @@ RTEMS_INLINE_ROUTINE void _CORE_semaphore_Seize_isr_disable(CORE_semaphore_Contr
 	_Thread_queue_Enter_critical_section(&the_semaphore->Wait_queue);
 	executing->Wait.queue = &the_semaphore->Wait_queue;
 	executing->Wait.id = id;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	_Thread_queue_Enqueue(&the_semaphore->Wait_queue,0);
 	_Thread_Enable_dispatch();

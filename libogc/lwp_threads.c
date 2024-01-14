@@ -144,7 +144,7 @@ void __thread_dispatch_fp()
 	u32 level;
 	Thread_Control *executing;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	executing = _Thread_Executing;
 #ifdef _LWPTHREADS_DEBUG
 	__lwp_dumpcontext_fp(executing,_Thread_Allocated_fp);
@@ -154,7 +154,7 @@ void __thread_dispatch_fp()
 		_CPU_Context_restore_fp_context(&executing->Registers);
 		_Thread_Allocated_fp = executing;
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void _Thread_Dispatch()
@@ -162,14 +162,14 @@ void _Thread_Dispatch()
 	u32 level;
 	Thread_Control *executing,*heir;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	executing = _Thread_Executing;
 	while(_Context_Switch_necessary==TRUE) {
 		heir = _Thread_Heir;
 		_Thread_Dispatch_disable_level = 1;
 		_Context_Switch_necessary = FALSE;
 		_Thread_Executing = heir;
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 
 		if(_Thread_libc_reent) {
 			executing->libc_reent = *_Thread_libc_reent;
@@ -181,10 +181,10 @@ void _Thread_Dispatch()
 		_CPU_Context_switch((void*)&executing->Registers,(void*)&heir->Registers);
 #endif
 		executing = _Thread_Executing;
-		_CPU_ISR_Disable(level);
+		_ISR_Disable(level);
 	}
 	_Thread_Dispatch_disable_level = 0;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 static void _Thread_Handler()
@@ -222,7 +222,7 @@ void _Thread_Rotate_Ready_Queue(u32 priority)
 		return;
 	}
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(!_Chain_Is_empty(ready) && !_Chain_Has_only_one_node(ready)) {
 		node = _Chain_Get_first_unprotected(ready);
 		_Chain_Append_unprotected(ready,node);
@@ -238,7 +238,7 @@ void _Thread_Rotate_Ready_Queue(u32 priority)
 #ifdef _LWPTHREADS_DEBUG
 	kprintf("_Thread_Rotate_Ready_Queue(%d,%p,%p)\n",priority,executing,_Thread_Heir);
 #endif
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void _Thread_Yield_processor()
@@ -250,7 +250,7 @@ void _Thread_Yield_processor()
 	executing = _Thread_Executing;
 	ready = executing->ready;
 	
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(!_Chain_Has_only_one_node(ready)) {
 		_Chain_Extract_unprotected(&executing->Object.Node);
 		_Chain_Append_unprotected(ready,&executing->Object.Node);
@@ -260,7 +260,7 @@ void _Thread_Yield_processor()
 		_Context_Switch_necessary = TRUE;
 	} else if(!_Thread_Is_heir(executing))
 		_Context_Switch_necessary = TRUE;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void _Thread_Reset_timeslice()
@@ -272,9 +272,9 @@ void _Thread_Reset_timeslice()
 	executing = _Thread_Executing;
 	ready = executing->ready;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(_Chain_Has_only_one_node(ready)) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return;
 	}
 
@@ -287,7 +287,7 @@ void _Thread_Reset_timeslice()
 		_Thread_Heir = (Thread_Control*)ready->first;
 
 	_Context_Switch_necessary = TRUE;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void _Thread_Set_state(Thread_Control *the_thread,u32 state)
@@ -299,10 +299,10 @@ void _Thread_Set_state(Thread_Control *the_thread,u32 state)
 #ifdef _LWPTHREADS_DEBUG
 	kprintf("_Thread_Set_state(%d,%p,%p,%08x)\n",_Context_Switch_necessary,_Thread_Heir,the_thread,the_thread->cur_state);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(!_States_Is_ready(the_thread->current_state)) {
 		the_thread->current_state = _States_Clear(the_thread->current_state,state);
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return;
 	}
 
@@ -321,14 +321,14 @@ void _Thread_Set_state(Thread_Control *the_thread,u32 state)
 #ifdef _LWPTHREADS_DEBUG
 	kprintf("_Thread_Set_state(%d,%p,%p,%08x)\n",_Context_Switch_necessary,_Thread_Heir,the_thread,the_thread->cur_state);
 #endif
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void _Thread_Clear_state(Thread_Control *the_thread,u32 state)
 {
 	u32 level,current_state;
 	
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	current_state = the_thread->current_state;
 	if(current_state&state) {
@@ -347,7 +347,7 @@ void _Thread_Clear_state(Thread_Control *the_thread,u32 state)
 		}
 	}
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 u32 _Thread_Evaluate_mode()
@@ -372,11 +372,11 @@ void _Thread_Change_priority(Thread_Control *the_thread,u32 new_priority,u32 pre
 	if(the_thread->current_priority!=new_priority) 
 		_Thread_Set_priority(the_thread,new_priority);
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	the_thread->current_state = _States_Clear(the_thread->current_state,STATES_TRANSIENT);
 	if(!_States_Is_ready(the_thread->current_state)) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return;
 	}
 
@@ -394,7 +394,7 @@ void _Thread_Change_priority(Thread_Control *the_thread,u32 new_priority,u32 pre
 		&& _Thread_Executing->is_preemptible)
 		_Context_Switch_necessary = TRUE;
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void _Thread_Set_priority(Thread_Control *the_thread,u32 new_priority)
@@ -414,11 +414,11 @@ void _Thread_Suspend(Thread_Control *the_thread)
 
 	ready = the_thread->ready;
 	
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	the_thread->suspend_count++;
 	if(!_States_Is_ready(the_thread->current_state)) {
 		the_thread->current_state = _States_Set(the_thread->current_state,STATES_SUSPENDED);
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return;
 	}
 	
@@ -437,7 +437,7 @@ void _Thread_Suspend(Thread_Control *the_thread)
 	if(_Thread_Is_executing(the_thread))
 		_Context_Switch_necessary = TRUE;
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void _Thread_Set_transient(Thread_Control *the_thread)
@@ -447,7 +447,7 @@ void _Thread_Set_transient(Thread_Control *the_thread)
 
 	ready = the_thread->ready;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	
 	old_state = the_thread->current_state;
 	the_thread->current_state = _States_Set(old_state,STATES_TRANSIENT);
@@ -461,14 +461,14 @@ void _Thread_Set_transient(Thread_Control *the_thread)
 		}
 	}
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void _Thread_Resume(Thread_Control *the_thread,u32 force)
 {
 	u32 level,current_state;
 	
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	if(force==TRUE)
 		the_thread->suspend_count = 0;
@@ -476,7 +476,7 @@ void _Thread_Resume(Thread_Control *the_thread,u32 force)
 		the_thread->suspend_count--;
 	
 	if(the_thread->suspend_count>0) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return;
 	}
 
@@ -495,7 +495,7 @@ void _Thread_Resume(Thread_Control *the_thread,u32 force)
 			}
 		}
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void _Thread_Load_environment(Thread_Control *the_thread)
@@ -538,7 +538,7 @@ void _Thread_Ready(Thread_Control *the_thread)
 	u32 level;
 	Thread_Control *heir;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 #ifdef _LWPTHREADS_DEBUG
 	kprintf("_Thread_Ready(%p)\n",the_thread);
 #endif
@@ -552,7 +552,7 @@ void _Thread_Ready(Thread_Control *the_thread)
 	if(!(_Thread_Is_executing(heir)) && _Thread_Executing->is_preemptible)
 		_Context_Switch_necessary = TRUE;
 	
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 u32 _Thread_Initialize(Thread_Control *the_thread,void *stack_area,u32 stack_size,u32 priority,u32 isr_level,bool is_preemptible)
@@ -613,14 +613,14 @@ void _Thread_Close(Thread_Control *the_thread)
 			_Watchdog_Remove_ticks(&the_thread->Timer);
 	}
 	
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	value_ptr = (void**)the_thread->Wait.return_argument;
 	while((p=_Thread_queue_Dequeue(&the_thread->Join_List))!=NULL) {
 		*(void**)p->Wait.return_argument = value_ptr;
 	}
 	the_thread->cpu_time_budget = 0;
 	the_thread->budget_algorithm = THREAD_CPU_BUDGET_ALGORITHM_NONE;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	libc_delete_hook(_Thread_Executing,the_thread);
 
@@ -641,7 +641,7 @@ void __lwp_thread_closeall()
 #ifdef _LWPTHREADS_DEBUG
 	kprintf("__lwp_thread_closeall(enter)\n");
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	for(i=0;i<LWP_MAXPRIORITIES;i++) {
 		header = &_Thread_Ready_chain[i];
 		ptr = (Thread_Control*)header->first;
@@ -653,7 +653,7 @@ void __lwp_thread_closeall()
 			ptr = next;
 		}
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 #ifdef _LWPTHREADS_DEBUG
 	kprintf("__lwp_thread_closeall(leave)\n");
 #endif

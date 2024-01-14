@@ -130,14 +130,14 @@ void __exception_close(u32 except)
 	u32 level;
 	void *pAdd = (void*)(0x80000000|exception_location[except]);
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	__exception_sethandler(except,NULL);
 
 	*(u32*)pAdd = 0x4C000064;
 	DCFlushRangeNoSync(pAdd,0x100);
 	ICInvalidateRange(pAdd,0x100);
 	_sync();
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void __exception_closeall()
@@ -214,7 +214,7 @@ static void waitForReload()
 			reload_timer == 0 )
 		{
 			kprintf("\n\tReload\n\n\n");
-			_CPU_ISR_Disable(level);
+			_ISR_Disable(level);
 			__reload ();
 		}
 

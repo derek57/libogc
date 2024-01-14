@@ -212,12 +212,12 @@ static void __AISetStreamSampleRate(u32 rate)
 		dsprate = _aiReg[AI_CONTROL]&0x40;
 		_aiReg[AI_CONTROL] = _aiReg[AI_CONTROL]&~0x40;
 
-		_CPU_ISR_Disable(level);
+		_ISR_Disable(level);
 		__AISRCINIT();
 		_aiReg[AI_CONTROL] |= dsprate;
 		_aiReg[AI_CONTROL] = (_aiReg[AI_CONTROL]&~0x20)|0x20;
 		_aiReg[AI_CONTROL] = (_aiReg[AI_CONTROL]&~0x02)|(_SHIFTL(rate,1,1));
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 
 		AUDIO_SetStreamPlayState(playstate);
 		AUDIO_SetStreamVolLeft(volleft);
@@ -230,9 +230,9 @@ AISCallback AUDIO_RegisterStreamCallback(AISCallback callback)
 	u32 level;
 
 	AISCallback old = __AIS_Callback;
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	__AIS_Callback = callback;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return old;
 }
 #endif
@@ -257,10 +257,10 @@ void AUDIO_Init(u8 *stack)
 		rate = (_SHIFTR(_aiReg[AI_CONTROL],6,1))^1;
 		if(rate==AI_SAMPLERATE_48KHZ) {
 			_aiReg[AI_CONTROL] &= ~AI_DMAFR;
-			_CPU_ISR_Disable(level);
+			_ISR_Disable(level);
 			__AISRCINIT();
 			_aiReg[AI_CONTROL] |= AI_DMAFR;
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 		}
 
 		__AID_Callback = NULL;
@@ -335,11 +335,11 @@ void AUDIO_SetStreamPlayState(u32 state)
 		volleft = AUDIO_GetStreamVolLeft();
 		AUDIO_SetStreamVolLeft(0);
 
-		_CPU_ISR_Disable(level);
+		_ISR_Disable(level);
 		__AISRCINIT();
 		_aiReg[AI_CONTROL] = (_aiReg[AI_CONTROL]&~AI_SCRESET)|AI_SCRESET;
 		_aiReg[AI_CONTROL] = (_aiReg[AI_CONTROL]&~0x01)|0x01;
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		AUDIO_SetStreamVolRight(volright);
 		AUDIO_SetStreamVolLeft(volleft);
 	} else {
@@ -358,10 +358,10 @@ AIDCallback AUDIO_RegisterDMACallback(AIDCallback callback)
 	u32 level;
 	AIDCallback old;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	old = __AID_Callback;
 	__AID_Callback = callback;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return old;
 }
 
@@ -369,11 +369,11 @@ void AUDIO_InitDMA(u32 startaddr,u32 len)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	_dspReg[24] = (_dspReg[24]&~0x1fff)|(_SHIFTR(startaddr,16,13));
 	_dspReg[25] = (_dspReg[25]&~0xffe0)|(startaddr&0xffff);
 	_dspReg[27] = (_dspReg[27]&~0x7fff)|(_SHIFTR(len,5,15));
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 u16 AUDIO_GetDMAEnableFlag()
@@ -413,10 +413,10 @@ void AUDIO_SetDSPSampleRate(u8 rate)
 	if(AUDIO_GetDSPSampleRate()!=rate) {
 		_aiReg[AI_CONTROL] &= ~AI_DMAFR;
 		if(rate==AI_SAMPLERATE_32KHZ) {
-			_CPU_ISR_Disable(level);
+			_ISR_Disable(level);
 			__AISRCINIT();
 			_aiReg[AI_CONTROL] |= AI_DMAFR;
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 		}
 	}
 }

@@ -17,12 +17,12 @@ u32 _CORE_semaphore_Surrender(CORE_semaphore_Control *the_semaphore,u32 id)
 	status = CORE_SEMAPHORE_STATUS_SUCCESSFUL;
 	if((the_thread=_Thread_queue_Dequeue(&the_semaphore->Wait_queue))) return status;
 	else {
-		_CPU_ISR_Disable(level);
+		_ISR_Disable(level);
 		if(the_semaphore->count<=the_semaphore->Attributes.maximum_count)
 			++the_semaphore->count;
 		else
 			status = CORE_SEMAPHORE_MAXIMUM_COUNT_EXCEEDED;
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 	}
 	return status;
 }
@@ -35,15 +35,15 @@ u32 _CORE_semaphore_Seize(CORE_semaphore_Control *the_semaphore,u32 id,u32 wait,
 	executing = _Thread_Executing;
 	executing->Wait.return_code = CORE_SEMAPHORE_STATUS_SUCCESSFUL;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(the_semaphore->count!=0) {
 		--the_semaphore->count;
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return CORE_SEMAPHORE_STATUS_SUCCESSFUL;
 	}
 
 	if(!wait) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		executing->Wait.return_code = CORE_SEMAPHORE_STATUS_UNSATISFIED_NOWAIT;
 		return CORE_SEMAPHORE_STATUS_UNSATISFIED_NOWAIT;
 	}
@@ -51,7 +51,7 @@ u32 _CORE_semaphore_Seize(CORE_semaphore_Control *the_semaphore,u32 id,u32 wait,
 	_Thread_queue_Enter_critical_section(&the_semaphore->Wait_queue);
 	executing->Wait.queue = &the_semaphore->Wait_queue;
 	executing->Wait.id = id;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	
 	_Thread_queue_Enqueue(&the_semaphore->Wait_queue,timeout);
 	return CORE_SEMAPHORE_STATUS_SUCCESSFUL;

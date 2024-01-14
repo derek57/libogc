@@ -330,7 +330,7 @@ void DSP_Init()
 #ifdef _DSP_DEBUG
 	printf("DSP_Init()\n");
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(__dsp_inited==FALSE) {
 		__dsp_intcb= __dsp_def_taskcb;
 
@@ -346,7 +346,7 @@ void DSP_Init()
 		tmp_task = NULL;
 		__dsp_inited = TRUE;
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 DSPCallback DSP_RegisterCallback(DSPCallback usr_cb)
@@ -356,13 +356,13 @@ DSPCallback DSP_RegisterCallback(DSPCallback usr_cb)
 #ifdef _DSP_DEBUG
 	printf("DSP_RegisterCallback()\n");
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	ret = __dsp_intcb;
 	if(usr_cb)
 		__dsp_intcb = usr_cb;
 	else
 		__dsp_intcb = __dsp_def_taskcb;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return ret;
 }
@@ -422,9 +422,9 @@ void DSP_AssertInt()
 #ifdef _DSP_DEBUG
 	printf("DSP_AssertInt()\n");
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	_dspReg[5] = (_dspReg[5]&~(DSPCR_AIINT|DSPCR_ARINT|DSPCR_DSPINT))|DSPCR_PIINT;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void DSP_Reset()
@@ -432,29 +432,29 @@ void DSP_Reset()
 	u16 old;
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	old = _dspReg[5];
 	_dspReg[5] = (old&~(DSPCR_AIINT|DSPCR_ARINT|DSPCR_DSPINT))|(DSPCR_DSPRESET|DSPCR_RES);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void DSP_Halt()
 {
 	u32 level,old;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	old = _dspReg[5];
 	_dspReg[5] = (old&~(DSPCR_AIINT|DSPCR_ARINT|DSPCR_DSPINT))|DSPCR_HALT;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void DSP_Unhalt()
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	_dspReg[5] = (_dspReg[5]&~(DSPCR_AIINT|DSPCR_ARINT|DSPCR_DSPINT|DSPCR_HALT));
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 u32 DSP_GetDMAStatus()
@@ -468,11 +468,11 @@ dsptask_t* DSP_AddTask(dsptask_t *task)
 #ifdef _DSP_DEBUG
 	printf("DSP_AddTask(%p)\n",task);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	__dsp_inserttask(task);
 	task->state = DSPTASK_INIT;
 	task->flags = DSPTASK_ATTACH;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	if(__dsp_firsttask==task) __dsp_boottask(task);
 	return task;
@@ -482,9 +482,9 @@ void DSP_CancelTask(dsptask_t *task)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	task->flags |= DSPTASK_CANCEL;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 dsptask_t* DSP_AssertTask(dsptask_t *task)
@@ -492,7 +492,7 @@ dsptask_t* DSP_AssertTask(dsptask_t *task)
 	u32 level;
 	dsptask_t *ret = NULL;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(task==__dsp_currtask) {
 		__dsp_rudetask = task;
 		__dsp_rudetask_pend = TRUE;
@@ -507,7 +507,7 @@ dsptask_t* DSP_AssertTask(dsptask_t *task)
 			ret = task;
 		}
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return ret;
 }

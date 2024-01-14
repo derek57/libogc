@@ -58,8 +58,8 @@ typedef u32		mem_ptr_t;
 #define LWIP_PLATFORM_DIAG(x) printf x
 
 #define SYS_ARCH_DECL_PROTECT(lev) u32 lev
-#define SYS_ARCH_PROTECT(lev) _CPU_ISR_Disable(lev)
-#define SYS_ARCH_UNPROTECT(lev) _CPU_ISR_Restore(lev)
+#define SYS_ARCH_PROTECT(lev) _ISR_Disable(lev)
+#define SYS_ARCH_UNPROTECT(lev) _ISR_Enable(lev)
 
 /* Define (sn)printf formatters for these lwIP types */
 #define U16_F "hu"

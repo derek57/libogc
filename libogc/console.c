@@ -256,7 +256,7 @@ void __console_init(void *framebuffer,int xstart,int ystart,int xres,int yres,in
 	unsigned int level;
 	console_data_s *con = &stdcon;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	con->destbuffer = framebuffer;
 	con->con_xres = xres;
@@ -278,7 +278,7 @@ void __console_init(void *framebuffer,int xstart,int ystart,int xres,int yres,in
 
 	devoptab_list[STD_OUT] = &dotab_stdout;
 	devoptab_list[STD_ERR] = &dotab_stdout;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	setvbuf(stdout, NULL , _IONBF, 0);
 	setvbuf(stderr, NULL , _IONBF, 0);
@@ -289,7 +289,7 @@ void __console_init_ex(void *conbuffer,int tgt_xstart,int tgt_ystart,int tgt_str
 	unsigned int level;
 	console_data_s *con = &stdcon;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	con->destbuffer = conbuffer;
 	con->target_x = tgt_xstart;
@@ -319,7 +319,7 @@ void __console_init_ex(void *conbuffer,int tgt_xstart,int tgt_ystart,int tgt_str
 
 	VIDEO_SetPostRetraceCallback(__console_vipostcb);
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	setvbuf(stdout, NULL , _IONBF, 0);
 	setvbuf(stderr, NULL , _IONBF, 0);

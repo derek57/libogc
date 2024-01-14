@@ -85,11 +85,11 @@ u32 _CORE_message_queue_Seize(CORE_message_queue_Control *the_message_queue,u32 
 	printf("_CORE_message_queue_Seize(%p,%d,%p,%p,%d,%d)\n",the_message_queue,id,buffer,size,wait,the_message_queue->num_pendingmsgs);
 #endif
 	
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(the_message_queue->number_of_pending_messages!=0) {
 		--the_message_queue->number_of_pending_messages;
 		the_message = _CORE_message_queue_Get_pending_message(the_message_queue);
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		
 		*size = the_message->Contents.size;
 		executing->Wait.count = the_message->priority;
@@ -110,7 +110,7 @@ u32 _CORE_message_queue_Seize(CORE_message_queue_Control *the_message_queue,u32 
 	}
 
 	if(!wait) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		executing->Wait.return_code = CORE_MESSAGE_QUEUE_STATUS_UNSATISFIED_NOWAIT;
 		return CORE_MESSAGE_QUEUE_STATUS_UNSATISFIED_NOWAIT;
 	}
@@ -120,7 +120,7 @@ u32 _CORE_message_queue_Seize(CORE_message_queue_Control *the_message_queue,u32 
 	executing->Wait.id = id;
 	executing->Wait.return_argument = (void*)buffer;
 	executing->Wait.return_argument_1 = (void*)size;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	_Thread_queue_Enqueue(&the_message_queue->Wait_queue,timeout);
 	return CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL;
@@ -165,14 +165,14 @@ u32 _CORE_message_queue_Submit(CORE_message_queue_Control *the_message_queue,u32
 	{
 		Thread_Control *exec = _Thread_Executing;
 
-		_CPU_ISR_Disable(level);
+		_ISR_Disable(level);
 		_Thread_queue_Enter_critical_section(&the_message_queue->Wait_queue);
 		exec->Wait.queue = &the_message_queue->Wait_queue;
 		exec->Wait.id = id;
 		exec->Wait.return_argument = (void*)buffer;
 		exec->Wait.return_argument_1 = (void*)size;
 		exec->Wait.count = submit_type;
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		
 		_Thread_queue_Enqueue(&the_message_queue->Wait_queue,timeout);
 	}
@@ -232,7 +232,7 @@ u32 _CORE_message_queue_Flush_support(CORE_message_queue_Control *the_message_qu
 	Chain_Node *message_queue_last;
 	u32 count;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	inactive_first = the_message_queue->Inactive_messages.first;
 	message_queue_first = the_message_queue->Pending_messages.first;
@@ -248,7 +248,7 @@ u32 _CORE_message_queue_Flush_support(CORE_message_queue_Control *the_message_qu
 	count = the_message_queue->number_of_pending_messages;
 	the_message_queue->number_of_pending_messages = 0;
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return count;
 }
 

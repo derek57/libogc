@@ -32,11 +32,11 @@ Chain_Node* _Chain_Get(Chain_Control *the_chain)
 	u32 level;
 	Chain_Node *return_node = NULL;
 	
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(!_Chain_Is_empty(the_chain)) {
 		return_node	 = _Chain_Get_first_unprotected(the_chain);
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return return_node;
 }
 
@@ -44,25 +44,25 @@ void _Chain_Append(Chain_Control *the_chain,Chain_Node *node)
 {
 	u32 level;
 	
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	_Chain_Append_unprotected(the_chain,node);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void _Chain_Extract(Chain_Node *node)
 {
 	u32 level;
 	
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	_Chain_Extract_unprotected(node);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void _Chain_Insert(Chain_Node *after_node,Chain_Node *node)
 {
 	u32 level;
 	
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	_Chain_Insert_unprotected(after_node,node);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }

@@ -72,7 +72,7 @@ void _Watchdog_Insert(Chain_Control *header,Watchdog_Control *the_watchdog)
 
 	_Watchdog_Sync_count++;
 restart:
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	delta_interval = the_watchdog->delta_interval;
 	for(after=_Watchdog_First(header);;after=_Watchdog_Next(after)) {
 		if(delta_interval==0 || !_Watchdog_Next(after)) break;
@@ -82,7 +82,7 @@ restart:
 		if(the_watchdog->state!=WATCHDOG_BEING_INSERTED) goto exit_insert;
 		if(_Watchdog_Sync_level>insert_isr_nest_level) {
 			_Watchdog_Sync_level = insert_isr_nest_level;
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			goto restart;
 		}
 	}
@@ -94,7 +94,7 @@ restart:
 exit_insert:
 	_Watchdog_Sync_level = insert_isr_nest_level;
 	_Watchdog_Sync_count--;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return;
 }
 
@@ -106,7 +106,7 @@ u32 _Watchdog_Remove(Chain_Control *header,Watchdog_Control *the_watchdog)
 #ifdef _LWPWD_DEBUG
 	printf("_Watchdog_Remove(%p)\n",the_watchdog);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	previous_state = the_watchdog->state;
 	switch(previous_state) {
 		case WATCHDOG_INACTIVE:
@@ -123,7 +123,7 @@ u32 _Watchdog_Remove(Chain_Control *header,Watchdog_Control *the_watchdog)
 			if(!_Chain_Is_empty(header) && _Watchdog_First(header)==next_watchdog) __lwp_wd_settimer(next_watchdog);
 			break;
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return previous_state;
 }
 
@@ -166,7 +166,7 @@ void _Watchdog_Adjust(Chain_Control *header,u32 direction,s64 units)
 	u32 level;
 	u64 abs_int;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	abs_int = gettime()+LWP_WD_ABS(units);
 	if(!_Chain_Is_empty(header)) {
 		switch(direction) {
@@ -188,5 +188,5 @@ void _Watchdog_Adjust(Chain_Control *header,u32 direction,s64 units)
 				break;
 		}
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }

@@ -104,12 +104,12 @@ static s32 __lwp_cond_waitsupp(pthread_cond_t cond,pthread_mutex_t mutex,u64 tim
 	LWP_MutexUnlock(mutex);
 	if(!timedout) {
 		thecond->Mutex = mutex;
-		_CPU_ISR_Disable(level);
+		_ISR_Disable(level);
 		_Thread_queue_Enter_critical_section(&thecond->Wait_queue);
 		_Thread_Executing->Wait.return_code = 0;
 		_Thread_Executing->Wait.queue = &thecond->Wait_queue;
 		_Thread_Executing->Wait.id = cond;
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		_Thread_queue_Enqueue(&thecond->Wait_queue,timeout);
 		_Thread_Enable_dispatch();
 		

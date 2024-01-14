@@ -111,7 +111,7 @@
 	  ); \
 	}
 
-#define _CPU_ISR_Disable( _isr_cookie ) \
+#define _ISR_Disable( _isr_cookie ) \
   { register u32 _disable_mask = 0; \
 	_isr_cookie = 0; \
     __asm__ __volatile__ ( \
@@ -124,7 +124,7 @@
 	); \
   }
 
-#define _CPU_ISR_Restore( _isr_cookie )  \
+#define _ISR_Enable( _isr_cookie )  \
   { register u32 _enable_mask = 0; \
 	__asm__ __volatile__ ( \
     "    cmpwi %0,0\n" \

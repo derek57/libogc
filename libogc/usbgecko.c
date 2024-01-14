@@ -38,12 +38,12 @@ RTEMS_INLINE_ROUTINE void __usbgecko_exi_wait(s32 chn)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(!usbgecko_inited) __usbgecko_init();
 	while(EXI_Lock(chn,EXI_DEVICE_0,__usbgecko_exi_unlock)==0) {
 		LWP_ThreadSleep(wait_exi_queue[chn]);
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 RTEMS_INLINE_ROUTINE int __send_command(s32 chn,u16 *cmd)

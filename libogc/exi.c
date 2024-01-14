@@ -171,7 +171,7 @@ static s32 __exi_probe(s32 nChn)
 #ifdef _EXI_DEBUG
 	printf("__exi_probe(%d)\n",nChn);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	val = _exiReg[nChn*5];
 	if(!(exi->flags&EXI_FLAG_ATTACH)) {
 		if(val&EXI_EXT_IRQ) {
@@ -187,12 +187,12 @@ static s32 __exi_probe(s32 nChn)
 #ifdef _EXI_DEBUG
 			printf("val = %u, ret = %d, last_exi_idtime[chn] = %llu\n",val,ret,last_exi_idtime[nChn]);
 #endif
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return ret;
 		} else {
 			exi->exi_idtime = 0;
 			last_exi_idtime[nChn] = 0;
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return 0;
 		}
 	}
@@ -202,7 +202,7 @@ static s32 __exi_probe(s32 nChn)
 		last_exi_idtime[nChn] = 0;
 		ret = 0;
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return ret;
 }
 
@@ -214,7 +214,7 @@ static s32 __exi_attach(s32 nChn,EXICallback ext_cb)
 #ifdef _EXI_DEBUG
 	printf("__exi_attach(%d,%p)\n",nChn,ext_cb);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	ret = 0;
 	if(!(exi->flags&EXI_FLAG_ATTACH)) {
 		if(__exi_probe(nChn)==1) {
@@ -225,7 +225,7 @@ static s32 __exi_attach(s32 nChn,EXICallback ext_cb)
 			ret = 1;
 		}
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return ret;
 }
 
@@ -237,7 +237,7 @@ s32 EXI_Lock(s32 nChn,s32 nDev,EXICallback unlockCB)
 #ifdef _EXI_DEBUG
 	printf("EXI_Lock(%d,%d,%p)\n",nChn,nDev,unlockCB);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(exi->flags&EXI_FLAG_LOCKED) {
 		if(unlockCB && !(exi->lckd_dev_bits&(1<<nDev))) {
 			lckd = (struct _lck_dev*)_Chain_Get_unprotected(&_lckdev_queue);
@@ -249,7 +249,7 @@ s32 EXI_Lock(s32 nChn,s32 nDev,EXICallback unlockCB)
 				_Chain_Append_unprotected(&exi->lckd_dev,&lckd->node);
 			}
 		}
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return 0;
 	}
 
@@ -257,7 +257,7 @@ s32 EXI_Lock(s32 nChn,s32 nDev,EXICallback unlockCB)
 	exi->flags |= EXI_FLAG_LOCKED;
 	__exi_setinterrupts(nChn,exi);
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return 1;
 }
 
@@ -270,9 +270,9 @@ s32 EXI_Unlock(s32 nChn)
 #ifdef _EXI_DEBUG
 	printf("EXI_Unlock(%d)\n",nChn);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(!(exi->flags&EXI_FLAG_LOCKED)) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return 0;
 	}
 
@@ -280,7 +280,7 @@ s32 EXI_Unlock(s32 nChn)
 	__exi_setinterrupts(nChn,exi);
 
 	if(!exi->lck_cnt) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return 1;
 	}
 
@@ -293,7 +293,7 @@ s32 EXI_Unlock(s32 nChn)
 	exi->lckd_dev_bits &= ~(1<<dev);
 	if(cb) cb(nChn,dev);
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return 1;
 }
 
@@ -305,20 +305,20 @@ s32 EXI_Select(s32 nChn,s32 nDev,s32 nFrq)
 #ifdef _EXI_DEBUG
 	printf("EXI_Select(%d,%d,%d)\n",nChn,nDev,nFrq);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	if(exi->flags&EXI_FLAG_SELECT) {
 #ifdef _EXI_DEBUG
 		printf("EXI_Select(): allready selected.\n");
 #endif
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return 0;
 	}
 
 	if(nChn!=EXI_CHANNEL_2) {
 		if(nDev==EXI_DEVICE_0 && !(exi->flags&EXI_FLAG_ATTACH)) {
 			if(__exi_probe(nChn)==0) {
-				_CPU_ISR_Restore(level);
+				_ISR_Enable(level);
 				return 0;
 			}
 		}
@@ -326,7 +326,7 @@ s32 EXI_Select(s32 nChn,s32 nDev,s32 nFrq)
 #ifdef _EXI_DEBUG
 			printf("EXI_Select(): not locked or wrong dev(%d).\n",exi->lockeddev);
 #endif
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return 0;
 		}
 	}
@@ -341,7 +341,7 @@ s32 EXI_Select(s32 nChn,s32 nDev,s32 nFrq)
 		else if(nChn==EXI_CHANNEL_1) __MaskIrq(IRQMASK(IRQ_EXI1_EXT));
 	}
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return 1;
 }
 
@@ -354,13 +354,13 @@ s32 EXI_SelectSD(s32 nChn,s32 nDev,s32 nFrq)
 #ifdef _EXI_DEBUG
 	printf("EXI_SelectSD(%d,%d,%d)\n",nChn,nDev,nFrq);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	if(exi->flags&EXI_FLAG_SELECT) {
 #ifdef _EXI_DEBUG
 		printf("EXI_SelectSD(): allready selected.\n");
 #endif
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return 0;
 	}
 
@@ -370,7 +370,7 @@ s32 EXI_SelectSD(s32 nChn,s32 nDev,s32 nFrq)
 				if(!exi->exi_idtime) ret = EXI_GetID(nChn,EXI_DEVICE_0,&id);
 			}
 			if(ret==0) {
-				_CPU_ISR_Restore(level);
+				_ISR_Enable(level);
 				return 0;
 			}
 		}
@@ -378,7 +378,7 @@ s32 EXI_SelectSD(s32 nChn,s32 nDev,s32 nFrq)
 #ifdef _EXI_DEBUG
 			printf("EXI_SelectSD(): not locked or wrong dev(%d).\n",exi->lockeddev);
 #endif
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return 0;
 		}
 	}
@@ -393,7 +393,7 @@ s32 EXI_SelectSD(s32 nChn,s32 nDev,s32 nFrq)
 		else if(nChn==EXI_CHANNEL_1) __MaskIrq(IRQMASK(IRQ_EXI1_EXT));
 	}
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return 1;
 }
 
@@ -405,10 +405,10 @@ s32 EXI_Deselect(s32 nChn)
 #ifdef _EXI_DEBUG
 	printf("EXI_Deselect(%d)\n",nChn);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	if(!(exi->flags&EXI_FLAG_SELECT)) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return 0;
 	}
 
@@ -423,11 +423,11 @@ s32 EXI_Deselect(s32 nChn)
 
 	if(nChn!=EXI_CHANNEL_2 && val&EXI_DEVICE0) {
 		if(__exi_probe(nChn)==0) {
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return 0;
 		}
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return 1;
 }
 
@@ -442,7 +442,7 @@ s32 EXI_Sync(s32 nChn)
 #endif
 	while(_exiReg[nChn*5+3]&0x0001);
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	ret = 0;
 	if(exi->flags&EXI_FLAG_SELECT && exi->flags&(EXI_FLAG_DMA|EXI_FLAG_IMM)) {
@@ -457,7 +457,7 @@ s32 EXI_Sync(s32 nChn)
 		exi->flags &= ~(EXI_FLAG_DMA|EXI_FLAG_IMM);
 		ret = 1;
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return ret;
 }
 
@@ -469,10 +469,10 @@ s32 EXI_Imm(s32 nChn,void *pData,u32 nLen,u32 nMode,EXICallback tc_cb)
 #ifdef _EXI_DEBUG
 	printf("EXI_Imm(%d,%p,%d,%d,%p)\n",nChn,pData,nLen,nMode,tc_cb);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	if(exi->flags&(EXI_FLAG_DMA|EXI_FLAG_IMM) || !(exi->flags&EXI_FLAG_SELECT)) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return 0;
 	}
 
@@ -493,7 +493,7 @@ s32 EXI_Imm(s32 nChn,void *pData,u32 nLen,u32 nMode,EXICallback tc_cb)
 
 	_exiReg[nChn*5+3] = (((nLen-1)&0x03)<<4)|((nMode&0x03)<<2)|0x01;
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return 1;
 }
 
@@ -527,13 +527,13 @@ s32 EXI_Dma(s32 nChn,void *pData,u32 nLen,u32 nMode,EXICallback tc_cb)
 #ifdef _EXI_DEBUG
 	printf("EXI_Dma(%d,%p,%d,%d,%p)\n",nChn,pData,nLen,nMode,tc_cb);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	if(exi->flags&(EXI_FLAG_DMA|EXI_FLAG_IMM) || !(exi->flags&EXI_FLAG_SELECT)) {
 #ifdef _EXI_DEBUG
 		printf("EXI_Dma(%04x): abort\n",exi->flags);
 #endif
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return 0;
 	}
 #ifdef _EXI_DEBUG
@@ -553,7 +553,7 @@ s32 EXI_Dma(s32 nChn,void *pData,u32 nLen,u32 nMode,EXICallback tc_cb)
 	_exiReg[nChn*5+2] = nLen;
 	_exiReg[nChn*5+3] = ((nMode&0x03)<<2)|0x03;
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return 1;
 }
 
@@ -623,13 +623,13 @@ s32 EXI_GetID(s32 nChn,s32 nDev,u32 *nId)
 		ret = 0;
 		EXI_Detach(nChn);
 
-		_CPU_ISR_Disable(level);
+		_ISR_Disable(level);
 		if(idtime==last_exi_idtime[nChn]) {
 			exi->exi_idtime = idtime;
 			exi->exi_id = *nId;
 			ret = 1;
 		}
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 #ifdef _EXI_DEBUG
 		printf("EXI_GetID(exi_id = %d)\n",exi->exi_id);
 #endif
@@ -647,12 +647,12 @@ s32 EXI_Attach(s32 nChn,EXICallback ext_cb)
 #endif
 	EXI_Probe(nChn);
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(exi->exi_idtime) {
 		ret = __exi_attach(nChn,ext_cb);
 	} else
 		ret = 0;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return ret;
 }
 
@@ -664,7 +664,7 @@ s32 EXI_Detach(s32 nChn)
 #ifdef _EXI_DEBUG
 	printf("EXI_Detach(%d)\n",nChn);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(exi->flags&EXI_FLAG_ATTACH) {
 		if(exi->flags&EXI_FLAG_LOCKED && exi->lockeddev!=EXI_DEVICE_0) ret = 0;
 		else {
@@ -672,7 +672,7 @@ s32 EXI_Detach(s32 nChn)
 			__MaskIrq(((IRQMASK(IRQ_EXI0_EXI)|IRQMASK(IRQ_EXI0_TC)|IRQMASK(IRQ_EXI0_EXT))>>(nChn*3)));
 		}
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return ret;
 }
 
@@ -684,12 +684,12 @@ EXICallback EXI_RegisterEXICallback(s32 nChn,EXICallback exi_cb)
 #ifdef _EXI_DEBUG
 	printf("EXI_RegisterEXICallback(%d,%p)\n",nChn,exi_cb);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	old = exi->CallbackEXI;
 	exi->CallbackEXI = exi_cb;
 	if(nChn==EXI_CHANNEL_2) __exi_setinterrupts(EXI_CHANNEL_0,&eximap[EXI_CHANNEL_0]);
 	else __exi_setinterrupts(nChn,exi);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return old;
 }
 

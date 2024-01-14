@@ -82,7 +82,7 @@ RTEMS_INLINE_ROUTINE void spin_lock_irqsave(spinlock_t *lock,register u32 *p_isr
 	register u32 level;
     register u32 tmp;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 		
     __asm__ __volatile__(
    "	b       1f                      # spin_lock\n\
@@ -115,7 +115,7 @@ RTEMS_INLINE_ROUTINE void spin_unlock_irqrestore(spinlock_t *lock,register u32 i
 		: : :"memory");
     lock->lock = 0;
 
-	_CPU_ISR_Restore(isr_level);
+	_ISR_Enable(isr_level);
 }
 
 typedef struct {

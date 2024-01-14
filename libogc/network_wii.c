@@ -253,24 +253,24 @@ static s32 NetCreateHeap()
 	u32 level;
 	void *net_heap_ptr;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	if(__net_heap_inited)
 	{
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return IPC_OK;
 	}
 
 	net_heap_ptr = (void *)ROUNDDOWN32(((u32)SYS_GetArena2Hi() - NET_HEAP_SIZE));
 	if((u32)net_heap_ptr < (u32)SYS_GetArena2Lo())
 	{
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return IPC_ENOMEM;
 	}
 	SYS_SetArena2Hi(net_heap_ptr);
 	_Heap_Initialize(&__net_heap, net_heap_ptr, NET_HEAP_SIZE, 32);
 	__net_heap_inited=1;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return IPC_OK;
 }
 

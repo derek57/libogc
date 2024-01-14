@@ -293,10 +293,10 @@ static s32 __card_putcntrlblock(card_block *card,s32 result)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(card->attached) card->result = result;
 	else if(card->result==CARD_ERROR_BUSY) card->result = result;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return result;
 }
 
@@ -308,10 +308,10 @@ static s32 __card_getcntrlblock(s32 chn,card_block **card)
 
 	if(chn<EXI_CHANNEL_0 || chn>=EXI_CHANNEL_2) return CARD_ERROR_FATAL_ERROR;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	rcard = &cardmap[chn];
 	if(!rcard->attached) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return CARD_ERROR_NOCARD;	
 	}
 
@@ -322,7 +322,7 @@ static s32 __card_getcntrlblock(s32 chn,card_block **card)
 		*card = rcard;
 		ret = CARD_ERROR_READY;
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return ret;
 }
 
@@ -342,11 +342,11 @@ static s32 __card_sync(s32 chn)
 	u32 level;
 	card_block *card = &cardmap[chn];
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	while((ret=CARD_GetErrorCode(chn))==CARD_ERROR_BUSY) {
 		LWP_ThreadSleep(card->wait_sync_queue);
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return ret;
 }
 
@@ -357,9 +357,9 @@ static void __card_synccallback(s32 chn,s32 result)
 #ifdef _CARD_DEBUG
 	printf("__card_synccallback(%d,%d,%d)\n",chn,result,card->result);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	LWP_ThreadBroadcast(card->wait_sync_queue);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 static void __card_updateiconoffsets(struct card_direntry *entry,card_stat *stats)
@@ -1449,13 +1449,13 @@ static s32 __card_start(s32 chn,cardcallback tx_cb,cardcallback exi_cb)
 	if(chn<EXI_CHANNEL_0 || chn>=EXI_CHANNEL_2) return CARD_ERROR_NOCARD;
 	card = &cardmap[chn];
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(tx_cb) card->card_tx_cb = tx_cb;
 	if(exi_cb) card->card_exi_cb = exi_cb;
 
 	card->card_unlock_cb = __unlocked_callback;
 	if(EXI_Lock(chn,EXI_DEVICE_0,__card_unlockedhandler)==0) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 #ifdef _CARD_DEBUG
 		printf("__card_start(done CARD_ERROR_BUSY)\n");
 #endif
@@ -1465,7 +1465,7 @@ static s32 __card_start(s32 chn,cardcallback tx_cb,cardcallback exi_cb)
 
 	if(EXI_Select(chn,EXI_DEVICE_0,EXI_SPEED16MHZ)==0) {
 		EXI_Unlock(chn);
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 #ifdef _CARD_DEBUG
 		printf("__card_start(done CARD_ERROR_NOCARD)\n");
 #endif
@@ -1473,7 +1473,7 @@ static s32 __card_start(s32 chn,cardcallback tx_cb,cardcallback exi_cb)
 	}
 
 	__setuptimeout(card);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 #ifdef _CARD_DEBUG
 		printf("__card_start(done CARD_ERROR_READY)\n");
@@ -1911,7 +1911,7 @@ static void __card_dounmount(s32 chn,s32 result)
 	if(chn<EXI_CHANNEL_0 || chn>=EXI_CHANNEL_2) return;
 	card = &cardmap[chn];
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(card->attached) {
 		card->attached = 0;
 		card->mount_step = 0;
@@ -1920,7 +1920,7 @@ static void __card_dounmount(s32 chn,s32 result)
 		EXI_Detach(chn);
 		SYS_CancelAlarm(card->timeout_svc);
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 static s32 __card_domount(s32 chn)
@@ -2453,7 +2453,7 @@ s32 CARD_Init(const char *gamecode,const char *company)
 	if(gamecode && strlen(gamecode)<=4) memcpy(card_gamecode,gamecode,4);
 	if(company && strlen(company)<=2) memcpy(card_company,company,2);
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	DSP_Init();
 
 	memset(cardmap,0,sizeof(card_block)*2);
@@ -2464,7 +2464,7 @@ s32 CARD_Init(const char *gamecode,const char *company)
 	}
 	SYS_RegisterResetFunc(&card_resetinfo);
 	card_inited = 1;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return CARD_ERROR_READY;
 }
 
@@ -2484,24 +2484,24 @@ s32 CARD_ProbeEx(s32 chn,s32 *mem_size,s32 *sect_size)
 	if(chn<EXI_CHANNEL_0 || chn>=EXI_CHANNEL_2) return CARD_ERROR_FATAL_ERROR;
 	card = &cardmap[chn];
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	ret = EXI_ProbeEx(chn);
 	if(ret<=0) {
 		if(!ret) ret = CARD_ERROR_BUSY;
 		else ret = CARD_ERROR_NOCARD;
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return ret;
 	}
 
 	if(card->attached) {
 		if(card->mount_step<1) {
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return CARD_ERROR_BUSY;
 		}
 		if(mem_size) *mem_size = card->card_size;
 		if(sect_size) *sect_size = card->sector_size;
 
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return CARD_ERROR_READY;
 	}
 
@@ -2521,7 +2521,7 @@ s32 CARD_ProbeEx(s32 chn,s32 *mem_size,s32 *sect_size)
 		}
 	}
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return ret;
 }
 
@@ -2538,12 +2538,12 @@ s32 CARD_MountAsync(s32 chn,void *workarea,cardcallback detach_cb,cardcallback a
 	if(chn<EXI_CHANNEL_0 || chn>=EXI_CHANNEL_2) return CARD_ERROR_FATAL_ERROR;
 	card = &cardmap[chn];
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 #ifdef _CARD_DEBUG
 	printf("card->attached = %d,%08x\n",card->attached,EXI_GetState(chn));
 #endif
 	if(card->result==CARD_ERROR_BUSY) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return CARD_ERROR_BUSY;
 	}
 	if(card->attached || !(EXI_GetState(chn)&EXI_FLAG_ATTACH)) {
@@ -2562,7 +2562,7 @@ s32 CARD_MountAsync(s32 chn,void *workarea,cardcallback detach_cb,cardcallback a
 #ifdef _CARD_DEBUG
 				printf("card->attached = %d,%08x,attach failed\n",card->attached,EXI_GetState(chn));
 #endif
-				_CPU_ISR_Restore(level);
+				_ISR_Enable(level);
 				return CARD_ERROR_NOCARD;
 			}
 		}
@@ -2575,7 +2575,7 @@ s32 CARD_MountAsync(s32 chn,void *workarea,cardcallback detach_cb,cardcallback a
 		SYS_CancelAlarm(card->timeout_svc);
 		card->curr_dir = NULL;
 		card->curr_fat = NULL;
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 
 		card->card_unlock_cb = __card_mountcallback;
 		if(EXI_Lock(chn,EXI_DEVICE_0,__card_unlockedhandler)==0) return 0;
@@ -2586,7 +2586,7 @@ s32 CARD_MountAsync(s32 chn,void *workarea,cardcallback detach_cb,cardcallback a
 	}
 	
 	ret = CARD_ERROR_WRONGDEVICE;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return ret;
 }
 
@@ -3247,10 +3247,10 @@ s32 CARD_SetCompany(const char *company)
 {
 	u32 level,i;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	for(i=0;i<2;i++) card_company[i] = 0xff;
 	if(company && strlen(company)<=2) memcpy(card_company,company,2) ;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	
 	return CARD_ERROR_READY;
 }
@@ -3259,10 +3259,10 @@ s32 CARD_SetGamecode(const char *gamecode)
 {
 	u32 level,i;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	for(i=0;i<4;i++) card_gamecode[i] = 0xff;
 	if(gamecode && strlen(gamecode)<=4) memcpy(card_gamecode,gamecode,4) ;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	
 	return CARD_ERROR_READY;
 }

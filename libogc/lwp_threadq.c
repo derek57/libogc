@@ -45,7 +45,7 @@ void _Thread_queue_Enqueue_fifo(Thread_queue_Control *the_thread_queue,Thread_Co
 {
 	u32 level,sync_state;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	
 	sync_state = the_thread_queue->sync_state;
 	the_thread_queue->sync_state = THREAD_QUEUE_SYNCHRONIZED;
@@ -57,19 +57,19 @@ void _Thread_queue_Enqueue_fifo(Thread_queue_Control *the_thread_queue,Thread_Co
 			break;
 		case THREAD_QUEUE_NOTHING_HAPPENED:
 			_Chain_Append_unprotected(&the_thread_queue->Queues.Fifo,&the_thread->Object.Node);
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return;
 		case THREAD_QUEUE_TIMEOUT:
 			the_thread->Wait.return_code = the_thread->Wait.queue->timeout_status;
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			break;
 		case THREAD_QUEUE_SATISFIED:
 			if(_Watchdog_Is_active(&the_thread->Timer)) {
 				_Watchdog_Deactivate(&the_thread->Timer);
-				_CPU_ISR_Restore(level);
+				_ISR_Enable(level);
 				_Watchdog_Remove_ticks(&the_thread->Timer);
 			} else
-				_CPU_ISR_Restore(level);
+				_ISR_Enable(level);
 
 			break;
 	}
@@ -81,15 +81,15 @@ Thread_Control* _Thread_queue_Dequeue_fifo(Thread_queue_Control *the_thread_queu
 	u32 level;
 	Thread_Control *the_thread;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(!_Chain_Is_empty(&the_thread_queue->Queues.Fifo)) {
 		the_thread = (Thread_Control*)_Chain_Get_first_unprotected(&the_thread_queue->Queues.Fifo);
 		if(!_Watchdog_Is_active(&the_thread->Timer)) {
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			_Thread_Unblock(the_thread);
 		} else {
 			_Watchdog_Deactivate(&the_thread->Timer);
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			_Watchdog_Remove_ticks(&the_thread->Timer);
 			_Thread_Unblock(the_thread);
 		}
@@ -99,12 +99,12 @@ Thread_Control* _Thread_queue_Dequeue_fifo(Thread_queue_Control *the_thread_queu
 	switch(the_thread_queue->sync_state) {
 		case THREAD_QUEUE_SYNCHRONIZED:
 		case THREAD_QUEUE_SATISFIED:
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return NULL;
 		case THREAD_QUEUE_NOTHING_HAPPENED:
 		case THREAD_QUEUE_TIMEOUT:
 			the_thread_queue->sync_state = THREAD_QUEUE_SATISFIED;
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return _Thread_Executing;
 	}
 	return NULL;
@@ -136,7 +136,7 @@ void _Thread_queue_Enqueue_priority(Thread_queue_Control *the_thread_queue,Threa
 #endif
 forward_search:
 	search_priority = PRIORITY_MINIMUM - 1;
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	search_thread = (Thread_Control*)header->first;
 	while(!_Chain_Is_tail(header,(Chain_Node*)search_thread)) {
 		search_priority = search_thread->current_priority;
@@ -144,7 +144,7 @@ forward_search:
 		_CPU_ISR_Flash(level);
 
 		if(!_States_Are_set(search_thread->current_state,block_state)) {
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			goto forward_search;
 		}
 		search_thread = (Thread_Control*)search_thread->Object.Node.next;
@@ -161,12 +161,12 @@ forward_search:
 	the_node->previous = previous_node;
 	previous_node->next = the_node;
 	search_node->previous = the_node;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return;
 
 reverse_search:
 	search_priority = PRIORITY_MAXIMUM + 1;
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	search_thread = (Thread_Control*)header->last;
 	while(!_Chain_Is_head(header,(Chain_Node*)search_thread)) {
 		search_priority = search_thread->current_priority;
@@ -174,7 +174,7 @@ reverse_search:
 		_CPU_ISR_Flash(level);
 
 		if(!_States_Are_set(search_thread->current_state,block_state)) {
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			goto reverse_search;
 		}
 		search_thread = (Thread_Control*)search_thread->Object.Node.previous;
@@ -191,7 +191,7 @@ reverse_search:
 	the_node->previous = search_node;
 	search_node->next = the_node;
 	next_node->previous = the_node;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return;
 
 equal_prio:
@@ -206,7 +206,7 @@ equal_prio:
 	the_node->previous = previous_node;
 	previous_node->next = the_node;
 	search_node->previous = the_node;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return;
 
 synchronize:
@@ -223,15 +223,15 @@ synchronize:
 			break;
 		case THREAD_QUEUE_TIMEOUT:
 			the_thread->Wait.return_code = the_thread->Wait.queue->timeout_status;
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			break;
 		case THREAD_QUEUE_SATISFIED:
 			if(_Watchdog_Is_active(&the_thread->Timer)) {
 				_Watchdog_Deactivate(&the_thread->Timer);
-				_CPU_ISR_Restore(level);
+				_ISR_Enable(level);
 				_Watchdog_Remove_ticks(&the_thread->Timer);
 			} else
-				_CPU_ISR_Restore(level);
+				_ISR_Enable(level);
 			break;
 	}
 	_Thread_Unblock(the_thread);
@@ -243,7 +243,7 @@ Thread_Control* _Thread_queue_Dequeue_priority(Thread_queue_Control *the_thread_
 	Thread_Control *new_first_thread,*the_thread = NULL;
 	Chain_Node *new_first_node,*new_second_node,*last_node,*next_node,*previous_node;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	for(index=0;index<TASK_QUEUE_DATA_NUMBER_OF_PRIORITY_HEADERS;index++) {
 		if(!_Chain_Is_empty(&the_thread_queue->Queues.Priority[index])) {
 			the_thread	 = (Thread_Control*)the_thread_queue->Queues.Priority[index].first;
@@ -257,12 +257,12 @@ Thread_Control* _Thread_queue_Dequeue_priority(Thread_queue_Control *the_thread_
 	switch(the_thread_queue->sync_state) {
 		case THREAD_QUEUE_SYNCHRONIZED:
 		case THREAD_QUEUE_SATISFIED:
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return NULL;
 		case THREAD_QUEUE_NOTHING_HAPPENED:
 		case THREAD_QUEUE_TIMEOUT:
 			the_thread_queue->sync_state = THREAD_QUEUE_SATISFIED;
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return _Thread_Executing;
 	}
 
@@ -294,11 +294,11 @@ dequeue:
 	}
 
 	if(!_Watchdog_Is_active(&the_thread->Timer)) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		_Thread_Unblock(the_thread);
 	} else {
 		_Watchdog_Deactivate(&the_thread->Timer);
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		_Watchdog_Remove_ticks(&the_thread->Timer);
 		_Thread_Unblock(the_thread);
 	}
@@ -420,18 +420,18 @@ void _Thread_queue_Extract_fifo(Thread_queue_Control *the_thread_queue,Thread_Co
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(!_States_Is_waiting_on_thread_queue(the_thread->current_state)) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return;
 	}
 	
 	_Chain_Extract_unprotected(&the_thread->Object.Node);
 	if(!_Watchdog_Is_active(&the_thread->Timer)) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 	} else {
 		_Watchdog_Deactivate(&the_thread->Timer);
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		_Watchdog_Remove_ticks(&the_thread->Timer);
 	}
 	_Thread_Unblock(the_thread);
@@ -445,7 +445,7 @@ void _Thread_queue_Extract_priority(Thread_queue_Control *the_thread_queue,Threa
 
 	the_node = (Chain_Node*)the_thread;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(_States_Is_waiting_on_thread_queue(the_thread->current_state)) {
 		next_node = the_node->next;
 		previous_node = the_node->previous;
@@ -472,16 +472,16 @@ void _Thread_queue_Extract_priority(Thread_queue_Control *the_thread_queue,Threa
 			next_node->previous = previous_node;
 		}
 		if(!_Watchdog_Is_active(&the_thread->Timer)) {
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			_Thread_Unblock(the_thread);
 		} else {
 			_Watchdog_Deactivate(&the_thread->Timer);
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			_Watchdog_Remove_ticks(&the_thread->Timer);
 			_Thread_Unblock(the_thread);
 		}
 	} else
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 }
 
 u32 _Thread_queue_Extract_with_proxy(Thread_Control *the_thread)

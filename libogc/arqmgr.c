@@ -99,14 +99,14 @@ u32 ARQM_PushData(void *buffer,s32 len)
 	if(__ARQMFreeBytes>=rlen && __ARQMStackLocation<(ARQM_STACKENTRIES-1)) {
 		ptr = &__ARQMInfo[__ARQMStackLocation];
 		
-		_CPU_ISR_Disable(level);
+		_ISR_Disable(level);
 		ptr->polled = FALSE;
 		ptr->aram_start = __ARQMStackPointer[__ARQMStackLocation++];
 		__ARQMStackPointer[__ARQMStackLocation] = ptr->aram_start+rlen;
 		__ARQMFreeBytes -= rlen;
 
 		ARQ_PostRequestAsync(&ptr->arqhandle,__ARQMStackLocation-1,ARQ_MRAMTOARAM,ARQ_PRIO_HI,ptr->aram_start,(u32)buffer,rlen,__ARQMPollCallback);
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 
 		while(ptr->polled==FALSE);
 		return (ptr->aram_start);
@@ -118,13 +118,13 @@ void ARQM_Pop()
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	if(__ARQMStackLocation>1) {
 		__ARQMFreeBytes += (__ARQMStackPointer[__ARQMStackLocation]-__ARQMStackPointer[__ARQMStackLocation-1]);
 		__ARQMStackLocation--;
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 u32 ARQM_GetZeroBuffer()
@@ -136,9 +136,9 @@ u32 ARQM_GetStackPointer()
 {
 	u32 level,tmp;
 
-	_CPU_ISR_Disable(level)
+	_ISR_Disable(level)
 	tmp = __ARQMStackPointer[__ARQMStackLocation];
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return tmp;
 }
@@ -147,9 +147,9 @@ u32 ARQM_GetFreeSize()
 {
 	u32 level,tmp;
 
-	_CPU_ISR_Disable(level)
+	_ISR_Disable(level)
 	tmp = __ARQMFreeBytes;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return tmp;
 }

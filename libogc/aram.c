@@ -81,19 +81,19 @@ ARCallback AR_RegisterCallback(ARCallback callback)
 	u32 level;
 	ARCallback old;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	old = __ARDmaCallback;
 	__ARDmaCallback = callback;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return old;
 }
 
 u32 AR_GetDMAStatus()
 {
 	u32 level,ret;
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	ret = ((_dspReg[5]&DSPCR_DSPDMA)==DSPCR_DSPDMA);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return ret;
 }
 
@@ -107,7 +107,7 @@ u32 AR_Init(u32 *stack_idx_array,u32 num_entries)
 
 	if(__ARInit_Flag) return aram_base;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	__ARDmaCallback = NULL;
 
@@ -129,7 +129,7 @@ u32 AR_Init(u32 *stack_idx_array,u32 num_entries)
 	__ARCheckSize();
 	__ARInit_Flag = 1;
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return __ARStackPointer;
 }
 
@@ -137,7 +137,7 @@ void AR_StartDMA(u32 dir,u32 memaddr,u32 aramaddr,u32 len)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	// set main memory address
 	_dspReg[16] = (_dspReg[16]&~0x03ff)|_SHIFTR(memaddr,16,16);
@@ -152,7 +152,7 @@ void AR_StartDMA(u32 dir,u32 memaddr,u32 aramaddr,u32 len)
 	_dspReg[20] = (_dspReg[20]&~0x03ff)|_SHIFTR(len,16,16);
 	_dspReg[21] = (_dspReg[21]&~0xffe0)|_SHIFTR(len, 0,16);
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 u32 AR_Alloc(u32 len)
@@ -160,12 +160,12 @@ u32 AR_Alloc(u32 len)
 	u32 level;
 	u32 curraddr;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	curraddr = __ARStackPointer;
 	__ARStackPointer += len;
 	*__ARBlockLen++ = len;
 	__ARFreeBlocks--;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return curraddr;
 }
@@ -174,12 +174,12 @@ u32 AR_Free(u32 *len)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	__ARBlockLen--;
 	if(len) *len = *__ARBlockLen;
 	__ARStackPointer -= *__ARBlockLen;
 	__ARFreeBlocks++;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return __ARStackPointer;
 }

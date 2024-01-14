@@ -129,11 +129,11 @@ s32 __STM_SetEventHook()
 	
 	__stm_ehclear = 0;
 	
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	ret = IOS_IoctlAsync(__stm_eh_fd,IOCTL_STM_EVENTHOOK,__stm_ehbufin,0x20,__stm_ehbufout,0x20,__STMEventHandler,NULL);
 	if(ret<0) __stm_ehregistered = 0;
 	else __stm_ehregistered = 1;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return ret;
 }

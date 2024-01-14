@@ -74,7 +74,7 @@ unsigned32 _Heap_Initialize(
        (size < HEAP_MINIMUM_SIZE) )
     return 0;
 
-  _CPU_ISR_Disable(level);
+  _ISR_Disable(level);
   the_heap->page_size = page_size;
   the_size = size - HEAP_OVERHEAD;
 
@@ -93,7 +93,7 @@ unsigned32 _Heap_Initialize(
   the_block->back_flag  = the_size;
   the_block->front_flag = HEAP_DUMMY_FLAG;
   the_heap->final       = the_block;
-  _CPU_ISR_Restore(level);
+  _ISR_Enable(level);
 
   return ( the_size - HEAP_BLOCK_USED_OVERHEAD );
 }
@@ -135,7 +135,7 @@ void *_Heap_Allocate(
   if ( size >= (-1 - HEAP_BLOCK_USED_OVERHEAD) )
     return( NULL );
 
-  _CPU_ISR_Disable(level);
+  _ISR_Disable(level);
   excess   = size % the_heap->page_size;
   the_size = size + the_heap->page_size + HEAP_BLOCK_USED_OVERHEAD;
   
@@ -149,7 +149,7 @@ void *_Heap_Allocate(
         ;
         the_block = the_block->next ) {
     if ( the_block == _Heap_Tail( the_heap ) ) {
-      _CPU_ISR_Restore(level);
+      _ISR_Enable(level);
       return( NULL );
     }
     if ( the_block->front_flag >= the_size )
@@ -195,7 +195,7 @@ void *_Heap_Allocate(
   }
 #endif
 
-  _CPU_ISR_Restore(level);
+  _ISR_Enable(level);
 
   return ptr;
 }
@@ -229,13 +229,13 @@ boolean _Heap_Free(
   unsigned32         the_size;
   unsigned32         level;
 
-  _CPU_ISR_Disable(level);
+  _ISR_Disable(level);
 
   the_block = _Heap_User_block_at( starting_address );
 
   if ( !_Heap_Is_block_in( the_heap, the_block ) ||
         _Heap_Is_block_free( the_block ) ) {
-      _CPU_ISR_Restore(level);
+      _ISR_Enable(level);
       return( FALSE );
   }
 
@@ -244,7 +244,7 @@ boolean _Heap_Free(
 
   if ( !_Heap_Is_block_in( the_heap, next_block ) ||
        (the_block->front_flag != next_block->back_flag) ) {
-      _CPU_ISR_Restore(level);
+      _ISR_Enable(level);
       return( FALSE );
   }
 
@@ -252,7 +252,7 @@ boolean _Heap_Free(
     previous_block = _Heap_Previous_block( the_block );
 
     if ( !_Heap_Is_block_in( the_heap, previous_block ) ) {
-        _CPU_ISR_Restore(level);
+        _ISR_Enable(level);
         return( FALSE );
     }
 
@@ -288,7 +288,7 @@ boolean _Heap_Free(
     the_heap->first           = the_block;
     the_block->next->previous = the_block;
   }
-  _CPU_ISR_Restore(level);
+  _ISR_Enable(level);
 
   return( TRUE );
 }

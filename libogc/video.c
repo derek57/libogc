@@ -1877,7 +1877,7 @@ static u32 __VISendI2CData(u8 addr,void *val,u32 len)
 		i2cIdentFirst = 1;
 	}
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	__viOpenI2C(1);
 	__viSetSCL(1);
@@ -1887,7 +1887,7 @@ static u32 __VISendI2CData(u8 addr,void *val,u32 len)
 
 	ret = __sendSlaveAddress(addr);
 	if(ret==0) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return 0;
 	}
 
@@ -1911,7 +1911,7 @@ static u32 __VISendI2CData(u8 addr,void *val,u32 len)
 		udelay(2);
 
 		if(i2cIdentFlag==1 && __viGetSDA()!=0) {
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return 0;
 		}
 
@@ -1925,7 +1925,7 @@ static u32 __VISendI2CData(u8 addr,void *val,u32 len)
 	udelay(2);
 	__viSetSDA(i2cIdentFlag);
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return 1;
 }
 
@@ -2261,7 +2261,7 @@ void VIDEO_Init()
 {
 	u32 level,vimode = 0;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	if(!(_viReg[1]&0x0001))
 		__VIInit(VI_TVMODE_NTSC_INT);
@@ -2338,7 +2338,7 @@ void VIDEO_Init()
 #if defined(HW_RVL)
 	__VISetupEncoder();
 #endif
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void VIDEO_Configure(GXRModeObj *rmode)
@@ -2353,7 +2353,7 @@ void VIDEO_Configure(GXRModeObj *rmode)
 	if(rmode->xfbMode==VI_XFBMODE_SF && !(rmode->viTVMode==VI_TVMODE_NTSC_PROG || rmode->viTVMode==VI_TVMODE_NTSC_PROG_DS)
 		&& (rmode->xfbHeight<<1)!=rmode->viHeight) printf("VIDEO_Configure(): xfbHeight(%d) is not as twice as viHeight(%d) when SF XFB mode is specified\n",rmode->xfbHeight,rmode->viHeight);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	nonint = (rmode->viTVMode&0x0003);
 	if(nonint!=HorVer.nonInter) {
 		changeMode = 1;
@@ -2415,7 +2415,7 @@ void VIDEO_Configure(GXRModeObj *rmode)
 #ifdef _VIDEO_DEBUG
 	printDebugCalculations();
 #endif
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void VIDEO_WaitVSync(void)
@@ -2423,19 +2423,19 @@ void VIDEO_WaitVSync(void)
 	u32 level;
 	u32 retcnt;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	retcnt = retraceCount;
 	do {
 		LWP_ThreadSleep(video_queue);
 	} while(retraceCount==retcnt);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void VIDEO_SetFramebuffer(void *fb)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	fbSet = 1;
 	HorVer.bufAddr = fb;
 	__setFbbRegs(&HorVer,&HorVer.tfbb,&HorVer.bfbb,&HorVer.rtfbb,&HorVer.rbfbb);
@@ -2452,7 +2452,7 @@ void VIDEO_SetFramebuffer(void *fb)
 		_viReg[20] = regs[20];
 		_viReg[21] = regs[21];
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void VIDEO_SetNextFramebuffer(void *fb)
@@ -2461,22 +2461,22 @@ void VIDEO_SetNextFramebuffer(void *fb)
 #ifdef _VIDEO_DEBUG
 	if((u32)fb&0x1f) printf("VIDEO_SetNextFramebuffer(): Frame buffer address (%p) is not 32byte aligned\n",fb);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	fbSet = 1;
 	HorVer.bufAddr = fb;
 	__setFbbRegs(&HorVer,&HorVer.tfbb,&HorVer.bfbb,&HorVer.rtfbb,&HorVer.rbfbb);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void VIDEO_SetNextRightFramebuffer(void *fb)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	fbSet = 1;
 	HorVer.rbufAddr = fb;
 	__setFbbRegs(&HorVer,&HorVer.tfbb,&HorVer.bfbb,&HorVer.rtfbb,&HorVer.rbfbb);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void VIDEO_Flush()
@@ -2485,7 +2485,7 @@ void VIDEO_Flush()
 	u32 val;
 	u64 mask;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	shdw_changeMode |= changeMode;
 	changeMode = 0;
 
@@ -2501,7 +2501,7 @@ void VIDEO_Flush()
 	printRegs();
 #endif
 	nextFb = HorVer.bufAddr;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void VIDEO_SetBlack(bool black)
@@ -2509,20 +2509,20 @@ void VIDEO_SetBlack(bool black)
 	u32 level;
 	const struct _timing *curtiming;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	HorVer.black = black;
 	curtiming = HorVer.timing;
 	__setVerticalRegs(HorVer.adjustedDispPosY,HorVer.dispSizeY,curtiming->equ,curtiming->acv,curtiming->prbOdd,curtiming->prbEven,curtiming->psbOdd,curtiming->psbEven,HorVer.black);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 u32 VIDEO_GetNextField()
 {
 	u32 level,nextfield;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	nextfield = __getCurrentFieldEvenOdd()^1;		//we've to swap the result because it shows us only the current field,so we've the next field either even or odd
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return nextfield^(HorVer.adjustedDispPosY&0x0001);	//if the YOrigin is at an odd position we've to swap it again, since the Fb registers are set swapped if this rule applies
 }
@@ -2533,7 +2533,7 @@ u32 VIDEO_GetCurrentTvMode()
 	u32 level;
 	u32 tv;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	mode = currTvMode;
 
 	if(mode==VI_DEBUG) tv = VI_NTSC;
@@ -2541,7 +2541,7 @@ u32 VIDEO_GetCurrentTvMode()
 	else if(mode==VI_MPAL) tv = VI_MPAL;
 	else if(mode==VI_NTSC) tv = VI_NTSC;
 	else tv = VI_PAL;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return tv;
 }
@@ -2636,9 +2636,9 @@ u32 VIDEO_GetCurrentLine()
 {
 	u32 level,curr_hl = 0;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	curr_hl = __getCurrentHalfLine();
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	if(curr_hl>=currTiming->nhlines) curr_hl -=currTiming->nhlines;
 	curr_hl >>= 1;
@@ -2650,9 +2650,9 @@ VIRetraceCallback VIDEO_SetPreRetraceCallback(VIRetraceCallback callback)
 {
 	u32 level = 0;
 	VIRetraceCallback ret = preRetraceCB;
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	preRetraceCB = callback;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return ret;
 }
 
@@ -2660,9 +2660,9 @@ VIRetraceCallback VIDEO_SetPostRetraceCallback(VIRetraceCallback callback)
 {
 	u32 level = 0;
 	VIRetraceCallback ret = postRetraceCB;
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	postRetraceCB = callback;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return ret;
 }
 

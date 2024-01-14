@@ -45,9 +45,9 @@ void LCEnable()
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	__LCEnable();
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 u32 LCLoadData(void *dstAddr,void *srcAddr,u32 nCount)
@@ -121,9 +121,9 @@ void LCAlloc(void *addr,u32 bytes)
 	cnt = bytes>>5;
 	hid2 = mfspr(920);
 	if(!(hid2&0x10000000)) {
-		_CPU_ISR_Disable(level);
+		_ISR_Disable(level);
 		__LCEnable();
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 	}
 	LCAllocTags(TRUE,addr,cnt);
 }
@@ -135,9 +135,9 @@ void LCAllocNoInvalidate(void *addr,u32 bytes)
 	cnt = bytes>>5;
 	hid2 = mfspr(920);
 	if(!(hid2&0x10000000)) {
-		_CPU_ISR_Disable(level);
+		_ISR_Disable(level);
 		__LCEnable();
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 	}
 	LCAllocTags(FALSE,addr,cnt);
 }
@@ -146,7 +146,7 @@ void L2Enhance()
 {
 	u32 level, hid4;
 	u32 *stub = (u32*)0x80001800;
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	hid4 = mfspr(HID4);
 	// make sure H4A is set before doing anything
 	if (hid4 & 0x80000000) {
@@ -174,6 +174,6 @@ void L2Enhance()
 			}
 		}
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 #endif

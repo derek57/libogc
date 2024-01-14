@@ -24,7 +24,7 @@ void* _DEFUN(__libogc_sbrk_r,(ptr,incr),
 	static char *mem2_start = NULL;
 #endif
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 #if defined(HW_RVL)
 	if(MALLOC_MEM2) {
 		// use MEM2 aswell for malloc
@@ -86,7 +86,7 @@ void* _DEFUN(__libogc_sbrk_r,(ptr,incr),
 #if defined(HW_RVL)
 	}
 #endif
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return (void*)prev_heap;	
 }

@@ -204,12 +204,12 @@ s32 USBStorage_Initialize()
 	if(__inited)
 		return IPC_OK;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	LWP_InitQueue(&__usbstorage_waitq);
 	if(!arena_ptr) {
 		arena_ptr = (u8*)ROUNDDOWN32(((u32)SYS_GetArena2Hi() - HEAP_SIZE));
 		if((u32)arena_ptr < (u32)SYS_GetArena2Lo()) {
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return IPC_ENOMEM;
 		}
 		SYS_SetArena2Hi(arena_ptr);
@@ -217,7 +217,7 @@ s32 USBStorage_Initialize()
 	_Heap_Initialize(&__heap, arena_ptr, HEAP_SIZE, 32);
 	cbw_buffer=(u8*)_Heap_Allocate(&__heap, 32);
 	__inited = true;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return IPC_OK;
 }
 

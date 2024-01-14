@@ -260,11 +260,11 @@ static s32 __ipc_queuerequest(struct _ipcreq *req)
 #ifdef DEBUG_IPC
 	printf("__ipc_queuerequest(0x%p)\n",req);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	cnt = (_ipc_responses.cnt_queue - _ipc_responses.cnt_sent);
 	if(cnt>=16) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return IPC_EQUEUEFULL;
 	}
 
@@ -272,7 +272,7 @@ static s32 __ipc_queuerequest(struct _ipcreq *req)
 	_ipc_responses.req_queue_no = ((_ipc_responses.req_queue_no+1)&0x0f);
 	_ipc_responses.cnt_queue++;
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return IPC_OK;
 }
 
@@ -690,9 +690,9 @@ static s32 __ipc_asyncrequest(struct _ipcreq *req)
 	ret = __ipc_queuerequest(req);
 	if(ret) __ipc_freereq(req);
 	else {
-		_CPU_ISR_Disable(level);
+		_ISR_Disable(level);
 		if(_ipc_mailboxack>0) __ipc_sendrequest();
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 	}
 	return ret;
 }
@@ -704,14 +704,14 @@ static s32 __ipc_syncrequest(struct _ipcreq *req)
 
 	LWP_InitQueue(&req->syncqueue);
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	ret = __ipc_syncqueuerequest(req);
 	if(ret==0) {
 		if(_ipc_mailboxack>0) __ipc_sendrequest();
 		LWP_ThreadSleep(req->syncqueue);
 		ret = req->result;
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	LWP_CloseQueue(req->syncqueue);
 	return ret;
@@ -726,7 +726,7 @@ s32 iosCreateHeap(s32 size)
 #ifdef DEBUG_IPC
 	printf("iosCreateHeap(%d)\n",size);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	i=0;
 	while(i<IPC_NUMHEAPS) {
@@ -734,7 +734,7 @@ s32 iosCreateHeap(s32 size)
 		i++;
 	}
 	if(i>=IPC_NUMHEAPS) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return IPC_ENOHEAP;
 	}
 
@@ -750,7 +750,7 @@ s32 iosCreateHeap(s32 size)
 	if(ret<=0) return IPC_ENOMEM;
 
 	IPC_SetBufferLo((void*)(ipclo+size));
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return i;
 }
 
@@ -824,7 +824,7 @@ void __IPC_Reinitialize(void)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	IPC_WriteReg(1,56);
 
@@ -837,7 +837,7 @@ void __IPC_Reinitialize(void)
 	_ipc_responses.req_send_no = 0;
 	_ipc_responses.cnt_sent = 0;
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 s32 IOS_Open(const char *filepath,u32 mode)

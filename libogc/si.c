@@ -208,9 +208,9 @@ static u32 __si_transfer(s32 chan,void *out,u32 out_len,void *in,u32 in_len,SICa
 #ifdef _SI_DEBUG
 	printf("__si_transfer(%d,%p,%d,%p,%d,%p)\n",chan,out,out_len,in,in_len,cb);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(sicntrl.chan!=-1) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return 0;
 	}
 #ifdef _SI_DEBUG
@@ -245,7 +245,7 @@ static u32 __si_transfer(s32 chan,void *out,u32 out_len,void *in,u32 in_len,SICa
 	printf("__si_transfer(csr = %08x)\n",csr.val);
 #endif
 	_siReg[13] = csr.val;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return 1;
 }
@@ -414,10 +414,10 @@ u32 SI_Sync()
 
 	while(_siReg[13]&SICOMCSR_TSTART);
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	ret = __si_completetransfer();
 	__si_transfernext(4);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return ret;
 }
@@ -442,10 +442,10 @@ void SI_SetXY(u16 line,u8 cnt)
 #ifdef _SI_DEBUG
 	printf("SI_SetXY(%d,%d)\n",line,cnt);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	sicntrl.poll = (sicntrl.poll&~0x3ffff00)|_SHIFTL(line,16,10)|_SHIFTL(cnt,8,8);
 	_siReg[12] = sicntrl.poll;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void SI_EnablePolling(u32 poll)
@@ -454,7 +454,7 @@ void SI_EnablePolling(u32 poll)
 #ifdef _SI_DEBUG
 	printf("SI_EnablePolling(%08x)\n",poll);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	poll >>= 24;
 	mask = (poll>>4)&0x0f;
 	sicntrl.poll &= ~mask;
@@ -467,7 +467,7 @@ void SI_EnablePolling(u32 poll)
 	printf("SI_EnablePolling(%08x)\n",sicntrl.poll);
 #endif
 	_siReg[12] = sicntrl.poll;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void SI_DisablePolling(u32 poll)
@@ -476,11 +476,11 @@ void SI_DisablePolling(u32 poll)
 #ifdef _SI_DEBUG
 	printf("SI_DisablePolling(%08x)\n",poll);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	mask = (poll>>24)&0xf0;
 	sicntrl.poll &= ~mask;
 	_siReg[12] = sicntrl.poll;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void SI_SetSamplingRate(u32 samplingrate)
@@ -490,7 +490,7 @@ void SI_SetSamplingRate(u32 samplingrate)
 
 	if(samplingrate>11) samplingrate = 11;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	sampling_rate = samplingrate;
 	xy = __si_getxy();
 
@@ -498,7 +498,7 @@ void SI_SetSamplingRate(u32 samplingrate)
 	if(_viReg[54]&0x0001) div = 2;
 
 	SI_SetXY(div*xy[samplingrate].line,xy[samplingrate].cnt);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void SI_RefreshSamplingRate()
@@ -510,10 +510,10 @@ u32 SI_GetStatus(s32 chan)
 {
 	u32 level,sisr;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	sisr = (_siReg[14]>>((3-chan)<<3));
 	if(sisr&SISR_NORESPONSE && !(si_type[chan]&SI_ERR_BUSY)) si_type[chan] = SI_ERROR_NO_RESPONSE;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return sisr;
 }
 
@@ -537,7 +537,7 @@ u32 SI_GetResponseRaw(s32 chan)
 u32 SI_GetResponse(s32 chan,void *buf)
 {
 	u32 level,valid;
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	SI_GetResponseRaw(chan);
 	valid = inputBufferValid[chan];
 	inputBufferValid[chan] = 0;
@@ -548,7 +548,7 @@ u32 SI_GetResponse(s32 chan,void *buf)
 		((u32*)buf)[0] = inputBuffer[chan][0];
 		((u32*)buf)[1] = inputBuffer[chan][1];
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return valid;
 }
 
@@ -572,7 +572,7 @@ u32 SI_Transfer(s32 chan,void *out,u32 out_len,void *in,u32 in_len,SICallback cb
 #ifdef _SI_DEBUG
 	printf("SI_Transfer(%d,%p,%d,%p,%d,%p,%d)\n",chan,out,out_len,in,in_len,cb,us_delay);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(sipacket[chan].chan==-1 && sicntrl.chan!=chan) {
 		ret = 1;
 		fire = now = gettime();
@@ -583,7 +583,7 @@ u32 SI_Transfer(s32 chan,void *out,u32 out_len,void *in,u32 in_len,SICallback cb
 			tb.tv_nsec = ticks_to_nanosecs((fire - now));
 			SYS_SetAlarm(si_alarm[chan],&tb,__si_alarmhandler,NULL);
 		} else if(__si_transfer(chan,out,out_len,in,in_len,cb)) {
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return ret;
 		}
 		sipacket[chan].chan = chan;
@@ -597,7 +597,7 @@ u32 SI_Transfer(s32 chan,void *out,u32 out_len,void *in,u32 in_len,SICallback cb
 		printf("SI_Transfer(%d,%p,%d,%p,%d,%p,%08x%08x)\n",sipacket[chan].chan,sipacket[chan].out,sipacket[chan].out_bytes,sipacket[chan].in,sipacket[chan].in_bytes,sipacket[chan].callback,(u32)(sipacket[chan].fire>>32),(u32)sipacket[chan].fire);
 #endif
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return ret;
 }
 
@@ -609,19 +609,19 @@ u32 SI_GetType(s32 chan)
 #ifdef _SI_DEBUG
 	printf("SI_GetType(%d)\n",chan);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	now = gettime();
 	type = si_type[chan];
 	diff = (now - typeTime[chan]);
 	if(sicntrl.poll&(0x80>>chan)) {
 		if(type!=SI_ERROR_NO_RESPONSE) {
 			typeTime[chan] = gettime();
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return type;
 		}
 		si_type[chan] = type = SI_ERR_BUSY;
 	} else if(diff==millisecs_to_ticks(50) && type!=SI_ERROR_NO_RESPONSE) {
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return type;
 	} else if(diff==millisecs_to_ticks(75)) si_type[chan] = SI_ERR_BUSY;
 	else si_type[chan] = type = SI_ERR_BUSY;
@@ -629,7 +629,7 @@ u32 SI_GetType(s32 chan)
 	typeTime[chan] = gettime();
 
 	SI_Transfer(chan,&cmdtypeandstatus$223,1,&si_type[chan],3,__si_gettypecallback,65);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return type;
 }
@@ -641,7 +641,7 @@ u32 SI_GetTypeAsync(s32 chan,SICallback cb)
 #ifdef _SI_DEBUG
 	printf("SI_GetTypeAsync(%d)\n",chan);
 #endif
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	type = SI_GetType(chan);
 	if(si_type[chan]&SI_ERR_BUSY) {
 		i=0;
@@ -651,12 +651,12 @@ u32 SI_GetTypeAsync(s32 chan,SICallback cb)
 				break;
 			}
 		}
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 		return type;
 	}
 
 	cb(chan,type);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return type;
 }
 
@@ -669,12 +669,12 @@ u32 SI_RegisterPollingHandler(RDSTHandler handler)
 {
 	u32 level,i;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	i = 0;
 	for(i=0;i<4;i++) {
 		if(rdstHandlers[i]==handler) {
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return 1;
 		}
 	}
@@ -683,12 +683,12 @@ u32 SI_RegisterPollingHandler(RDSTHandler handler)
 		if(rdstHandlers[i]==NULL) {
 			rdstHandlers[i] = handler;
 			SI_EnablePollingInterrupt(TRUE);
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return 1;
 		}
 	}
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return 0;
 }
 
@@ -696,7 +696,7 @@ u32 SI_UnregisterPollingHandler(RDSTHandler handler)
 {
 	u32 level,i;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	for(i=0;i<4;i++) {
 		if(rdstHandlers[i]==handler) {
 			rdstHandlers[i] = NULL;
@@ -705,11 +705,11 @@ u32 SI_UnregisterPollingHandler(RDSTHandler handler)
 			}
 			if(i>=4) SI_EnablePollingInterrupt(FALSE);
 
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return 1;
 		}
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return 0;
 }
 
@@ -718,7 +718,7 @@ u32 SI_EnablePollingInterrupt(s32 enable)
 	sicomcsr csr;
 	u32 level,ret,i;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	ret = 0;
 	csr.val = _siReg[13];
@@ -733,7 +733,7 @@ u32 SI_EnablePollingInterrupt(s32 enable)
 	csr.val &= 0x7ffffffe;
 	_siReg[13] = csr.val;
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return ret;
 }
 

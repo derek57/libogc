@@ -126,7 +126,7 @@ void ARQ_Init()
 #endif
 	if(__ARQInitFlag) return;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	__ARQReqPendingLo = NULL;
 	__ARQReqPendingHi = NULL;
@@ -143,23 +143,23 @@ void ARQ_Init()
 	AR_RegisterCallback(__ARInterruptServiceRoutine);
 
 	__ARQInitFlag = 1;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void ARQ_Reset()
 {
 	u32 level;
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	__ARQInitFlag = 0;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void ARQ_SetChunkSize(u32 size)
 {
 	u32 level;
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	__ARQChunkSize = (size+31)&~31;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 u32 ARQ_GetChunkSize()
@@ -171,13 +171,13 @@ void ARQ_FlushQueue()
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	
 	_Chain_Initialize_empty(&__ARQReqQueueLo);
 	_Chain_Initialize_empty(&__ARQReqQueueHi);
 	if(!__ARQCallbackLo) __ARQReqPendingLo = NULL;
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void ARQ_PostRequestAsync(ARQRequest *req,u32 owner,u32 dir,u32 prio,u32 aram_addr,u32 mram_addr,u32 len,ARQCallback cb)
@@ -194,7 +194,7 @@ void ARQ_PostRequestAsync(ARQRequest *req,u32 owner,u32 dir,u32 prio,u32 aram_ad
 	req->prio = prio;
 	req->callback = (cb==NULL) ? __ARQCallbackDummy : cb;
 	
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	if(prio==ARQ_PRIO_LO) _Chain_Append_unprotected(&__ARQReqQueueLo,&req->node);
 	else _Chain_Append_unprotected(&__ARQReqQueueHi,&req->node);
@@ -212,7 +212,7 @@ void ARQ_PostRequestAsync(ARQRequest *req,u32 owner,u32 dir,u32 prio,u32 aram_ad
 		}
 		if(!__ARQReqPendingHi) __ARQServiceQueueLo();
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void ARQ_PostRequest(ARQRequest *req,u32 owner,u32 dir,u32 prio,u32 aram_addr,u32 mram_addr,u32 len)
@@ -221,21 +221,21 @@ void ARQ_PostRequest(ARQRequest *req,u32 owner,u32 dir,u32 prio,u32 aram_addr,u3
 
 	ARQ_PostRequestAsync(req,owner,dir,prio,aram_addr,mram_addr,len,__ARQCallbackSync);
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	while(req->state!=ARQ_TASK_FINISHED) {
 		LWP_ThreadSleep(__ARQSyncQueue);
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void ARQ_RemoveRequest(ARQRequest *req)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	_Chain_Extract_unprotected(&req->node);
 	if(__ARQReqPendingLo && __ARQReqPendingLo==req && __ARQCallbackLo==NULL) __ARQReqPendingLo = NULL;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 u32 ARQ_RemoveOwnerRequest(u32 owner)
@@ -243,7 +243,7 @@ u32 ARQ_RemoveOwnerRequest(u32 owner)
 	u32 level,cnt;
 	ARQRequest *req;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	
 	cnt = 0;
 	req = (ARQRequest*)__ARQReqQueueHi.first;
@@ -264,7 +264,7 @@ u32 ARQ_RemoveOwnerRequest(u32 owner)
 		req = (ARQRequest*)req->node.next;
 	}
 	if(__ARQReqPendingLo && __ARQReqPendingLo==req && __ARQCallbackLo==NULL) __ARQReqPendingLo = NULL;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return cnt;
 }

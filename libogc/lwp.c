@@ -317,14 +317,14 @@ s32 LWP_JoinThread(lwp_t thethread,void **value_ptr)
 	}
 
 	exec = _Thread_Executing;
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	_Thread_queue_Enter_critical_section(&lwp_thread->Join_List);
 	exec->Wait.return_code = 0;
 	exec->Wait.return_argument_1 = NULL;
 	exec->Wait.return_argument = (void*)&return_ptr;
 	exec->Wait.queue = &lwp_thread->Join_List;
 	exec->Wait.id = thethread;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	_Thread_queue_Enqueue(&lwp_thread->Join_List,WATCHDOG_NO_TIMEOUT);
 	_Thread_Enable_dispatch();
 
@@ -376,14 +376,14 @@ s32 LWP_ThreadSleep(lwpq_t thequeue)
 	if(!tq) return -1;
 
 	exec = _Thread_Executing;
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	_Thread_queue_Enter_critical_section(&tq->tqueue);
 	exec->Wait.return_code = 0;
 	exec->Wait.return_argument = NULL;
 	exec->Wait.return_argument_1 = NULL;
 	exec->Wait.queue = &tq->tqueue;
 	exec->Wait.id = thequeue;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	_Thread_queue_Enqueue(&tq->tqueue,RTEMS_NO_TIMEOUT);
 	_Thread_Enable_dispatch();
 	return 0;
