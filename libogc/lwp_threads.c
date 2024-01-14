@@ -695,7 +695,7 @@ void _Thread_Start_multitasking()
 #ifdef _LWPTHREADS_DEBUG
 	kprintf("_Thread_Start_multitasking(%p,%p)\n",_Thread_Executing,_Thread_Heir);
 #endif
-	_Watchdog_Insert_ticks(&_lwp_wd_timeslice,millisecs_to_ticks(1));
+	__lwp_thread_starttimeslice();
 	_CPU_Context_switch((void*)&_Thread_BSP_context,(void*)&_Thread_Heir->Registers);
 
 	if(_lwp_exitfunc) _lwp_exitfunc();
@@ -705,7 +705,7 @@ void _Thread_Stop_multitasking(void (*exitfunc)())
 {
 	_lwp_exitfunc = exitfunc;
 	if(_System_state_Get()!=SYSTEM_STATE_SHUTDOWN) {
-		_Watchdog_Remove_ticks(&_lwp_wd_timeslice);
+		__lwp_thread_stoptimeslice();
 		_System_state_Set(SYSTEM_STATE_SHUTDOWN);
 		_CPU_Context_switch((void*)&_Thread_Executing->Registers,(void*)&_Thread_BSP_context);
 	}
@@ -719,8 +719,8 @@ void _Thread_Handler_initialization()
 	kprintf("_Thread_Handler_initialization()\n\n");
 #endif
 	_Thread_Dispatch_initialization();
-	_Watchdog_Initialize(&_lwp_wd_timeslice,_Thread_Tickle_timeslice,LWP_TIMESLICE_TIMER_ID,NULL);
-	
+	__lwp_thread_inittimeslice();
+
 	_Context_Switch_necessary = FALSE;
 	_Thread_Executing = NULL;
 	_Thread_Heir = NULL;

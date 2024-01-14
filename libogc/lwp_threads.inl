@@ -75,4 +75,19 @@ static __inline__ bool _Thread_Is_dispatching_enabled()
 {
 	return (_Thread_Dispatch_disable_level==0);
 }
+
+static __inline__ void __lwp_thread_inittimeslice()
+{
+	_Watchdog_Initialize(&_lwp_wd_timeslice,_Thread_Tickle_timeslice,LWP_TIMESLICE_TIMER_ID,NULL);
+}
+
+static __inline__ void __lwp_thread_starttimeslice()
+{
+	_Watchdog_Insert_ticks(&_lwp_wd_timeslice,millisecs_to_ticks(1));
+}
+
+static __inline__ void __lwp_thread_stoptimeslice()
+{
+	_Watchdog_Remove_ticks(&_lwp_wd_timeslice);
+}
 #endif

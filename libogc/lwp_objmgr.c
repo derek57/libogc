@@ -8,11 +8,17 @@
 
 #include "lwp_objmgr.h"
 
+static u32 _lwp_objmgr_memsize = 0;
 static Objects_Control *null_local_table = NULL;
+
+u32 __lwp_objmgr_memsize()
+{
+	return _lwp_objmgr_memsize;
+}
 
 void _Objects_Initialize_information(Objects_Information *information,u32 maximum,u32 size)
 {
-	u32 index;
+	u32 index,i,sz;
 	Objects_Control *the_object;
 	Chain_Control inactives;
 	void **local_table;
@@ -27,12 +33,13 @@ void _Objects_Initialize_information(Objects_Information *information,u32 maximu
 
 	_Chain_Initialize_empty(&information->Inactive);
 
+	sz = ((information->maximum*sizeof(Objects_Control*))+(information->maximum*information->size));
 	local_table = (void**)_Workspace_Allocate(information->maximum*sizeof(Objects_Control*));
 	if(!local_table) return;
 
 	information->local_table = (Objects_Control**)local_table;
-	for(index=0;index<information->maximum;index++) {
-		local_table[index] = NULL;
+	for(i=0;i<information->maximum;i++) {
+		local_table[i] = NULL;
 	}
 
 	information->object_blocks = _Workspace_Allocate(information->maximum*information->size);
@@ -53,6 +60,7 @@ void _Objects_Initialize_information(Objects_Information *information,u32 maximu
 
 	information->maximum_id += information->maximum;
 	information->inactive += information->maximum;
+	_lwp_objmgr_memsize += sz;
 }
 
 Objects_Control* _Objects_Get_isr_disable(Objects_Information *information,u32 id,u32 *level_p)

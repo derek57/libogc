@@ -203,7 +203,7 @@ u32 _CORE_message_queue_Broadcast(CORE_message_queue_Control *the_message_queue,
 			constrained_size = the_message_queue->maximum_message_size;
 
 		_CORE_message_queue_Copy_buffer(waitp->return_argument,buffer,constrained_size);
-		*(u32*)waitp->return_argument = size;
+		*(u32*)waitp->return_argument_1 = size;
 	}
 	*count = number_broadcasted;
 	return CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL;

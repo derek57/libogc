@@ -11,18 +11,18 @@
 
 #define HEAP_OVERHEAD					(sizeof(u32)*2)
 #define HEAP_BLOCK_USED_OVERHEAD		(sizeof(void*)*2)
-#define HEAP_MIN_SIZE					(HEAP_OVERHEAD+sizeof(heap_block))
+#define HEAP_MIN_SIZE					(HEAP_OVERHEAD+sizeof(Heap_Block))
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct Heap_Block_struct heap_block;
+typedef struct Heap_Block_struct Heap_Block;
 struct Heap_Block_struct {
 	u32 back_flag;
 	u32 front_flag;
-	heap_block *next;
-	heap_block *previous;
+	Heap_Block *next;
+	Heap_Block *previous;
 };
 
 typedef struct {
@@ -33,12 +33,12 @@ typedef struct {
 } Heap_Information_block;
 
 typedef struct {
-	heap_block *start;
-	heap_block *final;
+	Heap_Block *start;
+	Heap_Block *final;
 
-	heap_block *first;
-	heap_block *permanent_null;
-	heap_block *last;
+	Heap_Block *first;
+	Heap_Block *permanent_null;
+	Heap_Block *last;
 	u32 page_size;
 	u32 reserved;
 } Heap_Control;

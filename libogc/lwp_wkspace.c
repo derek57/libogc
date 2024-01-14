@@ -9,7 +9,25 @@
 #define ROUND32UP(v)			(((u32)(v)+31)&~31)
 
 Heap_Control _Workspace_Area;
+static Heap_Information_block __wkspace_iblock;
 static u32 memory_available = 0;
+
+u32 __lwp_wkspace_heapsize()
+{
+	return memory_available;
+}
+
+u32 __lwp_wkspace_heapfree()
+{
+	_Heap_Get_information(&_Workspace_Area,&__wkspace_iblock);
+	return __wkspace_iblock.free_size;
+}
+
+u32 __lwp_wkspace_heapused()
+{
+	_Heap_Get_information(&_Workspace_Area,&__wkspace_iblock);
+	return __wkspace_iblock.used_size;
+}
 
 void _Workspace_Handler_initialization(u32 size)
 {
