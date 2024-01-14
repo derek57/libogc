@@ -1,46 +1,151 @@
+/*  sysstates.inl
+ *
+ *  This file contains the inline implementation of routines regarding the 
+ *  system state.
+ *
+ *  COPYRIGHT (c) 1989-1999.
+ *  On-Line Applications Research Corporation (OAR).
+ *
+ *  The license and distribution terms for this file may be
+ *  found in the file LICENSE in this distribution or at
+ *  http://www.OARcorp.com/rtems/license.html.
+ *
+ *  $Id$
+ */
+
 #ifndef __SYS_STATE_INL__
 #define __SYS_STATE_INL__
 
 #include "lwp_config.h"
 
-RTEMS_INLINE_ROUTINE void _System_state_Handler_initialization()
+/*PAGE
+ *
+ *  _System_state_Handler_initialization
+ *
+ *  DESCRIPTION:
+ *
+ *  This routine initializes the system state handler.
+ */
+ 
+RTEMS_INLINE_ROUTINE void _System_state_Handler_initialization (void)
 {
-	_System_state_Current = SYSTEM_STATE_BEFORE_INITIALIZATION;
+  _System_state_Current = SYSTEM_STATE_BEFORE_INITIALIZATION;
+}
+ 
+/*PAGE
+ *
+ *  _System_state_Set
+ *
+ *  DESCRIPTION:
+ *
+ *  This routine sets the current system state to that specified by
+ *  the called.
+ */
+
+RTEMS_INLINE_ROUTINE void _System_state_Set (
+  System_state_Codes state
+)
+{
+  _System_state_Current = state;
 }
 
-RTEMS_INLINE_ROUTINE void _System_state_Set(u32 state)
+/*PAGE
+ *
+ *  _System_state_Get
+ *
+ *  DESCRIPTION:
+ *
+ *  This function returns the current system state.
+ */
+
+RTEMS_INLINE_ROUTINE System_state_Codes _System_state_Get ( void )
 {
-	_System_state_Current = state;
+  return _System_state_Current;
 }
 
-RTEMS_INLINE_ROUTINE u32 _System_state_Get()
+/*PAGE
+ *
+ *  _System_state_Is_before_initialization
+ *
+ *  DESCRIPTION:
+ *
+ *  This function returns TRUE if the state is equal to the
+ *  "before initialization" state, and FALSE otherwise.
+ */
+
+RTEMS_INLINE_ROUTINE boolean _System_state_Is_before_initialization (
+  System_state_Codes state
+)
 {
-	return _System_state_Current;
+  return (state == SYSTEM_STATE_BEFORE_INITIALIZATION);
 }
 
-RTEMS_INLINE_ROUTINE u32 _System_state_Is_before_initialization(u32 state)
+/*PAGE
+ *
+ *  _System_state_Is_before_multitasking
+ *
+ *  DESCRIPTION:
+ *
+ *  This function returns TRUE if the state is equal to the
+ *  "before multitasking" state, and FALSE otherwise.
+ */
+
+RTEMS_INLINE_ROUTINE boolean _System_state_Is_before_multitasking (
+  System_state_Codes state
+)
 {
-	return (state==SYSTEM_STATE_BEFORE_INITIALIZATION);
+  return (state == SYSTEM_STATE_BEFORE_MULTITASKING);
 }
 
-RTEMS_INLINE_ROUTINE u32 _System_state_Is_before_multitasking(u32 state)
+/*PAGE
+ *
+ *  _System_state_Is_begin_multitasking
+ *
+ *  DESCRIPTION:
+ *
+ *  This function returns TRUE if the state is equal to the
+ *  "begin multitasking" state, and FALSE otherwise.
+ */
+
+RTEMS_INLINE_ROUTINE boolean _System_state_Is_begin_multitasking (
+  System_state_Codes state
+)
 {
-	return (state==SYSTEM_STATE_BEFORE_MULTITASKING);
+  return (state == SYSTEM_STATE_BEGIN_MULTITASKING);
 }
 
-RTEMS_INLINE_ROUTINE u32 _System_state_Is_begin_multitasking(u32 state)
+/*PAGE
+ *
+ *  _System_state_Is_up
+ *
+ *  DESCRIPTION:
+ *
+ *  This function returns TRUE if the state is equal to the
+ *  "up" state, and FALSE otherwise.
+ */
+
+RTEMS_INLINE_ROUTINE boolean _System_state_Is_up (
+  System_state_Codes state
+)
 {
-	return (state==SYSTEM_STATE_BEGIN_MULTITASKING);
+  return (state == SYSTEM_STATE_UP);
 }
 
-RTEMS_INLINE_ROUTINE u32 _System_state_Is_up(u32 state)
-{
-	return (state==SYSTEM_STATE_UP);
-}
+/*PAGE
+ *
+ *  _System_state_Is_failed
+ *
+ *  DESCRIPTION:
+ *
+ *  This function returns TRUE if the state is equal to the
+ *  "failed" state, and FALSE otherwise.
+ */
 
-RTEMS_INLINE_ROUTINE u32 _System_state_Is_failed(u32 state)
+RTEMS_INLINE_ROUTINE boolean _System_state_Is_failed (
+  System_state_Codes state
+)
 {
-	return (state==SYSTEM_STATE_FAILED);
+  return (state == SYSTEM_STATE_FAILED);
 }
 
 #endif

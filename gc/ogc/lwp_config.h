@@ -38,6 +38,13 @@ typedef unsigned short      unsigned16;
 typedef unsigned char       unsigned8;
 
 /*
+ *  The following type defines the control block used to manage a
+ *  thread's state.
+ */
+
+typedef unsigned32          States_Control;
+
+/*
  *  The following type defines the control block used to manage
  *  intervals.
  */
