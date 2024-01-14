@@ -10,7 +10,7 @@
 u32 _Heap_Initialize(Heap_Control *the_heap,void *starting_address,u32 size,u32 page_size)
 {
 	u32 the_size,level;
-	heap_block *the_block;
+	Heap_Block *the_block;
 
 	if(!_Heap_Is_page_size_valid(page_size) || size<HEAP_MIN_SIZE) return 0;
 
@@ -18,7 +18,7 @@ u32 _Heap_Initialize(Heap_Control *the_heap,void *starting_address,u32 size,u32 
 	the_heap->page_size = page_size;
 	the_size = (size - HEAP_OVERHEAD);
 	
-	the_block = (heap_block*)starting_address;
+	the_block = (Heap_Block*)starting_address;
 	the_block->back_flag = HEAP_DUMMY_FLAG;
 	the_block->front_flag = the_size;
 	the_block->next	= _Heap_Tail(the_heap);
@@ -42,9 +42,9 @@ void* _Heap_Allocate(Heap_Control *the_heap,u32 size)
 {
 	u32 excess;
 	u32 the_size;
-	heap_block *the_block;
-	heap_block *next_block;
-	heap_block *temporary_block;
+	Heap_Block *the_block;
+	Heap_Block *next_block;
+	Heap_Block *temporary_block;
 	void *ptr;
 	u32 offset,level;
 
@@ -58,7 +58,7 @@ void* _Heap_Allocate(Heap_Control *the_heap,u32 size)
 	if(excess)
 		the_size += (the_heap->page_size - excess);
 
-	if(the_size<sizeof(heap_block)) the_size = sizeof(heap_block);
+	if(the_size<sizeof(Heap_Block)) the_size = sizeof(Heap_Block);
 	
 	for(the_block=the_heap->first;;the_block=the_block->next) {
 		if(the_block==_Heap_Tail(the_heap)) {
@@ -98,11 +98,11 @@ void* _Heap_Allocate(Heap_Control *the_heap,u32 size)
 
 BOOL _Heap_Free(Heap_Control *the_heap,void *starting_address)
 {
-	heap_block *the_block;
-	heap_block *next_block;
-	heap_block *new_next_block;
-	heap_block *previous_block;
-	heap_block *temporary_block;
+	Heap_Block *the_block;
+	Heap_Block *next_block;
+	Heap_Block *new_next_block;
+	Heap_Block *previous_block;
+	Heap_Block *temporary_block;
 	u32 the_size,level;
 
 	_CPU_ISR_Disable(level);
@@ -162,8 +162,8 @@ BOOL _Heap_Free(Heap_Control *the_heap,void *starting_address)
 u32 _Heap_Get_information(Heap_Control *the_heap,Heap_Information_block *the_info)
 {
 	u32 not_done = 1;
-	heap_block *theblock = NULL;
-	heap_block *nextblock = NULL;
+	Heap_Block *theblock = NULL;
+	Heap_Block *nextblock = NULL;
 	
 	the_info->free_blocks = 0;
 	the_info->free_size = 0;
