@@ -79,6 +79,8 @@ typedef s32                 Objects_Id;
 
 typedef unsigned32          Objects_Maximum; 
 
+typedef unsigned32          CORE_message_queue_Submit_types; 
+
 /*
  *  The following type defines the control block used to manage
  *  thread priorities.

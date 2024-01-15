@@ -49,8 +49,8 @@ extern "C" {
  *
  */
 
-#define _Objects_Get_node( _node ) \
-  (((_node) >> OBJECTS_NODE_START_BIT) & OBJECTS_INDEX_MASK) 
+#define _Objects_Get_node( _id ) \
+  (((_id) >> OBJECTS_NODE_START_BIT) & OBJECTS_INDEX_MASK) 
 
 /*PAGE
  *
