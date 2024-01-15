@@ -68,7 +68,7 @@ unsigned32 _Heap_Initialize(
 {
   Heap_Block        *the_block;
   unsigned32         the_size;
-  unsigned32         level;
+  ISR_Level          level;
 
   if ( !_Heap_Is_page_size_valid( page_size ) ||
        (size < HEAP_MINIMUM_SIZE) )
@@ -125,7 +125,7 @@ void *_Heap_Allocate(
   Heap_Block *temporary_block;
   void       *ptr;
   unsigned32  offset;
-  unsigned32  level;
+  ISR_Level   level;
 
   /*
    * Catch the case of a user allocating close to the limit of the
@@ -227,7 +227,7 @@ boolean _Heap_Free(
   Heap_Block        *previous_block;
   Heap_Block        *temporary_block;
   unsigned32         the_size;
-  unsigned32         level;
+  ISR_Level          level;
 
   _ISR_Disable(level);
 

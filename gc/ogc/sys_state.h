@@ -21,6 +21,14 @@ extern "C" {
 
 #include <gctypes.h>
 
+#include "lwp_config.h"
+
+/* enumerated constants */
+
+/*
+ *  The following type defines the possible system states.
+ */
+
 typedef enum {
   SYSTEM_STATE_BEFORE_INITIALIZATION,   /* start -> end of 1st init part */
   SYSTEM_STATE_BEFORE_MULTITASKING,     /* end of 1st -> beginning of 2nd */
@@ -30,7 +38,11 @@ typedef enum {
   SYSTEM_STATE_FAILED                   /* fatal error occurred */
 } System_state_Codes; 
 
-extern u32 _System_state_Current;
+/*
+ *  The following variable contains the current system state.
+ */
+
+SCORE_EXTERN System_state_Codes _System_state_Current;
 
 #ifdef __RTEMS_APPLICATION__
 #include <libogc/sys_state.inl>

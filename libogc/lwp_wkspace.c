@@ -23,26 +23,26 @@
 #include "system.h"
 #include "lwp_wkspace.h"
 
-#define ROUND32UP(v)			(((u32)(v)+31)&~31)
+#define ROUND32UP(v)			(((unsigned32)(v) + 31) & ~31)
 
 Heap_Control _Workspace_Area;
 static Heap_Information_block __wkspace_iblock;
-static u32 memory_available = 0;
+static unsigned32 memory_available = 0;
 
-u32 __lwp_wkspace_heapsize()
+unsigned32 __lwp_wkspace_heapsize(void)
 {
 	return memory_available;
 }
 
-u32 __lwp_wkspace_heapfree()
+unsigned32 __lwp_wkspace_heapfree(void)
 {
-	_Heap_Get_information(&_Workspace_Area,&__wkspace_iblock);
+	_Heap_Get_information(&_Workspace_Area, &__wkspace_iblock);
 	return __wkspace_iblock.free_size;
 }
 
-u32 __lwp_wkspace_heapused()
+unsigned32 __lwp_wkspace_heapused(void)
 {
-	_Heap_Get_information(&_Workspace_Area,&__wkspace_iblock);
+	_Heap_Get_information(&_Workspace_Area, &__wkspace_iblock);
 	return __wkspace_iblock.used_size;
 }
 
@@ -51,17 +51,25 @@ u32 __lwp_wkspace_heapused()
  *  _Workspace_Handler_initialization
  */
 
-void _Workspace_Handler_initialization(u32 size)
+void _Workspace_Handler_initialization(unsigned32 size)
 {
-	u32 starting_address,level,dsize;
+  unsigned32 starting_address;
+  ISR_Level level;
+  unsigned32 dsize;
 
-	// Get current ArenaLo and adjust to 32-byte boundary
-	_ISR_Disable(level);
-	starting_address = ROUND32UP(SYS_GetArenaLo());
-	dsize = (size - (starting_address - (u32)SYS_GetArenaLo()));
-	SYS_SetArenaLo((void*)(starting_address+dsize));
-	_ISR_Enable(level);
+  // Get current ArenaLo and adjust to 32-byte boundary
+  _ISR_Disable(level);
+  starting_address = ROUND32UP(SYS_GetArenaLo());
+  dsize = (size - (starting_address - (u32)SYS_GetArenaLo()));
+  SYS_SetArenaLo((void*)(starting_address+dsize));
+  _ISR_Enable(level);
 
-	memset((void*)starting_address,0,dsize);
-	memory_available += _Heap_Initialize(&_Workspace_Area,(void*)starting_address,dsize,CPU_HEAP_ALIGNMENT);
+  memset((void *)starting_address, 0, dsize);
+
+  memory_available = _Heap_Initialize(
+    &_Workspace_Area,
+    (void *)starting_address,
+    dsize,
+    CPU_HEAP_ALIGNMENT
+  );
 }

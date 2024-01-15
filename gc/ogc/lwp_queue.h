@@ -20,6 +20,7 @@
 extern "C" {
 #endif
 
+#include <stdlib.h>
 #include <gctypes.h>
 
 #include "lwp_config.h"
@@ -29,6 +30,17 @@ extern "C" {
 #ifdef _LWPQ_DEBUG
 extern int printk(const char *fmt,...);
 #endif
+
+/**
+ *  @typedef Chain_Node
+ *
+ *  This type definition promotes the name for the Chain Node used by
+ *  all RTEMS code.  It is a separate type definition because a forward
+ *  reference is required to define it.  See @ref Chain_Node_struct for
+ *  detailed information.
+ */
+
+typedef struct Chain_Node_struct Chain_Node;
 
 /*
  *  This is used to manage each element (node) which is placed
@@ -44,10 +56,10 @@ extern int printk(const char *fmt,...);
  *
  */
 
-typedef struct Chain_Node_struct Chain_Node;
-
 struct Chain_Node_struct {
+  /** This points to the node after this one on this chain. */
   Chain_Node *next;
+  /** This points to the node immediate prior to this one on this chain. */
   Chain_Node *previous;
 };
 
@@ -67,8 +79,11 @@ struct Chain_Node_struct {
  */
 
 typedef struct {
+  /** This points to the first node on this chain. */
   Chain_Node *first;
+  /** This field is always 0. */
   Chain_Node *permanent_null;
+  /** This points to the last node on this chain. */
   Chain_Node *last;
 } Chain_Control;
 
@@ -86,8 +101,8 @@ typedef struct {
 void _Chain_Initialize(
   Chain_Control *the_chain,
   void          *starting_address,
-  unsigned32     number_nodes,
-  unsigned32     node_size
+  size_t         number_nodes,
+  size_t         node_size
 );
 
 /*

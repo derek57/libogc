@@ -54,10 +54,14 @@ typedef enum {
  */
 
 typedef struct {
-  unsigned32   free_blocks;
-  unsigned32   free_size;
-  unsigned32   used_blocks;
-  unsigned32   used_size;
+  /** This field is the number of free blocks in this heap. */
+  unsigned32     free_blocks;
+  /** This field is the amount of free memory in this heap. */
+  unsigned32     free_size;
+  /** This field is the number of used blocks in this heap. */
+  unsigned32     used_blocks;
+  /** This field is the amount of used memory in this heap. */
+  unsigned32     used_size;
 } Heap_Information_block;
 
 /*

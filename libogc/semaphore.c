@@ -97,7 +97,7 @@ s32 LWP_SemInit(sem_t *sem,u32 start,u32 max)
 
 	attr.maximum_count = max;
 	attr.discipline = CORE_SEMAPHORE_DISCIPLINES_FIFO;
-	CORE_semaphore_Initialize(&ret->Semaphore,&attr,start);
+	_CORE_semaphore_Initialize(&ret->Semaphore,&attr,start);
 
 	*sem = (sem_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_SEM)|LWP_OBJMASKID(ret->Object.id));
 	_Thread_Enable_dispatch();

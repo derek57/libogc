@@ -24,7 +24,12 @@ extern "C" {
 #include <gctypes.h>
 #include <lwp_heap.h>
 
-extern Heap_Control _Workspace_Area;
+/*
+ *  The following is used to manage the Workspace.
+ *
+ */
+
+SCORE_EXTERN Heap_Control _Workspace_Area;  /* executive heap header */
 
 /*
  *  _Workspace_Handler_initialization
@@ -34,7 +39,9 @@ extern Heap_Control _Workspace_Area;
  *  This routine performs the initialization necessary for this handler.
  */
 
-void _Workspace_Handler_initialization(u32 size);
+void _Workspace_Handler_initialization(
+  unsigned32  size
+);
 
 #ifdef __RTEMS_APPLICATION__
 #include <libogc/lwp_wkspace.inl>

@@ -51,7 +51,7 @@ typedef unsigned32          States_Control;
 
 typedef uint64_t            Watchdog_Interval;
 
-#define SCORE_INIT
+//#define SCORE_INIT
 
 #ifdef SCORE_INIT
 #undef  SCORE_EXTERN
@@ -60,6 +60,8 @@ typedef uint64_t            Watchdog_Interval;
 #undef  SCORE_EXTERN
 #define SCORE_EXTERN  extern
 #endif
+
+typedef unsigned32          Objects_Id; 
 
 /*
  *  The following type defines the control block used to manage
@@ -78,6 +80,64 @@ typedef unsigned32          Priority_Bit_map_control;
  */
 
 typedef unsigned32          ISR_Level;
+
+/*
+ *  Application binary interfaces.
+ *
+ *  PPC_ABI MUST be defined as one of these.
+ *  Only PPC_ABI_POWEROPEN is currently fully supported.
+ *  Only EABI will be supported in the end when
+ *  the tools are there.
+ *  Only big endian is currently supported.
+ */
+
+/*
+ *  PowerOpen ABI.  This is Andy's hack of the
+ *  PowerOpen ABI to ELF.  ELF rather than a
+ *  XCOFF assembler is used.  This may work
+ *  if PPC_ASM == PPC_ASM_XCOFF is defined.
+ */
+#define PPC_ABI_POWEROPEN	0
+
+/*
+ *  GCC 2.7.0 munched version of EABI, with
+ *  PowerOpen calling convention and stack frames,
+ *  but EABI style indirect function calls.
+ */
+#define PPC_ABI_GCC27		1
+
+/*
+ *  SVR4 ABI
+ */
+#define PPC_ABI_SVR4		2
+
+/*
+ *  Embedded ABI
+ */
+#define PPC_ABI_EABI		3
+
+/*
+ *  Default to the EABI used by current GNU tools
+ */
+
+#ifndef PPC_ABI
+#define PPC_ABI PPC_ABI_EABI
+#endif
+
+#if (PPC_ABI == PPC_ABI_POWEROPEN)
+#define PPC_STACK_ALIGNMENT	8
+#elif (PPC_ABI == PPC_ABI_GCC27)
+#define PPC_STACK_ALIGNMENT	8
+#elif (PPC_ABI == PPC_ABI_SVR4)
+#define PPC_STACK_ALIGNMENT	16
+#elif (PPC_ABI == PPC_ABI_EABI)
+#define PPC_STACK_ALIGNMENT	8
+#else
+#error  "PPC_ABI is not properly defined"
+#endif
+#ifndef PPC_ABI
+#error  "PPC_ABI is not properly defined"
+#endif
 
 /*
  *  Bitfield handler macros

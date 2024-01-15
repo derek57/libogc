@@ -84,7 +84,7 @@ Chain_Node *_Chain_Get(
   Chain_Control *the_chain
 )
 {
-  u32 level;
+  ISR_Level level;
   Chain_Node *return_node;
 
   return_node = NULL;
@@ -171,7 +171,7 @@ void _Chain_Insert(
   Chain_Node *node
 )
 {
-  u32 level;
+  ISR_Level level;
 	
   _ISR_Disable(level);
     _Chain_Insert_unprotected( after_node, node );
