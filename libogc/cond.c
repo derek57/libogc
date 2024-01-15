@@ -37,11 +37,9 @@ distribution.
 #include "lwp_config.h"
 #include "cond.h"
 
-#define LWP_OBJTYPE_COND				5
-
 #define LWP_CHECK_COND(hndl)		\
 {									\
-	if(((hndl)==LWP_COND_NULL) || (LWP_OBJTYPE(hndl)!=LWP_OBJTYPE_COND))	\
+	if(((hndl)==LWP_COND_NULL) || (_Objects_Get_node(hndl)!=OBJECTS_POSIX_CONDITION_VARIABLES))	\
 		return NULL;				\
 }
 
@@ -64,7 +62,7 @@ void __lwp_cond_init()
 RTEMS_INLINE_ROUTINE POSIX_Condition_variables_Control* __lwp_cond_open(pthread_cond_t cond)
 {
 	LWP_CHECK_COND(cond);
-	return (POSIX_Condition_variables_Control*)_Objects_Get(&_lwp_cond_objects,LWP_OBJMASKID(cond));
+	return (POSIX_Condition_variables_Control*)_Objects_Get(&_lwp_cond_objects,_Objects_Get_index(cond));
 }
 
 RTEMS_INLINE_ROUTINE void __lwp_cond_free(POSIX_Condition_variables_Control *cond)
@@ -156,7 +154,7 @@ s32 LWP_CondInit(pthread_cond_t *cond)
 	ret->Mutex = LWP_MUTEX_NULL;
 	_Thread_queue_Initialize(&ret->Wait_queue,THREAD_QUEUE_DISCIPLINE_FIFO,STATES_WAITING_FOR_CONDITION_VARIABLE,ETIMEDOUT);
 
-	*cond = (pthread_cond_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_COND)|LWP_OBJMASKID(ret->Object.id));
+	*cond = (pthread_cond_t)_Objects_Build_id(OBJECTS_POSIX_CONDITION_VARIABLES, _Objects_Get_index(ret->Object.id));
 	_Thread_Enable_dispatch();
 
 	return 0;

@@ -36,11 +36,9 @@ distribution.
 #include <lwp_config.h>
 #include "message.h"
 
-#define LWP_OBJTYPE_MBOX			6
-
 #define LWP_CHECK_MBOX(hndl)		\
 {									\
-	if(((hndl)==MQ_BOX_NULL) || (LWP_OBJTYPE(hndl)!=LWP_OBJTYPE_MBOX))	\
+	if(((hndl)==MQ_BOX_NULL) || (_Objects_Get_node(hndl)!=OBJECTS_POSIX_MESSAGE_QUEUES))	\
 		return NULL;				\
 }
 
@@ -60,7 +58,7 @@ void __lwp_mqbox_init()
 RTEMS_INLINE_ROUTINE POSIX_Message_queue_Control* __lwp_mqbox_open(mqbox_t mbox)
 {
 	LWP_CHECK_MBOX(mbox);
-	return (POSIX_Message_queue_Control*)_Objects_Get(&_lwp_mqbox_objects,LWP_OBJMASKID(mbox));
+	return (POSIX_Message_queue_Control*)_Objects_Get(&_lwp_mqbox_objects,_Objects_Get_index(mbox));
 }
 
 RTEMS_INLINE_ROUTINE void __lwp_mqbox_free(POSIX_Message_queue_Control *mqbox)
@@ -100,7 +98,7 @@ s32 MQ_Init(mqbox_t *mqbox,u32 count)
 		return MQ_ERROR_TOOMANY;
 	}
 
-	*mqbox = (mqbox_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_MBOX)|LWP_OBJMASKID(ret->Object.id));
+	*mqbox = (mqbox_t)_Objects_Build_id(OBJECTS_POSIX_MESSAGE_QUEUES, _Objects_Get_index(ret->Object.id));
 	_Thread_Enable_dispatch();
 	return MQ_ERROR_SUCCESSFUL;
 }

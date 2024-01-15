@@ -61,7 +61,23 @@ typedef uint64_t            Watchdog_Interval;
 #define SCORE_EXTERN  extern
 #endif
 
-typedef unsigned32          Objects_Id; 
+/**
+ *  The following type defines the control block used to manage
+ *  object IDs.  The format is as follows (0=LSB):
+ *
+ *     Bits  0 ..  7    = index  (up to 254 objects of a type)
+ *     Bits  8 .. 10    = API    (up to 7 API classes)
+ *     Bits 11 .. 15    = class  (up to 31 object types per API)
+ */
+
+typedef s32                 Objects_Id; 
+
+/**
+ * This type is used to store the maximum number of allowed objects
+ * of each type.
+ */
+
+typedef unsigned32          Objects_Maximum; 
 
 /*
  *  The following type defines the control block used to manage

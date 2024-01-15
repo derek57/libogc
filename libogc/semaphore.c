@@ -37,11 +37,9 @@ distribution.
 #include "lwp_config.h"
 #include "semaphore.h"
 
-#define LWP_OBJTYPE_SEM				4
-
 #define LWP_CHECK_SEM(hndl)		\
 {									\
-	if(((hndl)==LWP_SEM_NULL) || (LWP_OBJTYPE(hndl)!=LWP_OBJTYPE_SEM))	\
+	if(((hndl)==LWP_SEM_NULL) || (_Objects_Get_node(hndl)!=OBJECTS_POSIX_SEMAPHORES))	\
 		return NULL;				\
 }
 
@@ -62,7 +60,7 @@ void __lwp_sema_init()
 RTEMS_INLINE_ROUTINE POSIX_Semaphore_Control* __lwp_sema_open(sem_t sem)
 {
 	LWP_CHECK_SEM(sem);
-	return (POSIX_Semaphore_Control*)_Objects_Get(&_lwp_sema_objects,LWP_OBJMASKID(sem));
+	return (POSIX_Semaphore_Control*)_Objects_Get(&_lwp_sema_objects,_Objects_Get_index(sem));
 }
 
 RTEMS_INLINE_ROUTINE void __lwp_sema_free(POSIX_Semaphore_Control *sema)
@@ -99,7 +97,7 @@ s32 LWP_SemInit(sem_t *sem,u32 start,u32 max)
 	attr.discipline = CORE_SEMAPHORE_DISCIPLINES_FIFO;
 	_CORE_semaphore_Initialize(&ret->Semaphore,&attr,start);
 
-	*sem = (sem_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_SEM)|LWP_OBJMASKID(ret->Object.id));
+	*sem = (sem_t)_Objects_Build_id(OBJECTS_POSIX_SEMAPHORES, _Objects_Get_index(ret->Object.id));
 	_Thread_Enable_dispatch();
 	return 0;
 }

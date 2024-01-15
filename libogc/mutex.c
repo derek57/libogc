@@ -36,11 +36,9 @@ distribution.
 #include "lwp_config.h"
 #include "mutex.h"
 
-#define LWP_OBJTYPE_MUTEX			3
-
 #define LWP_CHECK_MUTEX(hndl)		\
 {									\
-	if(((hndl)==LWP_MUTEX_NULL) || (LWP_OBJTYPE(hndl)!=LWP_OBJTYPE_MUTEX))	\
+	if(((hndl)==LWP_MUTEX_NULL) || (_Objects_Get_node(hndl)!=OBJECTS_POSIX_MUTEXES))	\
 		return NULL;				\
 }
 
@@ -57,9 +55,9 @@ static s32 __lwp_mutex_locksupp(pthread_mutex_t lock,u32 timeout,u8 block)
 	u32 level;
 	POSIX_Mutex_Control *p;
 
-	if(lock==LWP_MUTEX_NULL || LWP_OBJTYPE(lock)!=LWP_OBJTYPE_MUTEX) return -1;
+	if(lock==LWP_MUTEX_NULL || _Objects_Get_node(lock)!=OBJECTS_POSIX_MUTEXES) return -1;
 	
-	p = (POSIX_Mutex_Control*)_Objects_Get_isr_disable(&_lwp_mutex_objects,LWP_OBJMASKID(lock),&level);
+	p = (POSIX_Mutex_Control*)_Objects_Get_isr_disable(&_lwp_mutex_objects,_Objects_Get_index(lock),&level);
 	if(!p) return -1;
 
 	_CORE_mutex_Seize(&p->Mutex,p->Object.id,block,timeout,level);
@@ -75,7 +73,7 @@ void __lwp_mutex_init()
 RTEMS_INLINE_ROUTINE POSIX_Mutex_Control* __lwp_mutex_open(pthread_mutex_t lock)
 {
 	LWP_CHECK_MUTEX(lock);
-	return (POSIX_Mutex_Control*)_Objects_Get(&_lwp_mutex_objects,LWP_OBJMASKID(lock));
+	return (POSIX_Mutex_Control*)_Objects_Get(&_lwp_mutex_objects,_Objects_Get_index(lock));
 }
 
 RTEMS_INLINE_ROUTINE void __lwp_mutex_free(POSIX_Mutex_Control *lock)
@@ -114,7 +112,7 @@ s32 LWP_MutexInit(pthread_mutex_t *mutex,bool use_recursive)
 	attr.priority_ceiling = 1; //__lwp_priotocore(PRIORITY_MAXIMUM-1);
 	_CORE_mutex_Initialize(&ret->Mutex,&attr,CORE_MUTEX_UNLOCKED);
 
-	*mutex = (pthread_mutex_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_MUTEX)|LWP_OBJMASKID(ret->Object.id));
+	*mutex = (pthread_mutex_t)_Objects_Build_id(OBJECTS_POSIX_MUTEXES, _Objects_Get_index(ret->Object.id));
 	_Thread_Unnest_dispatch();
 	return 0;
 }

@@ -39,18 +39,15 @@ distribution.
 #include "lwp_config.h"
 #include "lwp.h"
 
-#define LWP_OBJTYPE_THREAD			1
-#define LWP_OBJTYPE_TQUEUE			2
-
 #define LWP_CHECK_THREAD(hndl)		\
 {									\
-	if(((hndl)==LWP_THREAD_NULL) || (LWP_OBJTYPE(hndl)!=LWP_OBJTYPE_THREAD))	\
+	if(((hndl)==LWP_THREAD_NULL) || (_Objects_Get_node(hndl)!=OBJECTS_INTERNAL_THREADS))	\
 		return NULL;				\
 }
 
 #define LWP_CHECK_TQUEUE(hndl)		\
 {									\
-	if(((hndl)==LWP_TQUEUE_NULL) || (LWP_OBJTYPE(hndl)!=LWP_OBJTYPE_TQUEUE))	\
+	if(((hndl)==LWP_TQUEUE_NULL) || (_Objects_Get_node(hndl)!=OBJECTS_RTEMS_TASKS))	\
 		return NULL;				\
 }
 
@@ -74,13 +71,13 @@ RTEMS_INLINE_ROUTINE u32 __lwp_priotocore(u32 prio)
 RTEMS_INLINE_ROUTINE Thread_Control* __lwp_cntrl_open(lwp_t thr_id)
 {
 	LWP_CHECK_THREAD(thr_id);
-	return (Thread_Control*)_Objects_Get(&_lwp_thr_objects,LWP_OBJMASKID(thr_id));
+	return (Thread_Control*)_Objects_Get(&_lwp_thr_objects,_Objects_Get_index(thr_id));
 }
 
 RTEMS_INLINE_ROUTINE tqueue_st* __lwp_tqueue_open(lwpq_t tqueue)
 {
 	LWP_CHECK_TQUEUE(tqueue);
-	return (tqueue_st*)_Objects_Get(&_lwp_tqueue_objects,LWP_OBJMASKID(tqueue));
+	return (tqueue_st*)_Objects_Get(&_lwp_tqueue_objects,_Objects_Get_index(tqueue));
 }
 
 static Thread_Control* __lwp_cntrl_allocate()
@@ -151,9 +148,9 @@ void __lwp_sysinit()
 
 BOOL __lwp_thread_isalive(lwp_t thr_id)
 {
-	if(thr_id==LWP_THREAD_NULL || LWP_OBJTYPE(thr_id)!=LWP_OBJTYPE_THREAD) return FALSE;
+	if(thr_id==LWP_THREAD_NULL || _Objects_Get_node(thr_id)!=OBJECTS_INTERNAL_THREADS) return FALSE;
 
-	Thread_Control *thethread = (Thread_Control*)_Objects_Get_no_protection(&_lwp_thr_objects,LWP_OBJMASKID(thr_id));
+	Thread_Control *thethread = (Thread_Control*)_Objects_Get_no_protection(&_lwp_thr_objects,_Objects_Get_index(thr_id));
 	
 	if(thethread) {  
 		u32 *stackbase = thethread->stack;
@@ -171,8 +168,8 @@ lwp_t pthread_self()
 
 BOOL __lwp_thread_exists(lwp_t thr_id)
 {
-	if(thr_id==LWP_THREAD_NULL || LWP_OBJTYPE(thr_id)!=LWP_OBJTYPE_THREAD) return FALSE;
-	return (_Objects_Get_no_protection(&_lwp_thr_objects,LWP_OBJMASKID(thr_id))!=NULL);
+	if(thr_id==LWP_THREAD_NULL || _Objects_Get_node(thr_id)!=OBJECTS_INTERNAL_THREADS) return FALSE;
+	return (_Objects_Get_no_protection(&_lwp_thr_objects,_Objects_Get_index(thr_id))!=NULL);
 }
 
 Context_Control* __lwp_thread_context(lwp_t thr_id)
@@ -181,7 +178,7 @@ Context_Control* __lwp_thread_context(lwp_t thr_id)
 	Context_Control *pctx = NULL;
 
 	LWP_CHECK_THREAD(thr_id);
-	thethread = (Thread_Control*)_Objects_Get_no_protection(&_lwp_thr_objects,LWP_OBJMASKID(thr_id));
+	thethread = (Thread_Control*)_Objects_Get_no_protection(&_lwp_thr_objects,_Objects_Get_index(thr_id));
 	if(thethread) pctx = &thethread->Registers;
 
 	return pctx;
@@ -211,7 +208,7 @@ s32 LWP_CreateThread(lwp_t *thethread,void* (*entry)(void *),void *arg,void *sta
 		return -1;
 	}
 
-	*thethread = (lwp_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_THREAD)|LWP_OBJMASKID(lwp_thread->Object.id));
+	*thethread = (lwp_t)_Objects_Build_id(OBJECTS_INTERNAL_THREADS, _Objects_Get_index(lwp_thread->Object.id));
 	_Thread_Enable_dispatch();
 
 	return 0;
@@ -254,7 +251,7 @@ lwp_t LWP_GetSelf()
 	lwp_t ret;
 
 	_Thread_Disable_dispatch();
-	ret = (lwp_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_THREAD)|LWP_OBJMASKID(_Thread_Executing->Object.id));
+	ret = (lwp_t)_Objects_Build_id(OBJECTS_INTERNAL_THREADS, _Objects_Get_index(_Thread_Executing->Object.id));
 	_Thread_Unnest_dispatch();
 
 	return ret;
@@ -343,7 +340,7 @@ s32 LWP_InitQueue(lwpq_t *thequeue)
 
 	_Thread_queue_Initialize(&tq->tqueue,THREAD_QUEUE_DISCIPLINE_FIFO,STATES_WAITING_ON_THREAD_QUEUE,0);
 
-	*thequeue = (lwpq_t)(LWP_OBJMASKTYPE(LWP_OBJTYPE_TQUEUE)|LWP_OBJMASKID(tq->object.id));
+	*thequeue = (lwpq_t)_Objects_Build_id(OBJECTS_RTEMS_TASKS, _Objects_Get_index(tq->object.id));
 	_Thread_Enable_dispatch();
 
 	return 0;

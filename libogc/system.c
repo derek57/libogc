@@ -77,11 +77,9 @@ distribution.
 #define DSPCR_PIINT				    0x0002        // assert DSP PI interrupt
 #define DSPCR_RES				    0x0001        // reset DSP
 
-#define LWP_OBJTYPE_SYSWD			7
-
 #define LWP_CHECK_SYSWD(hndl)		\
 {									\
-	if(((hndl)==SYS_WD_NULL) || (LWP_OBJTYPE(hndl)!=LWP_OBJTYPE_SYSWD))	\
+	if(((hndl)==SYS_WD_NULL) || (_Objects_Get_node(hndl)!=OBJECTS_RTEMS_PORTS))	\
 		return NULL;				\
 }
 
@@ -243,7 +241,7 @@ static const char *__sys_versionbuild;
 RTEMS_INLINE_ROUTINE alarm_st* __lwp_syswd_open(syswd_t wd)
 {
 	LWP_CHECK_SYSWD(wd);
-	return (alarm_st*)_Objects_Get(&sys_alarm_objects,LWP_OBJMASKID(wd));
+	return (alarm_st*)_Objects_Get(&sys_alarm_objects,_Objects_Get_index(wd));
 }
 
 RTEMS_INLINE_ROUTINE void __lwp_syswd_free(alarm_st *alarm)
@@ -333,10 +331,10 @@ static void __sys_alarmhandler(void *arg)
 	alarm_st *alarm;
 	syswd_t thealarm = (syswd_t)arg;
 
-	if(thealarm==SYS_WD_NULL || LWP_OBJTYPE(thealarm)!=LWP_OBJTYPE_SYSWD) return;
+	if(thealarm==SYS_WD_NULL || _Objects_Get_node(thealarm)!=OBJECTS_RTEMS_PORTS) return;
 
 	_Thread_Disable_dispatch();
-	alarm = (alarm_st*)_Objects_Get_no_protection(&sys_alarm_objects,LWP_OBJMASKID(thealarm));
+	alarm = (alarm_st*)_Objects_Get_no_protection(&sys_alarm_objects,_Objects_Get_index(thealarm));
 	if(alarm) {
 		if(alarm->alarmhandler) alarm->alarmhandler(thealarm,alarm->cb_arg);
 		if(alarm->periodic) _Watchdog_Insert_ticks(&alarm->alarm,alarm->periodic);
@@ -1532,7 +1530,7 @@ s32 SYS_CreateAlarm(syswd_t *thealarm)
 	alarm->start_per = 0;
 	alarm->periodic = 0;
 
-	*thealarm = (LWP_OBJMASKTYPE(LWP_OBJTYPE_SYSWD)|LWP_OBJMASKID(alarm->object.id));
+	*thealarm = _Objects_Build_id(OBJECTS_RTEMS_PORTS, _Objects_Get_index(alarm->object.id));
 	_Thread_Enable_dispatch();
 	return 0;
 }
