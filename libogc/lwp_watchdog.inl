@@ -1,84 +1,288 @@
+/*  watchdog.inl
+ *
+ *  This file contains the static inline implementation of all inlined
+ *  routines in the Watchdog Handler.
+ *
+ *  COPYRIGHT (c) 1989-1999.
+ *  On-Line Applications Research Corporation (OAR).
+ *
+ *  The license and distribution terms for this file may be
+ *  found in the file LICENSE in this distribution or at
+ *  http://www.OARcorp.com/rtems/license.html.
+ *
+ *  $Id$
+ */
+
 #ifndef __LWP_WATCHDOG_INL__
 #define __LWP_WATCHDOG_INL__
 
-RTEMS_INLINE_ROUTINE void _Watchdog_Initialize(Watchdog_Control *the_watchdog,Watchdog_Service_routine_entry routine,u32 id,void *user_data)
+/*PAGE
+ *
+ *  _Watchdog_Initialize
+ *
+ *  DESCRIPTION:
+ *
+ *  This routine initializes the specified watchdog.  The watchdog is
+ *  made inactive, the watchdog id and handler routine are set to the
+ *  specified values.
+ */
+
+RTEMS_INLINE_ROUTINE void _Watchdog_Initialize(
+  Watchdog_Control               *the_watchdog,
+  Watchdog_Service_routine_entry  routine,
+  Objects_Id                      id,
+  void                           *user_data
+)
 {
-	the_watchdog->state = WATCHDOG_INACTIVE;
-	the_watchdog->id = id;
-	the_watchdog->routine = routine;
-	the_watchdog->user_data = user_data;
+  the_watchdog->state     = WATCHDOG_INACTIVE;
+  the_watchdog->routine   = routine;
+  the_watchdog->id        = id;
+  the_watchdog->user_data = user_data;
 }
 
-RTEMS_INLINE_ROUTINE Watchdog_Control* _Watchdog_First(Chain_Control *queue)
+/*PAGE
+ *
+ *  _Watchdog_First
+ *
+ *  DESCRIPTION:
+ *
+ *  This routine returns a pointer to the first watchdog timer
+ *  on the watchdog chain HEADER.
+ */
+
+RTEMS_INLINE_ROUTINE Watchdog_Control *_Watchdog_First(
+  Chain_Control *header
+)
 {
-	return (Watchdog_Control*)queue->first;
+
+  return ( (Watchdog_Control *) header->first );
+
 }
 
-RTEMS_INLINE_ROUTINE Watchdog_Control* _Watchdog_Last(Chain_Control *queue)
+/*PAGE
+ *
+ *  _Watchdog_Last
+ *
+ *  DESCRIPTION:
+ *
+ *  This routine returns a pointer to the last watchdog timer
+ *  on the watchdog chain HEADER.
+ */
+
+RTEMS_INLINE_ROUTINE Watchdog_Control *_Watchdog_Last(
+  Chain_Control *header
+)
 {
-	return (Watchdog_Control*)queue->last;
+
+  return ( (Watchdog_Control *) header->last );
+
 }
 
-RTEMS_INLINE_ROUTINE Watchdog_Control* _Watchdog_Next(Watchdog_Control *the_watchdog)
+/*PAGE
+ *
+ *  _Watchdog_Next
+ *
+ *  DESCRIPTION:
+ *
+ *  This routine returns a pointer to the watchdog timer following
+ *  THE_WATCHDOG on the watchdog chain.
+ */
+
+RTEMS_INLINE_ROUTINE Watchdog_Control *_Watchdog_Next(
+  Watchdog_Control *the_watchdog
+)
 {
-	return (Watchdog_Control*)the_watchdog->node.next;
+
+  return ( (Watchdog_Control *) the_watchdog->Node.next );
+
 }
 
-RTEMS_INLINE_ROUTINE Watchdog_Control* _Watchdog_Previous(Watchdog_Control *the_watchdog)
+/*PAGE
+ *
+ *  _Watchdog_Previous
+ *
+ *  DESCRIPTION:
+ *
+ *  This routine returns a pointer to the watchdog timer preceding
+ *  THE_WATCHDOG on the watchdog chain.
+ */
+
+RTEMS_INLINE_ROUTINE Watchdog_Control *_Watchdog_Previous(
+  Watchdog_Control *the_watchdog
+)
 {
-	return (Watchdog_Control*)the_watchdog->node.previous;
+
+  return ( (Watchdog_Control *) the_watchdog->Node.previous );
+
 }
 
-RTEMS_INLINE_ROUTINE void _Watchdog_Activate(Watchdog_Control *the_watchdog)
+/*PAGE
+ *
+ *  _Watchdog_Activate
+ *
+ *  DESCRIPTION:
+ *
+ *  This routine activates THE_WATCHDOG timer which is already
+ *  on a watchdog chain.
+ */
+
+RTEMS_INLINE_ROUTINE void _Watchdog_Activate(
+  Watchdog_Control *the_watchdog
+)
 {
-	the_watchdog->state = WATCHDOG_ACTIVE;
+
+  the_watchdog->state = WATCHDOG_ACTIVE;
+
 }
 
-RTEMS_INLINE_ROUTINE void _Watchdog_Deactivate(Watchdog_Control *the_watchdog)
+/*PAGE
+ *
+ *  _Watchdog_Deactivate
+ *
+ *  DESCRIPTION:
+ *
+ *  This routine deactivates THE_WATCHDOG timer which will remain
+ *  on a watchdog chain.
+ */
+
+RTEMS_INLINE_ROUTINE void _Watchdog_Deactivate(
+  Watchdog_Control *the_watchdog
+)
 {
-	the_watchdog->state = WATCHDOG_REMOVE_IT;
+
+  the_watchdog->state = WATCHDOG_REMOVE_IT;
+
 }
 
-RTEMS_INLINE_ROUTINE u32 _Watchdog_Is_active(Watchdog_Control *the_watchdog)
+/*PAGE
+ *
+ *  _Watchdog_Is_active
+ *
+ *  DESCRIPTION:
+ *
+ *  This routine returns TRUE if the watchdog timer is in the ACTIVE
+ *  state, and FALSE otherwise.
+ */
+
+RTEMS_INLINE_ROUTINE boolean _Watchdog_Is_active(
+  Watchdog_Control *the_watchdog
+)
 {
-	return (the_watchdog->state==WATCHDOG_ACTIVE);
+
+  return ( the_watchdog->state == WATCHDOG_ACTIVE );
+
 }
 
-RTEMS_INLINE_ROUTINE u64 _POSIX_Timespec_to_interval(const struct timespec *time)
+/*PAGE
+ *
+ *  _POSIX_Timespec_to_interval
+ */
+
+RTEMS_INLINE_ROUTINE Watchdog_Interval _POSIX_Timespec_to_interval(
+  const struct timespec *time
+)
 {
-	u64 ticks;
+  Watchdog_Interval  ticks;
 
-	ticks = secs_to_ticks(time->tv_sec);
-	ticks += nanosecs_to_ticks(time->tv_nsec);
+  ticks  = secs_to_ticks( time->tv_sec );
+  ticks += nanosecs_to_ticks( time->tv_nsec );
 
-	return ticks;
+  return ticks;
 }
 
-RTEMS_INLINE_ROUTINE void _Watchdog_Tickle_ticks()
+/*PAGE
+ *
+ *  _Watchdog_Tickle_ticks
+ *
+ *  DESCRIPTION:
+ *
+ *  This routine is invoked at each clock tick to update the ticks
+ *  watchdog chain.
+ */
+
+RTEMS_INLINE_ROUTINE void _Watchdog_Tickle_ticks( void )
 {
-	_Watchdog_Tickle(&_Watchdog_Ticks_chain);
+
+  _Watchdog_Tickle( &_Watchdog_Ticks_chain );
+
 }
 
-RTEMS_INLINE_ROUTINE void _Watchdog_Insert_ticks(Watchdog_Control *the_watchdog,s64 units)
+/*PAGE
+ *
+ *  _Watchdog_Insert_ticks
+ *
+ *  DESCRIPTION:
+ *
+ *  This routine inserts THE_WATCHDOG into the ticks watchdog chain
+ *  for a time of UNITS ticks.  The INSERT_MODE indicates whether
+ *  THE_WATCHDOG is to be activated automatically or later, explicitly
+ *  by the caller.
+ */
+
+RTEMS_INLINE_ROUTINE void _Watchdog_Insert_ticks(
+  Watchdog_Control      *the_watchdog,
+  Watchdog_Interval      units
+)
 {
-	the_watchdog->initial = gettime();
-	the_watchdog->delta_interval = (the_watchdog->initial+LWP_WD_ABS(units));
-	_Watchdog_Insert(&_Watchdog_Ticks_chain,the_watchdog);
+
+  the_watchdog->initial = gettime();
+  the_watchdog->delta_interval = ( the_watchdog->initial + LWP_WD_ABS(units) );
+
+  _Watchdog_Insert( &_Watchdog_Ticks_chain, the_watchdog );
+
 }
 
-RTEMS_INLINE_ROUTINE void _Watchdog_Adjust_ticks(u32 dir,s64 units)
+/*PAGE
+ *
+ *  _Watchdog_Adjust_ticks
+ *
+ *  DESCRIPTION:
+ *
+ *  This routine adjusts the ticks watchdog chain in the forward
+ *  or backward DIRECTION for UNITS ticks.
+ */
+
+RTEMS_INLINE_ROUTINE void _Watchdog_Adjust_ticks(
+  Watchdog_Adjust_directions direction,
+  Watchdog_Interval          units
+)
 {
-	_Watchdog_Adjust(&_Watchdog_Ticks_chain,dir,units);
+
+  _Watchdog_Adjust( &_Watchdog_Ticks_chain, direction, units );
+
 }
+
+/*PAGE
+ *
+ *  _Watchdog_Remove_ticks
+ */
 
 RTEMS_INLINE_ROUTINE void _Watchdog_Remove_ticks(Watchdog_Control *the_watchdog)
 {
-	_Watchdog_Remove(&_Watchdog_Ticks_chain,the_watchdog);
+  (void) _Watchdog_Remove( &_Watchdog_Ticks_chain, the_watchdog );
 }
 
-RTEMS_INLINE_ROUTINE void _Watchdog_Reset(Watchdog_Control *the_watchdog)
+/*PAGE
+ *
+ *  _Watchdog_Reset
+ *
+ *  DESCRIPTION:
+ *
+ *  This routine resets THE_WATCHDOG timer to its state at INSERT
+ *  time.  This routine is valid only on interval watchdog timers
+ *  and is used to make an interval watchdog timer fire "every" so
+ *  many ticks.
+ */
+
+RTEMS_INLINE_ROUTINE void _Watchdog_Reset(
+  Watchdog_Control *the_watchdog
+)
 {
-	_Watchdog_Remove(&_Watchdog_Ticks_chain,the_watchdog);
-	_Watchdog_Insert(&_Watchdog_Ticks_chain,the_watchdog);
+
+  (void) _Watchdog_Remove( &_Watchdog_Ticks_chain, the_watchdog );
+
+  _Watchdog_Insert( &_Watchdog_Ticks_chain, the_watchdog );
+
 }
+
 #endif

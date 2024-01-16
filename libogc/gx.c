@@ -1694,7 +1694,7 @@ void GX_DrawDone()
 	GX_Flush();
 
 	_gxfinished = 0;
-	_CPU_ISR_Flash(level);
+	_ISR_Flash(level);
 
 	while(!_gxfinished)
 		LWP_ThreadSleep(_gxwaitfinish);

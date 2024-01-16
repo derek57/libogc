@@ -70,7 +70,7 @@ typedef uint64_t            Watchdog_Interval;
  *     Bits 11 .. 15    = class  (up to 31 object types per API)
  */
 
-typedef s32                 Objects_Id; 
+typedef unsigned32          Objects_Id; 
 
 /**
  * This type is used to store the maximum number of allowed objects

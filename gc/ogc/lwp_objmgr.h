@@ -102,16 +102,16 @@ typedef struct {
   /** This is the chain node portion of an object. */
   Chain_Node           Node;
   /** This is the object's ID. */
-  Objects_Id           id;
+  s32                  id;
   /** This is the object's information. */
   Objects_Information *information;
 } Objects_Control;
 
 struct _Objects_Control {
   /** This is the minimum valid id of this object class. */
-  unsigned32        minimum_id;
+  Objects_Id        minimum_id;
   /** This is the maximum valid id of this object class. */
-  unsigned32        maximum_id;
+  Objects_Id        maximum_id;
   /** This is the maximum number of objects in this class. */
   Objects_Maximum   maximum;
   /** This is the size in bytes of each object instance. */

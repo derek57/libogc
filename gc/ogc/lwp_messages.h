@@ -181,7 +181,7 @@ void _CORE_message_queue_Close(
  
 CORE_message_queue_Status _CORE_message_queue_Seize(
   CORE_message_queue_Control      *the_message_queue,
-  Objects_Id                       id,
+  unsigned32                       id,
   void                            *buffer,
   unsigned32                      *size,
   boolean                          wait,

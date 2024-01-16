@@ -36,7 +36,15 @@
 
 #define mfdec()   ({register u32 _rval; \
 		asm volatile("mfdec %0" : "=r" (_rval)); _rval;})
-#define mtdec(_val)  asm volatile("mtdec %0" : : "r" (_val))
+
+/*
+ *  Routines to access the decrementer register
+ */
+
+#define PPC_Set_decrementer( _clicks ) \
+  do { \
+    asm volatile( "mtdec %0" : : "r" ((_clicks)) ); \
+  } while (0)
 
 #define mfspr(_rn) \
 ({	register u32 _rval = 0; \
@@ -138,7 +146,7 @@
 	); \
   }
 
-#define _CPU_ISR_Flash( _isr_cookie ) \
+#define _ISR_Flash( _isr_cookie ) \
   { register u32 _flash_mask = 0; \
     __asm__ __volatile__ ( \
     "   cmpwi %0,0\n" \

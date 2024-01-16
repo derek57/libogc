@@ -55,7 +55,7 @@ SCORE_EXTERN volatile Priority_Bit_map_control _Priority_Major_bit_map;
 SCORE_EXTERN Priority_Bit_map_control 
                _Priority_Bit_map[16] CPU_STRUCTURE_ALIGNMENT;
 
-void _Priority_Handler_initialization(void);
+void _Priority_Handler_initialization( void );
 
 #ifdef __RTEMS_APPLICATION__
 #include <libogc/lwp_priority.inl>

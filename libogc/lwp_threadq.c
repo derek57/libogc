@@ -141,7 +141,7 @@ forward_search:
 	while(!_Chain_Is_tail(header,(Chain_Node*)search_thread)) {
 		search_priority = search_thread->current_priority;
 		if(priority<=search_priority) break;
-		_CPU_ISR_Flash(level);
+		_ISR_Flash(level);
 
 		if(!_States_Are_set(search_thread->current_state,block_state)) {
 			_ISR_Enable(level);
@@ -171,7 +171,7 @@ reverse_search:
 	while(!_Chain_Is_head(header,(Chain_Node*)search_thread)) {
 		search_priority = search_thread->current_priority;
 		if(priority>=search_priority) break;
-		_CPU_ISR_Flash(level);
+		_ISR_Flash(level);
 
 		if(!_States_Are_set(search_thread->current_state,block_state)) {
 			_ISR_Enable(level);

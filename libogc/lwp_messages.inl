@@ -139,7 +139,7 @@ RTEMS_INLINE_ROUTINE void _CORE_message_queue_Prepend (
  
 RTEMS_INLINE_ROUTINE CORE_message_queue_Status _CORE_message_queue_Send(
   CORE_message_queue_Control                *the_message_queue,
-  unsigned32                                 id,
+  Objects_Id                                 id,
   void                                      *buffer,
   unsigned32                                 size,
   boolean                                    wait,

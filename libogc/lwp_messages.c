@@ -106,7 +106,6 @@ void _CORE_message_queue_Insert_message(
  *    the_message_queue_attributes - the message queue's attributes
  *    maximum_pending_messages     - maximum message and reserved buffer count
  *    maximum_message_size         - maximum size of each message
- *    proxy_extract_callout        - remote extract support
  *
  *  Output parameters:
  *    TRUE   - if the message queue is initialized
@@ -183,7 +182,9 @@ boolean _CORE_message_queue_Initialize(
  *    wait              - TRUE if wait is allowed, FALSE otherwise
  *    timeout           - time to wait for a message
  *
- *  Output parameters:  status
+ *  Output parameters:
+ *    CORE_MESSAGE_QUEUE_SUCCESSFUL - if successful
+ *    error code                    - if unsuccessful
  *
  *  NOTE: Dependent on BUFFER_LENGTH
  *
@@ -287,10 +288,9 @@ CORE_message_queue_Status _CORE_message_queue_Seize(
  *
  *  Input parameters:
  *    the_message_queue            - message is submitted to this message queue
+ *    id                           - id of message queue
  *    buffer                       - pointer to message buffer
  *    size                         - size in bytes of message to send
- *    id                           - id of message queue
- *    api_message_queue_mp_support - api specific mp support callout
  *    submit_type                  - send or urgent message
  *
  *  Output parameters:
@@ -300,7 +300,7 @@ CORE_message_queue_Status _CORE_message_queue_Seize(
 
 CORE_message_queue_Status _CORE_message_queue_Submit(
   CORE_message_queue_Control                *the_message_queue,
-  unsigned32                                 id,
+  Objects_Id                                 id,
   void                                      *buffer,
   unsigned32                                 size,
   CORE_message_queue_Submit_types            submit_type,
@@ -416,7 +416,6 @@ CORE_message_queue_Status _CORE_message_queue_Submit(
  *    buffer                       - pointer to message buffer
  *    size                         - size in bytes of message to send
  *    id                           - id of message queue
- *    api_message_queue_mp_support - api specific mp support callout
  *    count                        - area to store number of threads made ready
  *
  *  Output parameters:
@@ -429,7 +428,7 @@ CORE_message_queue_Status _CORE_message_queue_Broadcast(
   CORE_message_queue_Control                *the_message_queue,
   void                                      *buffer,
   unsigned32                                 size,
-  unsigned32                                 id,
+  Objects_Id                                 id,
   unsigned32                                *count
 )
 {
@@ -493,7 +492,6 @@ CORE_message_queue_Status _CORE_message_queue_Broadcast(
  *
  *  Input parameters:
  *    the_message_queue      - the message_queue to be flushed
- *    remote_extract_callout - function to invoke remotely
  *    status                 - status to pass to thread
  *
  *  Output parameters:  NONE
