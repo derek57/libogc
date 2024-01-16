@@ -181,7 +181,7 @@ void _CORE_message_queue_Close(
  
 CORE_message_queue_Status _CORE_message_queue_Seize(
   CORE_message_queue_Control      *the_message_queue,
-  unsigned32                       id,
+  Objects_Id                       id,
   void                            *buffer,
   unsigned32                      *size,
   boolean                          wait,
@@ -204,7 +204,7 @@ CORE_message_queue_Status _CORE_message_queue_Seize(
  
 CORE_message_queue_Status _CORE_message_queue_Submit(
   CORE_message_queue_Control                *the_message_queue,
-  unsigned32                                 id,
+  Objects_Id                                 id,
   void                                      *buffer,
   unsigned32                                 size,
   CORE_message_queue_Submit_types            submit_type,
@@ -226,7 +226,7 @@ CORE_message_queue_Status _CORE_message_queue_Broadcast(
   CORE_message_queue_Control                *the_message_queue,
   void                                      *buffer,
   unsigned32                                 size,
-  unsigned32                                 id,
+  Objects_Id                                 id,
   unsigned32                                *count
 );
 

@@ -89,7 +89,6 @@ void pthread_exit(void *);
 void _Thread_Close(Thread_Control *);
 void _Thread_Start_multitasking();
 void _Thread_Stop_multitasking(void (*exitfunc)());
-Objects_Control* _Thread_Get(Thread_Control *);
 u32 _Thread_Evaluate_mode();
 
 u32 _ISR_Is_in_progress();

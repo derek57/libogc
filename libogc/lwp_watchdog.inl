@@ -221,12 +221,12 @@ RTEMS_INLINE_ROUTINE void _Watchdog_Tickle_ticks( void )
 
 RTEMS_INLINE_ROUTINE void _Watchdog_Insert_ticks(
   Watchdog_Control      *the_watchdog,
-  Watchdog_Interval      units
+  s64                    units
 )
 {
 
   the_watchdog->initial = gettime();
-  the_watchdog->delta_interval = ( the_watchdog->initial + LWP_WD_ABS(units) );
+  the_watchdog->delta_interval = ( the_watchdog->initial + LWP_WD_ABS( units ) );
 
   _Watchdog_Insert( &_Watchdog_Ticks_chain, the_watchdog );
 
