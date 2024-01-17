@@ -51,6 +51,13 @@ typedef unsigned32          States_Control;
 
 typedef uint64_t            Watchdog_Interval;
 
+/*
+ *  The following ensures that all data is declared in the space
+ *  of the initialization routine for either the Initialization Manager
+ *  or the initialization file for the appropriate API.  It is 
+ *  referenced as "external" in every other file.
+ */
+
 //#define SCORE_INIT
 
 #ifdef SCORE_INIT
@@ -386,6 +393,70 @@ typedef unsigned int        boolean;
 
 #define CPU_STRUCTURE_ALIGNMENT \
   __attribute__ ((aligned (PPC_CACHE_ALIGNMENT)))
+
+/* conditional compilation parameters */
+
+/*
+ *  Should the calls to _Thread_Enable_dispatch be inlined?
+ *
+ *  If TRUE, then they are inlined.
+ *  If FALSE, then a subroutine call is made.
+ *
+ *  Basically this is an example of the classic trade-off of size
+ *  versus speed.  Inlining the call (TRUE) typically increases the
+ *  size of RTEMS while speeding up the enabling of dispatching.
+ *  [NOTE: In general, the _Thread_Dispatch_disable_level will
+ *  only be 0 or 1 unless you are in an interrupt handler and that
+ *  interrupt handler invokes the executive.]  When not inlined
+ *  something calls _Thread_Enable_dispatch which in turns calls
+ *  _Thread_Dispatch.  If the enable dispatch is inlined, then
+ *  one subroutine call is avoided entirely.]
+ */
+
+#define CPU_INLINE_ENABLE_DISPATCH  TRUE
+
+/*
+ *  Unless specified above, then assume the model has FP support.
+ */
+
+#ifndef PPC_HAS_FPU
+#define PPC_HAS_FPU         1
+#endif
+
+/*
+ *  Does the CPU have hardware floating point?
+ *
+ *  If TRUE, then the RTEMS_FLOATING_POINT task attribute is supported.
+ *  If FALSE, then the RTEMS_FLOATING_POINT task attribute is ignored.
+ *
+ *  If there is a FP coprocessor such as the i387 or mc68881, then
+ *  the answer is TRUE.
+ *
+ *  The macro name "PPC_HAS_FPU" should be made CPU specific.
+ *  It indicates whether or not this CPU model has FP support.  For
+ *  example, it would be possible to have an i386_nofp CPU model
+ *  which set this to false to indicate that you have an i386 without
+ *  an i387 and wish to leave floating point support out of RTEMS.
+ */
+
+#if ( PPC_HAS_FPU == 1 )
+#define CPU_HARDWARE_FP     TRUE
+#else
+#define CPU_HARDWARE_FP     FALSE
+#endif
+
+/*
+ *  Initial value for the FPSCR register
+ */
+
+#define PPC_INIT_FPSCR		0x000000f8
+
+/*
+ *  The following (in conjunction with compiler arguments) are used
+ *  to choose between the use of static inline functions and macro
+ *  functions.   The static inline implementation allows better
+ *  type checking with no cost in code size or execution speed.
+ */
 
 #ifdef USE_INLINES
 # ifdef __GNUC__

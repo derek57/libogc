@@ -35,8 +35,8 @@ RTEMS_INLINE_ROUTINE void _Watchdog_Initialize(
 )
 {
   the_watchdog->state     = WATCHDOG_INACTIVE;
-  the_watchdog->routine   = routine;
   the_watchdog->id        = id;
+  the_watchdog->routine   = routine;
   the_watchdog->user_data = user_data;
 }
 

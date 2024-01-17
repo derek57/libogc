@@ -20,72 +20,17 @@
  *
  *  _Priority_Major
  *
- *  DESCRIPTION:
- *
- *  This function returns the major portion of the_priority.
  */
 
-RTEMS_INLINE_ROUTINE unsigned32 _Priority_Major (
-  Priority_Control the_priority
-)
-{
-  return ( the_priority / 16 );
-}
+#define _Priority_Major( _the_priority ) ( (_the_priority) / 16 )
 
 /*PAGE
  *
  *  _Priority_Minor
  *
- *  DESCRIPTION:
- *
- *  This function returns the minor portion of the_priority.
  */
 
-RTEMS_INLINE_ROUTINE unsigned32 _Priority_Minor (
-  Priority_Control the_priority
-)
-{
-  return ( the_priority % 16 );
-}
-
-#if ( CPU_USE_GENERIC_BITFIELD_CODE == TRUE )
- 
-/*PAGE
- *
- *  _Priority_Mask
- *
- *  DESCRIPTION:
- *
- *  This function returns the mask associated with the major or minor
- *  number passed to it.
- */
- 
-RTEMS_INLINE_ROUTINE unsigned32 _Priority_Mask (
-  unsigned32 bit_number
-)
-{
-  return (0x80000000 >> bit_number);
-}
- 
-/*PAGE
- *
- *  _Priority_Bits_index
- *
- *  DESCRIPTION:
- *
- *  This function translates the bit numbers returned by the bit scan
- *  of a priority bit field into something suitable for use as
- *  a major or minor component of a priority.
- */
- 
-RTEMS_INLINE_ROUTINE unsigned32 _Priority_Bits_index (
-  unsigned32 bit_number
-)
-{
-  return bit_number;
-}
-
-#endif
+#define _Priority_Minor( _the_priority ) ( (_the_priority) % 16 )
 
 /*PAGE
  *
@@ -100,7 +45,8 @@ RTEMS_INLINE_ROUTINE unsigned32 _Priority_Bits_index (
 
 RTEMS_INLINE_ROUTINE void _Priority_Initialize_information(
   Priority_Information *the_priority_map,
-  Priority_Control      new_priority
+//  Priority_Control      new_priority
+  unsigned32            new_priority
 )
 {
   Priority_Bit_map_control major;
@@ -170,13 +116,14 @@ RTEMS_INLINE_ROUTINE void _Priority_Remove_from_bit_map (
  *  ready thread.
  */
 
-RTEMS_INLINE_ROUTINE Priority_Control _Priority_Get_highest( void )
+//RTEMS_INLINE_ROUTINE Priority_Control _Priority_Get_highest( void )
+RTEMS_INLINE_ROUTINE unsigned32 _Priority_Get_highest( void )
 {
   Priority_Bit_map_control minor;
   Priority_Bit_map_control major;
 
-  _Bitfield_Find_first_bit( _Priority_Major_bit_map, major );
-  _Bitfield_Find_first_bit( _Priority_Bit_map[major], minor );
+  major = cntlzw( _Priority_Major_bit_map );
+  minor = cntlzw( _Priority_Bit_map[major] ); 
 
   return (_Priority_Bits_index( major ) << 4) +
           _Priority_Bits_index( minor );

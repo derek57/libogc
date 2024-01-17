@@ -34,10 +34,10 @@ extern "C" {
 
 typedef struct {
   Priority_Bit_map_control *minor;        /* addr of minor bit map slot */
-  Priority_Bit_map_control  ready_major;  /* priority bit map ready mask */
   Priority_Bit_map_control  ready_minor;  /* priority bit map ready mask */
-  Priority_Bit_map_control  block_major;  /* priority bit map block mask */
+  Priority_Bit_map_control  ready_major;  /* priority bit map ready mask */
   Priority_Bit_map_control  block_minor;  /* priority bit map block mask */
+  Priority_Bit_map_control  block_major;  /* priority bit map block mask */
 }   Priority_Information;
 
 /*

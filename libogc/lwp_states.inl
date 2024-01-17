@@ -29,8 +29,8 @@
  */
 
 RTEMS_INLINE_ROUTINE States_Control _States_Set (
-  States_Control states_to_set,
-  States_Control current_state
+  States_Control current_state,
+  States_Control states_to_set
 )
 {
    return (current_state | states_to_set);
@@ -47,8 +47,8 @@ RTEMS_INLINE_ROUTINE States_Control _States_Set (
  */
 
 RTEMS_INLINE_ROUTINE States_Control _States_Clear (
-  States_Control states_to_clear,
-  States_Control current_state
+  States_Control current_state,
+  States_Control states_to_clear
 )
 {
    return (current_state & ~states_to_clear);

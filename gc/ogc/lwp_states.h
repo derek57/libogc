@@ -1,6 +1,10 @@
 #ifndef ___LWP_STATES_H__
 #define ___LWP_STATES_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <gctypes.h>
 
 #define STATES_ALL_SET                         0xfffff /* all states */
@@ -42,10 +46,6 @@
                                  STATES_WAITING_FOR_EVENT       | \
                                  STATES_WAITING_ON_THREAD_QUEUE | \
                                  STATES_INTERRUPTIBLE_BY_SIGNAL ) 
-                                 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #ifdef __RTEMS_APPLICATION__
 #include <libogc/lwp_states.inl>
