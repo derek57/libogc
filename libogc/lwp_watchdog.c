@@ -34,11 +34,11 @@ static void __lwp_wd_settimer(
   Watchdog_Control *the_watchdog
 )
 {
-  u64   now;
-  s64   diff;
+  Watchdog_Interval   now;
+  signed64   diff;
   union uulc {
-    u64 ull;
-    u32 ul[2];
+    unsigned64 ull;
+    unsigned32 ul[2];
   } v;
 
   now = gettime();
@@ -234,8 +234,8 @@ void _Watchdog_Tickle(
 )
 {
   Watchdog_Control *the_watchdog;
-  u64 now;
-  s64 diff;
+  Watchdog_Interval now;
+  signed64 diff;
 
   if ( _Chain_Is_empty( header ) )
     return;
@@ -298,11 +298,11 @@ void _Watchdog_Tickle(
 void _Watchdog_Adjust(
   Chain_Control               *header,
   Watchdog_Adjust_directions   direction,
-  s64                          units
+  signed64                     units
 )
 {
-  u32 level;
-  u64 abs_int;
+  ISR_Level         level;
+  Watchdog_Interval abs_int;
 
   _ISR_Disable( level );
   abs_int = gettime() + LWP_WD_ABS( units );

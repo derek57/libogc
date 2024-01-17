@@ -29,20 +29,20 @@ Heap_Control _Workspace_Area;
 static Heap_Information_block __wkspace_iblock;
 static unsigned32 memory_available = 0;
 
-unsigned32 __lwp_wkspace_heapsize(void)
+unsigned32 __lwp_wkspace_heapsize( void )
 {
 	return memory_available;
 }
 
-unsigned32 __lwp_wkspace_heapfree(void)
+unsigned32 __lwp_wkspace_heapfree( void )
 {
-	_Heap_Get_information(&_Workspace_Area, &__wkspace_iblock);
+	_Heap_Get_information( &_Workspace_Area, &__wkspace_iblock );
 	return __wkspace_iblock.free_size;
 }
 
-unsigned32 __lwp_wkspace_heapused(void)
+unsigned32 __lwp_wkspace_heapused( void )
 {
-	_Heap_Get_information(&_Workspace_Area, &__wkspace_iblock);
+	_Heap_Get_information( &_Workspace_Area, &__wkspace_iblock );
 	return __wkspace_iblock.used_size;
 }
 
@@ -51,22 +51,24 @@ unsigned32 __lwp_wkspace_heapused(void)
  *  _Workspace_Handler_initialization
  */
 
-void _Workspace_Handler_initialization(unsigned32 size)
+void _Workspace_Handler_initialization(
+  unsigned32 size
+)
 {
   unsigned32 starting_address;
-  ISR_Level level;
+  ISR_Level  level;
   unsigned32 dsize;
 
   // Get current ArenaLo and adjust to 32-byte boundary
-  _ISR_Disable(level);
-  starting_address = ROUND32UP(SYS_GetArenaLo());
-  dsize = (size - (starting_address - (u32)SYS_GetArenaLo()));
-  SYS_SetArenaLo((void*)(starting_address+dsize));
-  _ISR_Enable(level);
+  _ISR_Disable( level );
+  starting_address = ROUND32UP( SYS_GetArenaLo() );
+  dsize = (size - (starting_address - (unsigned32)SYS_GetArenaLo()));
+  SYS_SetArenaLo( (void *)(starting_address + dsize) );
+  _ISR_Enable( level );
 
-  memset((void *)starting_address, 0, dsize);
+  memset( (void *)starting_address, 0, dsize );
 
-  memory_available = _Heap_Initialize(
+  memory_available += _Heap_Initialize(
     &_Workspace_Area,
     (void *)starting_address,
     dsize,

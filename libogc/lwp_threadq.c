@@ -32,7 +32,7 @@
  *  Output parameters: NONE
  */
 
-void _Thread_queue_Timeout(
+static void _Thread_queue_Timeout(
   void *user_data
 )
 {
@@ -287,9 +287,9 @@ void _Thread_queue_Enqueue_priority(
 )
 {
   ISR_Level            level;
-  unsigned32           search_priority;
+  Priority_Control     search_priority;
   unsigned32           header_index;
-  unsigned32           priority;
+  Priority_Control     priority;
   States_Control       block_state;
   Thread_queue_States  sync_state;
   Thread_Control      *search_thread;

@@ -371,7 +371,7 @@ static u32 __SetInterrupts(u32 iMask,u32 nMask)
 
 void __UnmaskIrq(u32 nMask)
 {
-	u32 level;
+	ISR_Level level;
 	u32 mask;
 
 	_ISR_Disable(level);
@@ -384,7 +384,7 @@ void __UnmaskIrq(u32 nMask)
 
 void __MaskIrq(u32 nMask)
 {
-	u32 level;
+	ISR_Level level;
 	u32 mask;
 
 	_ISR_Disable(level);
@@ -423,7 +423,7 @@ void __irq_init()
 
 raw_irq_handler_t IRQ_Request(u32 nIrq,raw_irq_handler_t pHndl,void *pCtx)
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 	raw_irq_handler_t old = g_IRQHandler[nIrq].pHndl;
@@ -435,7 +435,7 @@ raw_irq_handler_t IRQ_Request(u32 nIrq,raw_irq_handler_t pHndl,void *pCtx)
 
 raw_irq_handler_t IRQ_GetHandler(u32 nIrq)
 {
-	u32 level;
+	ISR_Level level;
 	raw_irq_handler_t ret;
 
 	_ISR_Disable(level);
@@ -446,7 +446,7 @@ raw_irq_handler_t IRQ_GetHandler(u32 nIrq)
 
 raw_irq_handler_t IRQ_Free(u32 nIrq)
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 	raw_irq_handler_t old = g_IRQHandler[nIrq].pHndl;
@@ -458,12 +458,12 @@ raw_irq_handler_t IRQ_Free(u32 nIrq)
 
 u32 IRQ_Disable()
 {
-	u32 level;
+	ISR_Level level;
 	_ISR_Disable(level);
 	return level;
 }
 
-void IRQ_Restore(u32 level)
+void IRQ_Restore(ISR_Level level)
 {
 	_ISR_Enable(level);
 }

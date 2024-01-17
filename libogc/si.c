@@ -60,7 +60,7 @@ static struct _sipacket {
 	void *in;
 	u32 in_bytes;
 	SICallback callback;
-	u64 fire;
+	Watchdog_Interval fire;
 } sipacket[4];
 
 static struct _sicntrl {
@@ -105,8 +105,8 @@ static u32 inputBufferVCount[4] = {0,0,0,0};
 static u32 inputBufferValid[4] = {0,0,0,0};
 static u32 inputBuffer[4][2] = {{0,0},{0,0},{0,0},{0,0}};
 static RDSTHandler rdstHandlers[4] = {NULL,NULL,NULL,NULL};
-static u64 typeTime[4] = {0,0,0,0};
-static u64 xferTime[4] = {0,0,0,0};
+static Watchdog_Interval typeTime[4] = {0,0,0,0};
+static Watchdog_Interval xferTime[4] = {0,0,0,0};
 static SICallback typeCallback[4][4] = {{NULL,NULL,NULL,NULL},
 										{NULL,NULL,NULL,NULL},
 										{NULL,NULL,NULL,NULL},
@@ -203,7 +203,8 @@ static u32 __si_completetransfer()
 
 static u32 __si_transfer(s32 chan,void *out,u32 out_len,void *in,u32 in_len,SICallback cb)
 {
-	u32 level,cnt,i;
+	ISR_Level level;
+	u32 cnt,i;
 	sicomcsr csr;
 #ifdef _SI_DEBUG
 	printf("__si_transfer(%d,%p,%d,%p,%d,%p)\n",chan,out,out_len,in,in_len,cb);
@@ -328,7 +329,7 @@ exit:
 static void __si_transfernext(u32 chan)
 {
 	u32 cnt;
-	u64 now;
+	Watchdog_Interval now;
 	s64 diff;
 #ifdef _SI_DEBUG
 	printf("__si_transfernext(%d)\n",chan);
@@ -410,7 +411,8 @@ static void __si_interrupthandler(u32 irq,void *ctx)
 
 u32 SI_Sync()
 {
-	u32 level,ret;
+	ISR_Level level;
+	u32 ret;
 
 	while(_siReg[13]&SICOMCSR_TSTART);
 
@@ -438,7 +440,7 @@ u32 SI_IsChanBusy(s32 chan)
 
 void SI_SetXY(u16 line,u8 cnt)
 {
-	u32 level;
+	ISR_Level level;
 #ifdef _SI_DEBUG
 	printf("SI_SetXY(%d,%d)\n",line,cnt);
 #endif
@@ -450,7 +452,8 @@ void SI_SetXY(u16 line,u8 cnt)
 
 void SI_EnablePolling(u32 poll)
 {
-	u32 level,mask;
+	ISR_Level level;
+	u32 mask;
 #ifdef _SI_DEBUG
 	printf("SI_EnablePolling(%08x)\n",poll);
 #endif
@@ -472,7 +475,8 @@ void SI_EnablePolling(u32 poll)
 
 void SI_DisablePolling(u32 poll)
 {
-	u32 level,mask;
+	ISR_Level level;
+	u32 mask;
 #ifdef _SI_DEBUG
 	printf("SI_DisablePolling(%08x)\n",poll);
 #endif
@@ -485,7 +489,8 @@ void SI_DisablePolling(u32 poll)
 
 void SI_SetSamplingRate(u32 samplingrate)
 {
-	u32 div,level;
+	u32 div;
+	ISR_Level level;
 	struct _xy *xy = NULL;
 
 	if(samplingrate>11) samplingrate = 11;
@@ -508,7 +513,8 @@ void SI_RefreshSamplingRate()
 
 u32 SI_GetStatus(s32 chan)
 {
-	u32 level,sisr;
+	ISR_Level level;
+	u32 sisr;
 
 	_ISR_Disable(level);
 	sisr = (_siReg[14]>>((3-chan)<<3));
@@ -536,7 +542,8 @@ u32 SI_GetResponseRaw(s32 chan)
 
 u32 SI_GetResponse(s32 chan,void *buf)
 {
-	u32 level,valid;
+	ISR_Level level;
+	u32 valid;
 	_ISR_Disable(level);
 	SI_GetResponseRaw(chan);
 	valid = inputBufferValid[chan];
@@ -565,9 +572,9 @@ u32 SI_GetCommand(s32 chan)
 u32 SI_Transfer(s32 chan,void *out,u32 out_len,void *in,u32 in_len,SICallback cb,u32 us_delay)
 {
 	u32 ret = 0;
-	u32 level;
+	ISR_Level level;
 	s64 diff;
-	u64 now,fire;
+	Watchdog_Interval now,fire;
 	struct timespec tb;
 #ifdef _SI_DEBUG
 	printf("SI_Transfer(%d,%p,%d,%p,%d,%p,%d)\n",chan,out,out_len,in,in_len,cb,us_delay);
@@ -603,8 +610,9 @@ u32 SI_Transfer(s32 chan,void *out,u32 out_len,void *in,u32 in_len,SICallback cb
 
 u32 SI_GetType(s32 chan)
 {
-	u32 level,type;
-	u64 now;
+	ISR_Level level;
+	u32 type;
+	Watchdog_Interval now;
 	s64 diff;
 #ifdef _SI_DEBUG
 	printf("SI_GetType(%d)\n",chan);
@@ -636,7 +644,7 @@ u32 SI_GetType(s32 chan)
 
 u32 SI_GetTypeAsync(s32 chan,SICallback cb)
 {
-	u32 level;
+	ISR_Level level;
 	u32 type,i;
 #ifdef _SI_DEBUG
 	printf("SI_GetTypeAsync(%d)\n",chan);
@@ -667,7 +675,8 @@ void SI_TransferCommands()
 
 u32 SI_RegisterPollingHandler(RDSTHandler handler)
 {
-	u32 level,i;
+	ISR_Level level;
+	u32 i;
 
 	_ISR_Disable(level);
 
@@ -694,7 +703,8 @@ u32 SI_RegisterPollingHandler(RDSTHandler handler)
 
 u32 SI_UnregisterPollingHandler(RDSTHandler handler)
 {
-	u32 level,i;
+	ISR_Level level;
+	u32 i;
 
 	_ISR_Disable(level);
 	for(i=0;i<4;i++) {
@@ -716,7 +726,8 @@ u32 SI_UnregisterPollingHandler(RDSTHandler handler)
 u32 SI_EnablePollingInterrupt(s32 enable)
 {
 	sicomcsr csr;
-	u32 level,ret,i;
+	ISR_Level level;
+	u32 ret,i;
 
 	_ISR_Disable(level);
 

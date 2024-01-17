@@ -127,7 +127,7 @@ void __exception_init()
 
 void __exception_close(u32 except)
 {
-	u32 level;
+	ISR_Level level;
 	void *pAdd = (void*)(0x80000000|exception_location[except]);
 
 	_ISR_Disable(level);
@@ -197,7 +197,7 @@ void __exception_setreload(int t)
 
 static void waitForReload()
 {
-	u32 level;
+	ISR_Level level;
 
 	PAD_Init();
 	

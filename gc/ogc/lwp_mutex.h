@@ -172,7 +172,7 @@ typedef struct {
   /** This field contains the ceiling priority to be used if that protocol
    *  is selected.
    */
-  Priority_Control             priority_ceiling;
+  unsigned8                    priority_ceiling;
   /** When this field is true, then only the thread that locked the mutex
    *  is allowed to unlock it.
    */

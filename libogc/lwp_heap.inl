@@ -225,7 +225,7 @@ RTEMS_INLINE_ROUTINE bool _Heap_Is_block_in (
   Heap_Block   *the_block
 )
 {
-  return ( (u32)the_block >= (u32)the_heap->start && (u32)the_block <= (u32)the_heap->final );
+  return ( (unsigned32)the_block >= (unsigned32)the_heap->start && (unsigned32)the_block <= (unsigned32)the_heap->final );
 }
 
 /*PAGE

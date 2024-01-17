@@ -1236,7 +1236,7 @@ s32 sdgecko_initIO(s32 drv_no)
 {
 	if(drv_no<0 || drv_no>=MAX_DRIVE) return CARDIO_ERROR_NOCARD;
 
-	u32 id = 0;
+	Objects_Id id = 0;
 	EXI_GetID(drv_no,EXI_DEVICE_0,&id);
 	if ( id != -1 ) return CARDIO_ERROR_NOCARD;
 

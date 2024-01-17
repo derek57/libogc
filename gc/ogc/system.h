@@ -227,7 +227,7 @@ typedef struct _sys_resetinfo sys_resetinfo;
 struct _sys_resetinfo {
 	Chain_Node node;
 	resetfunction func;
-	u32 prio;
+	Priority_Control prio;
 };
 
 /*! \fn void rtems_initialize_executive_early()
@@ -304,7 +304,7 @@ s32 SYS_RemoveAlarm(syswd_t thealarm);
 s32 SYS_CancelAlarm(syswd_t thealarm);
 
 
-void SYS_SetWirelessID(u32 chan,u32 id);
+void SYS_SetWirelessID(u32 chan,Objects_Id id);
 u32 SYS_GetWirelessID(u32 chan);
 u32 SYS_GetFontEncoding();
 u32 SYS_InitFont(sys_fontheader *font_data);

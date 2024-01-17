@@ -33,9 +33,23 @@
 
 #define CONFIGURE_MAXIMUM_POSIX_TIMERS              64
 
-typedef unsigned int        unsigned32;
-typedef unsigned short      unsigned16;
-typedef unsigned char       unsigned8;
+/*
+ *  This section defines the basic types for this processor.
+ */
+
+typedef unsigned char       unsigned8;  /* unsigned 8-bit  integer */
+typedef unsigned short      unsigned16; /* unsigned 16-bit integer */
+typedef unsigned int        unsigned32; /* unsigned 32-bit integer */
+typedef unsigned long long  unsigned64; /* unsigned 64-bit integer */ 
+
+typedef unsigned32          Priority_Bit_map_control;
+
+typedef signed char         signed8;    /* 8-bit  signed integer */
+typedef signed short        signed16;   /* 16-bit signed integer */
+typedef signed int          signed32;   /* 32-bit signed integer */
+typedef signed long long    signed64;   /* 64 bit signed integer */ 
+
+typedef unsigned32          boolean;    /* Boolean value   */
 
 /*
  *  The following type defines the control block used to manage a
@@ -65,7 +79,7 @@ typedef uint64_t            Watchdog_Interval;
 #define SCORE_EXTERN
 #else
 #undef  SCORE_EXTERN
-#define SCORE_EXTERN  extern
+#define SCORE_EXTERN        extern
 #endif
 
 /**
@@ -95,9 +109,7 @@ typedef unsigned32          CORE_message_queue_Submit_types;
  *  NOTE: Priority 0 is reserved for internal threads only.
  */
 
-typedef u8                  Priority_Control;
-
-typedef unsigned32          Priority_Bit_map_control;
+typedef unsigned32          Priority_Control;
 
 /*
  *  The following type defines the control block used to manage
@@ -347,8 +359,6 @@ const unsigned char __log2table[256] = {
 #define USE_INLINES
 #define STATIC              static
 #define INLINE              __inline__
-
-typedef unsigned int        boolean;
 
 /*
  *  This number corresponds to the byte alignment requirement for the

@@ -17,7 +17,7 @@ void* _DEFUN(__libogc_sbrk_r,(ptr,incr),
 			 struct _reent *ptr _AND
 			 ptrdiff_t incr)
 {
-	u32 level;
+	ISR_Level level;
 	char *heap_end = 0;
 	char *prev_heap = 0;
 #if defined(HW_RVL)

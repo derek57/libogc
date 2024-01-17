@@ -109,7 +109,7 @@ enum {
 };
 
 struct init_data {
-	u32 state;
+	States_Control state;
 	s32 fd;
 	s32 prevres;
 	s32 result;
@@ -250,7 +250,7 @@ static char __kd_fs[] CPU_STRUCTURE_ALIGNMENT = "/dev/net/kd/request";
 
 static s32 NetCreateHeap()
 {
-	u32 level;
+	ISR_Level level;
 	void *net_heap_ptr;
 
 	_ISR_Disable(level);

@@ -85,9 +85,10 @@ static POSIX_Condition_variables_Control* __lwp_cond_allocate()
 	return NULL;
 }
 
-static s32 __lwp_cond_waitsupp(pthread_cond_t cond,pthread_mutex_t mutex,u64 timeout,u8 timedout)
+static signed32 __lwp_cond_waitsupp(pthread_cond_t cond,pthread_mutex_t mutex,Watchdog_Interval timeout,unsigned8 timedout)
 {
-	u32 status,mstatus,level;
+	unsigned32 status,mstatus;
+	ISR_Level level;
 	POSIX_Condition_variables_Control *thecond;
 
 	thecond = __lwp_cond_open(cond);
@@ -126,7 +127,7 @@ static s32 __lwp_cond_waitsupp(pthread_cond_t cond,pthread_mutex_t mutex,u64 tim
 	return status;
 }
 
-static s32 __lwp_cond_signalsupp(pthread_cond_t cond,u8 isbroadcast)
+static signed32 __lwp_cond_signalsupp(pthread_cond_t cond,unsigned8 isbroadcast)
 {
 	Thread_Control *thethread;
 	POSIX_Condition_variables_Control *thecond;
@@ -142,7 +143,7 @@ static s32 __lwp_cond_signalsupp(pthread_cond_t cond,u8 isbroadcast)
 	return 0;
 }
 
-s32 LWP_CondInit(pthread_cond_t *cond)
+signed32 LWP_CondInit(pthread_cond_t *cond)
 {
 	POSIX_Condition_variables_Control *ret;
 	
@@ -160,31 +161,31 @@ s32 LWP_CondInit(pthread_cond_t *cond)
 	return 0;
 }
 
-s32 LWP_CondWait(pthread_cond_t cond,pthread_mutex_t mutex)
+signed32 LWP_CondWait(pthread_cond_t cond,pthread_mutex_t mutex)
 {
 	return __lwp_cond_waitsupp(cond,mutex,RTEMS_NO_TIMEOUT,FALSE);
 }
 
-s32 LWP_CondSignal(pthread_cond_t cond)
+signed32 LWP_CondSignal(pthread_cond_t cond)
 {
 	return __lwp_cond_signalsupp(cond,FALSE);
 }
 
-s32 LWP_CondBroadcast(pthread_cond_t cond)
+signed32 LWP_CondBroadcast(pthread_cond_t cond)
 {
 	return __lwp_cond_signalsupp(cond,TRUE);
 }
 
-s32 LWP_CondTimedWait(pthread_cond_t cond,pthread_mutex_t mutex,const struct timespec *abstime)
+signed32 LWP_CondTimedWait(pthread_cond_t cond,pthread_mutex_t mutex,const struct timespec *abstime)
 {
-	u64 timeout = RTEMS_NO_TIMEOUT;
-	bool timedout = FALSE;
+	Watchdog_Interval timeout = RTEMS_NO_TIMEOUT;
+	u8 timedout = 0;
 
 	if(abstime) timeout = _POSIX_Timespec_to_interval(abstime);
 	return __lwp_cond_waitsupp(cond,mutex,timeout,timedout);
 }
 
-s32 LWP_CondDestroy(pthread_cond_t cond)
+signed32 LWP_CondDestroy(pthread_cond_t cond)
 {
 	POSIX_Condition_variables_Control *ptr;
 

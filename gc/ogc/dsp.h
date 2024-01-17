@@ -37,6 +37,7 @@ distribution.
 */ 
 
 #include <gctypes.h>
+#include "lwp_config.h"
 
 /*! 
  * \addtogroup dsp_taskstate DSP task states
@@ -114,7 +115,7 @@ typedef void (*DSPCallback)(void);
 */
 struct _dsp_task {
 	vu32 state;
-	vu32 prio;
+	volatile Priority_Control prio;
 	vu32 flags;
 	
 	void *iram_maddr;

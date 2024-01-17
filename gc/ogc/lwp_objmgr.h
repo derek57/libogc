@@ -41,7 +41,7 @@ extern "C" {
 /**
  *  This mask is used to extract the index portion of an object Id.
  */
-#define OBJECTS_INDEX_MASK          (Objects_Id)0x0000ffff
+#define OBJECTS_INDEX_MASK          0x0000ffff
 
 /*PAGE
  *
@@ -102,7 +102,7 @@ typedef struct {
   /** This is the chain node portion of an object. */
   Chain_Node           Node;
   /** This is the object's ID. */
-  s32                  id;
+  signed32             id;
   /** This is the object's information. */
   Objects_Information *information;
 } Objects_Control;

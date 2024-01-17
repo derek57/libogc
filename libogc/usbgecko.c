@@ -36,7 +36,7 @@ static void __usbgecko_init()
 
 RTEMS_INLINE_ROUTINE void __usbgecko_exi_wait(s32 chn)
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 	if(!usbgecko_inited) __usbgecko_init();
@@ -155,7 +155,7 @@ void usb_flush(s32 chn)
 
 int usb_isgeckoalive(s32 chn)
 {
-	u32 id = 0;
+	Objects_Id id = 0;
 	s32 ret;
 	u16 val;
 

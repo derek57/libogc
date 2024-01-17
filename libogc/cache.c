@@ -31,6 +31,7 @@ distribution.
 #include <asm.h>
 #include <processor.h>
 #include "cache.h"
+#include "lwp_config.h"
 
 #define _SHIFTL(v, s, w)	\
     ((u32) (((u32)(v) & ((0x01 << (w)) - 1)) << (s)))
@@ -43,7 +44,7 @@ extern void L2Enable();
 
 void LCEnable()
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 	__LCEnable();
@@ -116,7 +117,8 @@ void LCFlushQueue()
 
 void LCAlloc(void *addr,u32 bytes)
 {
-	u32 level,cnt,hid2;
+	ISR_Level level;
+	u32 cnt,hid2;
 
 	cnt = bytes>>5;
 	hid2 = mfspr(920);
@@ -130,7 +132,8 @@ void LCAlloc(void *addr,u32 bytes)
 
 void LCAllocNoInvalidate(void *addr,u32 bytes)
 {
-	u32 level,cnt,hid2;
+	ISR_Level level;
+	u32 cnt,hid2;
 
 	cnt = bytes>>5;
 	hid2 = mfspr(920);
@@ -144,7 +147,8 @@ void LCAllocNoInvalidate(void *addr,u32 bytes)
 #ifdef HW_RVL
 void L2Enhance()
 {
-	u32 level, hid4;
+	ISR_Level level;
+	u32 hid4;
 	u32 *stub = (u32*)0x80001800;
 	_ISR_Disable(level);
 	hid4 = mfspr(HID4);

@@ -120,7 +120,7 @@ static void __ARInterruptServiceRoutine()
 
 void ARQ_Init()
 {
-	u32 level;
+	ISR_Level level;
 #ifdef _ARQ_DEBUG
 	printf("ARQ_Init(%02x)\n",__ARQInitFlag);
 #endif
@@ -148,7 +148,7 @@ void ARQ_Init()
 
 void ARQ_Reset()
 {
-	u32 level;
+	ISR_Level level;
 	_ISR_Disable(level);
 	__ARQInitFlag = 0;
 	_ISR_Enable(level);
@@ -156,7 +156,7 @@ void ARQ_Reset()
 
 void ARQ_SetChunkSize(u32 size)
 {
-	u32 level;
+	ISR_Level level;
 	_ISR_Disable(level);
 	__ARQChunkSize = (size+31)&~31;
 	_ISR_Enable(level);
@@ -169,7 +169,7 @@ u32 ARQ_GetChunkSize()
 
 void ARQ_FlushQueue()
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 	
@@ -180,9 +180,9 @@ void ARQ_FlushQueue()
 	_ISR_Enable(level);
 }
 
-void ARQ_PostRequestAsync(ARQRequest *req,u32 owner,u32 dir,u32 prio,u32 aram_addr,u32 mram_addr,u32 len,ARQCallback cb)
+void ARQ_PostRequestAsync(ARQRequest *req,u32 owner,u32 dir,Priority_Control prio,u32 aram_addr,u32 mram_addr,u32 len,ARQCallback cb)
 {
-	u32 level;
+	ISR_Level level;
 	ARQRequest *p;
 
 	req->state = ARQ_TASK_READY;
@@ -215,9 +215,9 @@ void ARQ_PostRequestAsync(ARQRequest *req,u32 owner,u32 dir,u32 prio,u32 aram_ad
 	_ISR_Enable(level);
 }
 
-void ARQ_PostRequest(ARQRequest *req,u32 owner,u32 dir,u32 prio,u32 aram_addr,u32 mram_addr,u32 len)
+void ARQ_PostRequest(ARQRequest *req,u32 owner,u32 dir,Priority_Control prio,u32 aram_addr,u32 mram_addr,u32 len)
 {
-	u32 level;
+	ISR_Level level;
 
 	ARQ_PostRequestAsync(req,owner,dir,prio,aram_addr,mram_addr,len,__ARQCallbackSync);
 
@@ -230,7 +230,7 @@ void ARQ_PostRequest(ARQRequest *req,u32 owner,u32 dir,u32 prio,u32 aram_addr,u3
 
 void ARQ_RemoveRequest(ARQRequest *req)
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 	_Chain_Extract_unprotected(&req->node);
@@ -240,7 +240,8 @@ void ARQ_RemoveRequest(ARQRequest *req)
 
 u32 ARQ_RemoveOwnerRequest(u32 owner)
 {
-	u32 level,cnt;
+	ISR_Level level;
+	u32 cnt;
 	ARQRequest *req;
 
 	_ISR_Disable(level);

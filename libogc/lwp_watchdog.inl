@@ -221,7 +221,7 @@ RTEMS_INLINE_ROUTINE void _Watchdog_Tickle_ticks( void )
 
 RTEMS_INLINE_ROUTINE void _Watchdog_Insert_ticks(
   Watchdog_Control      *the_watchdog,
-  s64                    units
+  signed64               units
 )
 {
 

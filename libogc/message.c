@@ -81,7 +81,7 @@ static POSIX_Message_queue_Control* __lwp_mqbox_allocate()
 	return NULL;
 }
 
-s32 MQ_Init(mqbox_t *mqbox,u32 count)
+signed32 MQ_Init(mqbox_t *mqbox,unsigned32 count)
 {
 	CORE_message_queue_Attributes attr;
 	POSIX_Message_queue_Control *ret = NULL;
@@ -116,11 +116,11 @@ void MQ_Close(mqbox_t mqbox)
 	__lwp_mqbox_free(mbox);
 }
 
-BOOL MQ_Send(mqbox_t mqbox,mqmsg_t msg,u32 flags)
+boolean MQ_Send(mqbox_t mqbox,mqmsg_t msg,unsigned32 flags)
 {
-	BOOL ret;
+	boolean ret;
 	POSIX_Message_queue_Control *mbox;
-	u32 wait = (flags==MQ_MSG_BLOCK)?TRUE:FALSE;
+	unsigned32 wait = (flags==MQ_MSG_BLOCK)?TRUE:FALSE;
 
 	mbox = __lwp_mqbox_open(mqbox);
 	if(!mbox) return FALSE;
@@ -132,11 +132,11 @@ BOOL MQ_Send(mqbox_t mqbox,mqmsg_t msg,u32 flags)
 	return ret;
 }
 
-BOOL MQ_Receive(mqbox_t mqbox,mqmsg_t *msg,u32 flags)
+boolean MQ_Receive(mqbox_t mqbox,mqmsg_t *msg,unsigned32 flags)
 {
-	BOOL ret;
+	boolean ret;
 	POSIX_Message_queue_Control *mbox;
-	u32 tmp,wait = (flags==MQ_MSG_BLOCK)?TRUE:FALSE;
+	unsigned32 tmp,wait = (flags==MQ_MSG_BLOCK)?TRUE:FALSE;
 
 	mbox = __lwp_mqbox_open(mqbox);
 	if(!mbox) return FALSE;
@@ -148,11 +148,11 @@ BOOL MQ_Receive(mqbox_t mqbox,mqmsg_t *msg,u32 flags)
 	return ret;
 }
 
-BOOL MQ_Jam(mqbox_t mqbox,mqmsg_t msg,u32 flags)
+boolean MQ_Jam(mqbox_t mqbox,mqmsg_t msg,unsigned32 flags)
 {
-	BOOL ret;
+	boolean ret;
 	POSIX_Message_queue_Control *mbox;
-	u32 wait = (flags==MQ_MSG_BLOCK)?TRUE:FALSE;
+	unsigned32 wait = (flags==MQ_MSG_BLOCK)?TRUE:FALSE;
 
 	mbox = __lwp_mqbox_open(mqbox);
 	if(!mbox) return FALSE;

@@ -301,7 +301,7 @@ u32 AUDIO_GetDSPSampleRate();
  *
  * \return none
  */
-void AUDIO_SetStreamPlayState(u32 state);
+void AUDIO_SetStreamPlayState(States_Control state);
 
 
 /*! 

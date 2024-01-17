@@ -36,7 +36,7 @@ u32 _DEFUN(gettick,(),
 }
 
 
-u64 _DEFUN(gettime,(),
+Watchdog_Interval _DEFUN(gettime,(),
 						  _NOARGS)
 {
 	u32 tmp;
@@ -57,7 +57,7 @@ u64 _DEFUN(gettime,(),
 }
 
 void _DEFUN(settime,(t),
-			u64 t)
+			Watchdog_Interval t)
 {
 	u32 tmp;
 	union uulc {
@@ -76,33 +76,33 @@ void _DEFUN(settime,(t),
 	);
 }
 
-u32 diff_sec(u64 start,u64 end)
+u32 diff_sec(Watchdog_Interval start,Watchdog_Interval end)
 {
-	u64 diff;
+	Watchdog_Interval diff;
 
 	diff = diff_ticks(start,end);
 	return ticks_to_secs(diff);
 }
 
-u32 diff_msec(u64 start,u64 end)
+u32 diff_msec(Watchdog_Interval start,Watchdog_Interval end)
 {
-	u64 diff;
+	Watchdog_Interval diff;
 
 	diff = diff_ticks(start,end);
 	return ticks_to_millisecs(diff);
 }
 
-u32 diff_usec(u64 start,u64 end)
+u32 diff_usec(Watchdog_Interval start,Watchdog_Interval end)
 {
-	u64 diff;
+	Watchdog_Interval diff;
 
 	diff = diff_ticks(start,end);
 	return ticks_to_microsecs(diff);
 }
 
-u32 diff_nsec(u64 start,u64 end)
+u32 diff_nsec(Watchdog_Interval start,Watchdog_Interval end)
 {
-	u64 diff;
+	Watchdog_Interval diff;
 
 	diff = diff_ticks(start,end);
 	return ticks_to_nanosecs(diff);
@@ -185,7 +185,7 @@ void _DEFUN(udelay,(us),
 unsigned int _DEFUN(nanosleep,(tb),
            struct timespec *tb)
 {
-	u64 timeout;
+	Watchdog_Interval timeout;
 
 	_Thread_Disable_dispatch();
 

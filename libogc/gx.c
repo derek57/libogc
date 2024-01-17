@@ -258,12 +258,12 @@ static void __GX_InitRevBits()
 
 static void __GX_WaitAbort(u32 delay)
 {
-	u64 start,end;
+	Watchdog_Interval start,end;
 
 	start = gettime();
 	while(1) {
 		end = gettime();
-		if(diff_ticks(start,end)>=(u64)delay) break;
+		if(diff_ticks(start,end)>=(Watchdog_Interval)delay) break;
 	};
 }
 
@@ -309,7 +309,8 @@ static void __GX_Abort()
 static void __GX_SaveFifo()
 {
 	s32 rdwt_dst;
-	u32 level,val;
+	ISR_Level level;
+	u32 val;
 	struct __gxfifo *cpufifo = (struct __gxfifo*)&_cpufifo;
 	struct __gxfifo *gpfifo = (struct __gxfifo*)&_gpfifo;
 
@@ -341,7 +342,7 @@ static void __GX_SaveFifo()
 
 static void __GX_CleanGPFifo()
 {
-	u32 level;
+	ISR_Level level;
 	struct __gxfifo *gpfifo = (struct __gxfifo*)&_gpfifo;
 	struct __gxfifo *cpufifo = (struct __gxfifo*)&_cpufifo;
 
@@ -1268,7 +1269,7 @@ void GX_InitFifoLimits(GXFifoObj *fifo,u32 hiwatermark,u32 lowatermark)
 
 void GX_InitFifoPtrs(GXFifoObj *fifo,void *rd_ptr,void *wt_ptr)
 {
-	u32 level;
+	ISR_Level level;
 	s32 rdwt_dst;
 	struct __gxfifo *ptr = (struct __gxfifo*)fifo;
 
@@ -1293,7 +1294,7 @@ void GX_GetFifoPtrs(GXFifoObj *fifo,void **rd_ptr,void **wt_ptr)
 
 void GX_SetCPUFifo(GXFifoObj *fifo)
 {
-	u32 level;
+	ISR_Level level;
 	struct __gxfifo *ptr = (struct __gxfifo*)fifo;
 	struct __gxfifo *cpufifo = (struct __gxfifo*)&_cpufifo;
 
@@ -1376,7 +1377,7 @@ void GX_GetCPUFifo(GXFifoObj *fifo)
 
 void GX_SetGPFifo(GXFifoObj *fifo)
 {
-	u32 level;
+	ISR_Level level;
 	struct __gxfifo *ptr = (struct __gxfifo*)fifo;
 	struct __gxfifo *gpfifo = (struct __gxfifo*)&_gpfifo;
 
@@ -1514,7 +1515,7 @@ lwp_t GX_GetCurrentGXThread()
 
 lwp_t GX_SetCurrentGXThread()
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 	lwp_t ret = _gxcurrentlwp;
@@ -1526,7 +1527,7 @@ lwp_t GX_SetCurrentGXThread()
 
 volatile void* GX_RedirectWriteGatherPipe(void *ptr)
 {
-	u32 level;
+	ISR_Level level;
 	struct __gxfifo *cpufifo = (struct __gxfifo*)&_cpufifo;
 
 	_ISR_Disable(level);
@@ -1552,7 +1553,7 @@ volatile void* GX_RedirectWriteGatherPipe(void *ptr)
 
 void GX_RestoreWriteGatherPipe()
 {
-	u32 level;
+	ISR_Level level;
 	struct __gxfifo *cpufifo = (struct __gxfifo*)&_cpufifo;
 
 	_ISR_Disable(level);
@@ -1600,7 +1601,7 @@ void GX_Flush()
 
 void GX_EnableBreakPt(void *break_pt)
 {
-	u32 level = 0;
+	ISR_Level level = 0;
 	_ISR_Disable(level);
 	__GX_FifoReadDisable();
 	_cpReg[30] = _SHIFTL(MEM_VIRTUAL_TO_PHYSICAL(break_pt),0,16);
@@ -1614,7 +1615,7 @@ void GX_EnableBreakPt(void *break_pt)
 
 void GX_DisableBreakPt()
 {
-	u32 level = 0;
+	ISR_Level level = 0;
 	_ISR_Disable(level);
 	__gx->cpCRreg = (__gx->cpCRreg&~0x22);
 	_cpReg[1] = __gx->cpCRreg;
@@ -1649,7 +1650,7 @@ void GX_AbortFrame()
 
 void GX_SetDrawSync(u16 token)
 {
-	u32 level = 0;
+	ISR_Level level = 0;
 	_ISR_Disable(level);
 	GX_LOAD_BP_REG(0x48000000 | token);
 	GX_LOAD_BP_REG(0x47000000 | token);
@@ -1664,7 +1665,7 @@ u16 GX_GetDrawSync()
 
 void GX_SetDrawDone()
 {
-	u32 level;
+	ISR_Level level;
 	_ISR_Disable(level);
 	GX_LOAD_BP_REG(0x45000002); // set draw done!
 	GX_Flush();
@@ -1675,7 +1676,7 @@ void GX_SetDrawDone()
 
 void GX_WaitDrawDone()
 {
-	u32 level;
+	ISR_Level level;
 #ifdef _GP_DEBUG
 	printf("GX_WaitDrawDone()\n\n");
 #endif
@@ -1687,7 +1688,7 @@ void GX_WaitDrawDone()
 
 void GX_DrawDone()
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 	GX_LOAD_BP_REG(0x45000002); // set draw done!
@@ -1703,7 +1704,7 @@ void GX_DrawDone()
 
 GXDrawDoneCallback GX_SetDrawDoneCallback(GXDrawDoneCallback cb)
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 	GXDrawDoneCallback ret = drawDoneCB;
@@ -1714,7 +1715,7 @@ GXDrawDoneCallback GX_SetDrawDoneCallback(GXDrawDoneCallback cb)
 
 GXDrawSyncCallback GX_SetDrawSyncCallback(GXDrawSyncCallback cb)
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 	GXDrawSyncCallback ret = tokenCB;
@@ -1725,7 +1726,7 @@ GXDrawSyncCallback GX_SetDrawSyncCallback(GXDrawSyncCallback cb)
 
 GXBreakPtCallback GX_SetBreakPtCallback(GXBreakPtCallback cb)
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 	GXBreakPtCallback ret = breakPtCB;
@@ -2156,7 +2157,7 @@ void GX_BeginDispList(void *list,u32 size)
 
 u32 GX_EndDispList()
 {
-	u32 level;
+	ISR_Level level;
 	u8 wrap = 0;
 
 	GX_GetCPUFifo(&_gx_dl_fifoobj);
@@ -3688,7 +3689,7 @@ void GX_SetTexCoordBias(u8 texcoord,u8 s_enable,u8 t_enable)
 
 GXTexRegionCallback GX_SetTexRegionCallback(GXTexRegionCallback cb)
 {
-	u32 level;
+	ISR_Level level;
 	GXTexRegionCallback ret;
 
 	_ISR_Disable(level);
@@ -3701,7 +3702,7 @@ GXTexRegionCallback GX_SetTexRegionCallback(GXTexRegionCallback cb)
 
 GXTlutRegionCallback GX_SetTlutRegionCallback(GXTlutRegionCallback cb)
 {
-	u32 level;
+	ISR_Level level;
 	GXTlutRegionCallback ret;
 
 	_ISR_Disable(level);
@@ -4553,7 +4554,7 @@ void GX_InitLightColor(GXLightObj *lit_obj,GXColor col)
 
 void GX_LoadLightObj(GXLightObj *lit_obj,u8 lit_id)
 {
-	u32 id;
+	Objects_Id id;
 	u16 reg;
 	struct __gx_litobj *lit = (struct __gx_litobj*)lit_obj;
 

@@ -95,8 +95,8 @@ typedef void (*CORE_message_queue_Notify_Handler)(void *);
  */
 
 typedef struct {
-	u32 size;
-	u32 buffer[1];
+	unsigned32 size;
+	unsigned32 buffer[1];
 } CORE_message_queue_Buffer;
 
 /*
@@ -106,7 +106,7 @@ typedef struct {
 
 typedef struct {
 	Chain_Node Node;
-	u32 priority;
+	Priority_Control priority;
 	CORE_message_queue_Buffer Contents;
 } CORE_message_queue_Buffer_control;
 
@@ -116,7 +116,7 @@ typedef struct {
  */
 
 typedef struct {
-	u32 discipline;
+	unsigned32 discipline;
 } CORE_message_queue_Attributes;
 
 /*
@@ -127,9 +127,9 @@ typedef struct {
 typedef struct {
 	Thread_queue_Control Wait_queue;
 	CORE_message_queue_Attributes Attributes;
-	u32 maximum_pending_messages;
-	u32 number_of_pending_messages;
-	u32 maximum_message_size;
+	unsigned32 maximum_pending_messages;
+	unsigned32 number_of_pending_messages;
+	unsigned32 maximum_message_size;
 	Chain_Control Pending_messages;
 	CORE_message_queue_Buffer *message_buffers;
 	CORE_message_queue_Notify_Handler notify_handler;

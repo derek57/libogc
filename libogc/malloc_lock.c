@@ -37,7 +37,7 @@ void __memlock_init()
 void _DEFUN(__libogc_malloc_lock,(r),
 			struct _reent *r)
 {
-	unsigned int level;
+	ISR_Level level;
 	
 	if(!initialized) return;
 
@@ -59,7 +59,7 @@ void _DEFUN(__libogc_malloc_unlock,(r),
 void _DEFUN(__libogc_malloc_lock,(ptr),
 			struct _reent *ptr)
 {
-	unsigned int level;
+	ISR_Level level;
 	
 	if(!initialized) return;
 

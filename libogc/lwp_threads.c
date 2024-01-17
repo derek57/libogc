@@ -43,7 +43,7 @@ volatile boolean _Context_Switch_necessary;
 volatile unsigned32 _Thread_Dispatch_disable_level;
 
 Watchdog_Control _lwp_wd_timeslice;
-u32 _Thread_Ticks_per_timeslice = 0;
+unsigned32 _Thread_Ticks_per_timeslice = 0;
 void **_Thread_libc_reent = NULL;
 Chain_Control _Thread_Ready_chain[LWP_MAXPRIORITIES];
 
@@ -191,7 +191,7 @@ void _Thread_Tickle_timeslice(
   void       *ignored
 )
 {
-  s64 ticks;
+  signed64 ticks;
   Thread_Control *executing;
 
   executing = _Thread_Executing;
@@ -227,22 +227,23 @@ void _Thread_Tickle_timeslice(
   _Thread_Unnest_dispatch();
 }
 
-void __thread_dispatch_fp()
+void __thread_dispatch_fp(void)
 {
-	u32 level;
-	Thread_Control *executing;
+  ISR_Level       level;
+  Thread_Control *executing;
 
-	_ISR_Disable(level);
-	executing = _Thread_Executing;
+  _ISR_Disable( level );
+  executing = _Thread_Executing;
 #ifdef _LWPTHREADS_DEBUG
-	__lwp_dumpcontext_fp(executing,_Thread_Allocated_fp);
+  __lwp_dumpcontext_fp( executing, _Thread_Allocated_fp );
 #endif
-	if(!_Thread_Is_allocated_fp(executing)) {
-		if(_Thread_Allocated_fp) _CPU_Context_save_fp_context(&_Thread_Allocated_fp->Registers);
-		_CPU_Context_restore_fp_context(&executing->Registers);
-		_Thread_Allocated_fp = executing;
-	}
-	_ISR_Enable(level);
+  if ( !_Thread_Is_allocated_fp( executing ) ) {
+    if ( _Thread_Allocated_fp )
+      _CPU_Context_save_fp_context( &_Thread_Allocated_fp->Registers );
+    _CPU_Context_restore_fp_context( &executing->Registers );
+    _Thread_Allocated_fp = executing;
+  }
+  _ISR_Enable( level );
 }
 
 /*PAGE
@@ -351,9 +352,9 @@ void _Thread_Dispatch( void )
  *  Output parameters:  NONE
  */
 
-void _Thread_Handler( void )
+static void _Thread_Handler( void )
 {
-  unsigned32      level;
+  ISR_Level       level;
   Thread_Control *executing;
 
   executing = _Thread_Executing;
@@ -395,8 +396,7 @@ void _Thread_Handler( void )
  */
 
 void _Thread_Rotate_Ready_Queue( 
-//  Priority_Control  priority
-  unsigned32        priority
+  Priority_Control  priority
 )
 {
   ISR_Level       level;
@@ -675,8 +675,7 @@ boolean _Thread_Evaluate_mode( void )
 
 void _Thread_Change_priority(
   Thread_Control   *the_thread,
-//  Priority_Control  new_priority,
-  unsigned32        new_priority,
+  Priority_Control  new_priority,
   boolean           prepend_it
 )
 {
@@ -757,8 +756,7 @@ void _Thread_Change_priority(
 
 void _Thread_Set_priority(
   Thread_Control   *the_thread,
-//  Priority_Control  new_priority
-  unsigned32        new_priority
+  Priority_Control  new_priority
 )
 {
   the_thread->current_priority = new_priority;
@@ -1053,8 +1051,7 @@ boolean _Thread_Initialize(
   Thread_Control                       *the_thread,
   void                                 *stack_area,
   unsigned32                            stack_size,
-//  Priority_Control                      priority,
-  unsigned32                            priority,
+  Priority_Control                      priority,
   unsigned32                            isr_level,
   bool                                  is_preemptible
 )

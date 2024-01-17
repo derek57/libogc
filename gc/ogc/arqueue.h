@@ -59,7 +59,9 @@ typedef void (*ARQCallback)(ARQRequest *);
 
 struct _arq_request {
 	Chain_Node node;
-	u32 owner,dir,prio,state;
+	u32 owner,dir;
+	Priority_Control prio;
+	States_Control state;
 	u32 aram_addr,mram_addr,len;
 	ARQCallback callback;
 };
@@ -69,7 +71,7 @@ void ARQ_Reset();
 
 
 /*!
- * \fn void ARQ_PostRequest(ARQRequest *req,u32 owner,u32 dir,u32 prio,u32 aram_addr,u32 mram_addr,u32 len)
+ * \fn void ARQ_PostRequest(ARQRequest *req,u32 owner,u32 dir,Priority_Control prio,u32 aram_addr,u32 mram_addr,u32 len)
  * \brief Enqueue a ARAM DMA transfer request.
  *
  * \param[in] req structure to hold ARAM DMA request informations.
@@ -83,11 +85,11 @@ void ARQ_Reset();
  *
  * \return none
  */
-void ARQ_PostRequest(ARQRequest *req,u32 owner,u32 dir,u32 prio,u32 aram_addr,u32 mram_addr,u32 len);
+void ARQ_PostRequest(ARQRequest *req,u32 owner,u32 dir,Priority_Control prio,u32 aram_addr,u32 mram_addr,u32 len);
 
 
 /*!
- * \fn void ARQ_PostRequestAsync(ARQRequest *req,u32 owner,u32 dir,u32 prio,u32 aram_addr,u32 mram_addr,u32 len,ARQCallback cb)
+ * \fn void ARQ_PostRequestAsync(ARQRequest *req,u32 owner,u32 dir,Priority_Control prio,u32 aram_addr,u32 mram_addr,u32 len,ARQCallback cb)
  * \brief Enqueue a ARAM DMA transfer request.
  *
  * \param[in] req structure to hold ARAM DMA request informations.
@@ -101,7 +103,7 @@ void ARQ_PostRequest(ARQRequest *req,u32 owner,u32 dir,u32 prio,u32 aram_addr,u3
  *
  * \return none
  */
-void ARQ_PostRequestAsync(ARQRequest *req,u32 owner,u32 dir,u32 prio,u32 aram_addr,u32 mram_addr,u32 len,ARQCallback cb);
+void ARQ_PostRequestAsync(ARQRequest *req,u32 owner,u32 dir,Priority_Control prio,u32 aram_addr,u32 mram_addr,u32 len,ARQCallback cb);
 void ARQ_RemoveRequest(ARQRequest *req);
 void ARQ_SetChunkSize(u32 size);
 u32 ARQ_GetChunkSize();

@@ -253,7 +253,7 @@ static void __console_clear_to_cursor() {
 
 void __console_init(void *framebuffer,int xstart,int ystart,int xres,int yres,int stride)
 {
-	unsigned int level;
+	ISR_Level level;
 	console_data_s *con = &stdcon;
 
 	_ISR_Disable(level);
@@ -286,7 +286,7 @@ void __console_init(void *framebuffer,int xstart,int ystart,int xres,int yres,in
 
 void __console_init_ex(void *conbuffer,int tgt_xstart,int tgt_ystart,int tgt_stride,int con_xres,int con_yres,int con_stride)
 {
-	unsigned int level;
+	ISR_Level level;
 	console_data_s *con = &stdcon;
 
 	_ISR_Disable(level);

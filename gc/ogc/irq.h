@@ -39,6 +39,7 @@ distribution.
 
 #include <gctypes.h>
 #include "context.h"
+#include "lwp_config.h"
 
 #define IM_NONE				 (0xffffffff)
 #define IRQ_MEM0			 0
@@ -171,13 +172,13 @@ raw_irq_handler_t IRQ_GetHandler(u32 nIrq);
 u32 IRQ_Disable(void);
 
 
-/*! \fn u32 IRQ_Restore(u32 level)
+/*! \fn u32 IRQ_Restore(ISR_Level level)
 \brief Restore the IRQ subsystem with the given level. This is function should be used together with IRQ_Disable()
 \param[in] level IRQ level to restore to.
 
 \return none
 */
-void IRQ_Restore(u32 level);
+void IRQ_Restore(ISR_Level level);
 
 void __MaskIrq(u32 nMask);
 void __UnmaskIrq(u32 nMask);

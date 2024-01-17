@@ -92,9 +92,9 @@ struct Thread_Control_struct {
   /** This field is the object management structure for each thread. */
   Objects_Control               Object;
   /** This field is the current priority state of this thread. */
-  Priority_Control              current_priority;
+  unsigned8                     current_priority;
   /** This field is the base priority of this thread. */
-  Priority_Control              real_priority;
+  unsigned8                     real_priority;
   /** This field is the number of nested suspend calls. */
   unsigned32                    suspend_count;
   /** This field is the number of mutexes currently held by this thread. */
@@ -134,7 +134,7 @@ struct Thread_Control_struct {
   /** This field is the stack area size. */
   unsigned32                    size;
   /** This field indicates whether the SuperCore allocated the stack. */
-  bool                          core_allocated_stack;
+  unsigned8                     core_allocated_stack;
   /** This field points to the Ready FIFO for this priority. */
   Chain_Control                *ready;
   /** This field holds the list of threads waiting to join. */
@@ -283,7 +283,7 @@ void _Thread_Clear_state(
 
 void _Thread_Change_priority (
   Thread_Control   *the_thread,
-  unsigned32        new_priority,
+  Priority_Control  new_priority,
   boolean           prepend_it
 );
 
@@ -298,7 +298,7 @@ void _Thread_Change_priority (
 
 void _Thread_Set_priority(
   Thread_Control   *the_thread,
-  unsigned32        new_priority
+  Priority_Control  new_priority
 );
 
 /*
@@ -392,7 +392,7 @@ boolean _Thread_Initialize(
   Thread_Control                       *the_thread,
   void                                 *stack_area,
   unsigned32                            stack_size,
-  unsigned32                            priority,
+  Priority_Control                      priority,
   unsigned32                            isr_level,
   bool                                  is_preemptible
 );
@@ -508,7 +508,7 @@ void _Thread_Reset_timeslice( void );
  */
 
 void _Thread_Rotate_Ready_Queue(
-  unsigned32        priority
+  Priority_Control  priority
 );
 
 /*

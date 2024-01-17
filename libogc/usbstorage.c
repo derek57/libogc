@@ -199,7 +199,7 @@ static u8 *cbw_buffer=NULL;
 
 s32 USBStorage_Initialize()
 {
-	u32 level;
+	ISR_Level level;
 
 	if(__inited)
 		return IPC_OK;

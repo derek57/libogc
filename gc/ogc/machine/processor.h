@@ -3,12 +3,13 @@
 
 #include <gctypes.h>
 #include "asm.h"
+#include "lwp_config.h"
 
 #define __stringify(rn)								#rn
 #define ATTRIBUTE_ALIGN(v)							__attribute__((aligned(v)))
 // courtesy of Marcan
-#define STACK_ALIGN(type, name, cnt, alignment)		u8 _al__##name[((sizeof(type)*(cnt)) + (alignment) + (((sizeof(type)*(cnt))%(alignment)) > 0 ? ((alignment) - ((sizeof(type)*(cnt))%(alignment))) : 0))]; \
-													type *name = (type*)(((u32)(_al__##name)) + ((alignment) - (((u32)(_al__##name))&((alignment)-1))))
+#define STACK_ALIGN(type, name, cnt, alignment)		unsigned8 _al__##name[((sizeof(type)*(cnt)) + (alignment) + (((sizeof(type)*(cnt))%(alignment)) > 0 ? ((alignment) - ((sizeof(type)*(cnt))%(alignment))) : 0))]; \
+													type *name = (type*)(((unsigned32)(_al__##name)) + ((alignment) - (((unsigned32)(_al__##name))&((alignment)-1))))
 
 #define _sync() asm volatile("sync")
 #define _nop() asm volatile("nop")
@@ -22,19 +23,19 @@
 	}									\
 })
 
-#define mfpvr() ({register u32 _rval; \
+#define mfpvr() ({register unsigned32 _rval; \
 		asm volatile("mfpvr %0" : "=r"(_rval)); _rval;})
 
-#define mfdcr(_rn) ({register u32 _rval; \
+#define mfdcr(_rn) ({register unsigned32 _rval; \
 		asm volatile("mfdcr %0," __stringify(_rn) \
              : "=r" (_rval)); _rval;})
 #define mtdcr(rn, val)  asm volatile("mtdcr " __stringify(rn) ",%0" : : "r" (val))
 
-#define mfmsr()   ({register u32 _rval; \
+#define mfmsr()   ({register unsigned32 _rval; \
 		asm volatile("mfmsr %0" : "=r" (_rval)); _rval;})
 #define mtmsr(val)  asm volatile("mtmsr %0" : : "r" (val))
 
-#define mfdec()   ({register u32 _rval; \
+#define mfdec()   ({register unsigned32 _rval; \
 		asm volatile("mfdec %0" : "=r" (_rval)); _rval;})
 
 /*
@@ -47,7 +48,7 @@
   } while (0)
 
 #define mfspr(_rn) \
-({	register u32 _rval = 0; \
+({	register unsigned32 _rval = 0; \
 	asm volatile("mfspr %0," __stringify(_rn) \
 	: "=r" (_rval));\
 	_rval; \
@@ -82,12 +83,12 @@
 #define mthid4(_val)	mtspr(HID4,_val)
 
 #define __lhbrx(base,index)			\
-({	register u16 res;				\
+({	register unsigned16 res;				\
 	__asm__ volatile ("lhbrx	%0,%1,%2" : "=r"(res) : "b%"(index), "r"(base) : "memory"); \
 	res; })
 
 #define __lwbrx(base,index)			\
-({	register u32 res;				\
+({	register unsigned32 res;				\
 	__asm__ volatile ("lwbrx	%0,%1,%2" : "=r"(res) : "b%"(index), "r"(base) : "memory"); \
 	res; })
 
@@ -97,7 +98,7 @@
 #define __stwbrx(base,index,value)	\
 	__asm__ volatile ("stwbrx	%0,%1,%2" : : "r"(value), "b%"(index), "r"(base) : "memory")
 
-#define cntlzw(_val) ({register u32 _rval; \
+#define cntlzw(_val) ({register unsigned32 _rval; \
 					  asm volatile("cntlzw %0, %1" : "=r"((_rval)) : "r"((_val))); _rval;})
 
 #define _CPU_MSR_GET( _msr_value ) \
@@ -110,7 +111,7 @@
 { asm volatile ("mtmsr %0" : "=&r" ((_msr_value)) : "0" ((_msr_value))); }
 
 #define _CPU_ISR_Enable() \
-	{ register u32 _val = 0; \
+	{ register unsigned32 _val = 0; \
 	  __asm__ __volatile__ ( \
 		"mfmsr %0\n" \
 		"ori %0,%0,0x8000\n" \
@@ -120,7 +121,7 @@
 	}
 
 #define _ISR_Disable( _isr_cookie ) \
-  { register u32 _disable_mask = 0; \
+  { register unsigned32 _disable_mask = 0; \
 	_isr_cookie = 0; \
     __asm__ __volatile__ ( \
 	  "mfmsr %0\n" \
@@ -133,7 +134,7 @@
   }
 
 #define _ISR_Enable( _isr_cookie )  \
-  { register u32 _enable_mask = 0; \
+  { register unsigned32 _enable_mask = 0; \
 	__asm__ __volatile__ ( \
     "    cmpwi %0,0\n" \
 	"    beq 1f\n" \
@@ -147,7 +148,7 @@
   }
 
 #define _ISR_Flash( _isr_cookie ) \
-  { register u32 _flash_mask = 0; \
+  { register unsigned32 _flash_mask = 0; \
     __asm__ __volatile__ ( \
     "   cmpwi %0,0\n" \
 	"   beq 1f\n" \
@@ -163,13 +164,13 @@
   }
 
 #define _CPU_FPR_Enable() \
-{ register u32 _val = 0; \
+{ register unsigned32 _val = 0; \
 	  asm volatile ("mfmsr %0; ori %0,%0,0x2000; mtmsr %0" : \
 					"=&r" (_val) : "0" (_val));\
 }
 
 #define _CPU_FPR_Disable() \
-{ register u32 _val = 0; \
+{ register unsigned32 _val = 0; \
 	  asm volatile ("mfmsr %0; rlwinm %0,%0,0,19,17; mtmsr %0" : \
 					"=&r" (_val) : "0" (_val));\
 }
@@ -178,25 +179,25 @@
    extern "C" {
 #endif /* __cplusplus */
 
-static inline u16 bswap16(u16 val)
+static inline unsigned16 bswap16(unsigned16 val)
 {
-	u16 tmp = val;
+	unsigned16 tmp = val;
 	return __lhbrx(&tmp,0);
 }
 
-static inline u32 bswap32(u32 val)
+static inline unsigned32 bswap32(unsigned32 val)
 {
-	u32 tmp = val;
+	unsigned32 tmp = val;
 	return __lwbrx(&tmp,0);
 }
 
-static inline u64 bswap64(u64 val)
+static inline unsigned64 bswap64(unsigned64 val)
 {
 	union ullc {
-		u64 ull;
-		u32 ul[2];
+		unsigned64 ull;
+		unsigned32 ul[2];
 	} outv;
-	u64 tmp = val;
+	unsigned64 tmp = val;
 
 	outv.ul[0] = __lwbrx(&tmp,4);
 	outv.ul[1] = __lwbrx(&tmp,0);
@@ -206,48 +207,48 @@ static inline u64 bswap64(u64 val)
 
 // Basic I/O
 
-static inline u32 read32(u32 addr)
+static inline unsigned32 read32(unsigned32 addr)
 {
-	u32 x;
+	unsigned32 x;
 	asm volatile("lwz %0,0(%1) ; sync" : "=r"(x) : "b"(0xc0000000 | addr));
 	return x;
 }
 
-static inline void write32(u32 addr, u32 x)
+static inline void write32(unsigned32 addr, unsigned32 x)
 {
 	asm("stw %0,0(%1) ; eieio" : : "r"(x), "b"(0xc0000000 | addr));
 }
 
-static inline void mask32(u32 addr, u32 clear, u32 set)
+static inline void mask32(unsigned32 addr, unsigned32 clear, unsigned32 set)
 {
 	write32(addr, (read32(addr)&(~clear)) | set);
 }
 
-static inline u16 read16(u32 addr)
+static inline unsigned16 read16(unsigned32 addr)
 {
-	u16 x;
+	unsigned16 x;
 	asm volatile("lhz %0,0(%1) ; sync" : "=r"(x) : "b"(0xc0000000 | addr));
 	return x;
 }
 
-static inline void write16(u32 addr, u16 x)
+static inline void write16(unsigned32 addr, unsigned16 x)
 {
 	asm("sth %0,0(%1) ; eieio" : : "r"(x), "b"(0xc0000000 | addr));
 }
 
-static inline u8 read8(u32 addr)
+static inline unsigned8 read8(unsigned32 addr)
 {
-	u8 x;
+	unsigned8 x;
 	asm volatile("lbz %0,0(%1) ; sync" : "=r"(x) : "b"(0xc0000000 | addr));
 	return x;
 }
 
-static inline void write8(u32 addr, u8 x)
+static inline void write8(unsigned32 addr, unsigned8 x)
 {
 	asm("stb %0,0(%1) ; eieio" : : "r"(x), "b"(0xc0000000 | addr));
 }
 
-static inline void writef32(u32 addr, f32 x)
+static inline void writef32(unsigned32 addr, f32 x)
 {
 	asm("stfs %0,0(%1) ; eieio" : : "f"(x), "b"(0xc0000000 | addr));
 }

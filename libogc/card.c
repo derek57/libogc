@@ -43,6 +43,7 @@ distribution.
 #include "lwp.h"
 #include "exi.h"
 #include "card.h"
+#include "lwp_priority.h"
 
 //#define _CARD_DEBUG
 
@@ -291,7 +292,7 @@ static void __card_checksum(u16 *buff,u32 len,u16 *cs1,u16 *cs2)
 
 static s32 __card_putcntrlblock(card_block *card,s32 result)
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 	if(card->attached) card->result = result;
@@ -303,7 +304,7 @@ static s32 __card_putcntrlblock(card_block *card,s32 result)
 static s32 __card_getcntrlblock(s32 chn,card_block **card)
 {
 	s32 ret;
-	u32 level;
+	ISR_Level level;
 	card_block *rcard = NULL;
 
 	if(chn<EXI_CHANNEL_0 || chn>=EXI_CHANNEL_2) return CARD_ERROR_FATAL_ERROR;
@@ -339,7 +340,7 @@ RTEMS_INLINE_ROUTINE struct card_bat* __card_getbatblock(card_block *card)
 static s32 __card_sync(s32 chn)
 {
 	s32 ret;
-	u32 level;
+	ISR_Level level;
 	card_block *card = &cardmap[chn];
 
 	_ISR_Disable(level);
@@ -352,7 +353,7 @@ static s32 __card_sync(s32 chn)
 
 static void __card_synccallback(s32 chn,s32 result)
 {
-	u32 level;
+	ISR_Level level;
 	card_block *card = &cardmap[chn];
 #ifdef _CARD_DEBUG
 	printf("__card_synccallback(%d,%d,%d)\n",chn,result,card->result);
@@ -722,7 +723,7 @@ static s32 __card_verify(card_block *card)
 	return CARD_ERROR_BROKEN;
 }
 
-static u32 __card_iscard(u32 id)
+static u32 __card_iscard(Objects_Id id)
 {
 	u32 ret;
 	u32 idx,tmp,secsize;
@@ -1441,7 +1442,7 @@ static void __unlocked_callback(s32 chn,s32 result)
 
 static s32 __card_start(s32 chn,cardcallback tx_cb,cardcallback exi_cb)
 {
-	u32 level;
+	ISR_Level level;
 	card_block *card = NULL;
 #ifdef _CARD_DEBUG
 	printf("__card_start(%d,%p,%p)\n",chn,tx_cb,exi_cb);
@@ -1658,8 +1659,8 @@ static s32 __card_formatregion(s32 chn,u32 encode,cardcallback callback)
 	s32 ret;
 	u16 tmp;
 	u32 cnt;
-	u64 time;
-	u64 rnd_val;
+	Watchdog_Interval time;
+	Watchdog_Interval rnd_val;
 	void *workarea,*memblock;
 	cardcallback cb = NULL;
 	card_block *card = NULL;
@@ -1690,17 +1691,17 @@ static s32 __card_formatregion(s32 chn,u32 encode,cardcallback callback)
 	rnd_val = time = gettime();
 	sramex = __SYS_LockSramEx();
 	while(cnt<12) {
-		rnd_val = (((rnd_val*(u64)0x0000000041c64e6d)+(u64)0x0000000000003039)>>16);
+		rnd_val = (((rnd_val*(Watchdog_Interval)0x0000000041c64e6d)+(Watchdog_Interval)0x0000000000003039)>>16);
 		((u8*)header->serial)[cnt] = (sramex->flash_id[chn][cnt]+(u32)rnd_val);
 
-		rnd_val = (((rnd_val*(u64)0x0000000041c64e6d)+(u64)0x0000000000003039)>>16);
-		rnd_val &= (u64)0x0000000000007fff;
+		rnd_val = (((rnd_val*(Watchdog_Interval)0x0000000041c64e6d)+(Watchdog_Interval)0x0000000000003039)>>16);
+		rnd_val &= (Watchdog_Interval)0x0000000000007fff;
 		
 		cnt++;
 	}
 	__SYS_UnlockSramEx(0);
 
-	*(u64*)&(header->serial[3]) = time;
+	*(Watchdog_Interval*)&(header->serial[3]) = time;
 	header->serial[7] = tmp;
 	header->device_id = 0;
 	header->size = card->card_size;
@@ -1905,7 +1906,7 @@ static s32 __card_updatedir(s32 chn,cardcallback callback)
 
 static void __card_dounmount(s32 chn,s32 result)
 {
-	u32 level;
+	ISR_Level level;
 	card_block *card;
 
 	if(chn<EXI_CHANNEL_0 || chn>=EXI_CHANNEL_2) return;
@@ -1928,7 +1929,8 @@ static s32 __card_domount(s32 chn)
 	u8 status,kval;
 	s32 ret = CARD_ERROR_READY;
 	u32 sum;
-	u32 id,idx,cnt;
+	Objects_Id id;
+	u32 idx,cnt;
 	card_block *card;
 	syssramex *sramex;
 
@@ -2424,7 +2426,7 @@ static s32 __dounlock(s32 chn,u32 *key)
 	DCInvalidateRange(cipher2,4);
 	DCFlushRange(workarea,16);
 
-	card->dsp_task.prio = 255;
+	card->dsp_task.prio = PRIORITY_MAXIMUM;
 	card->dsp_task.iram_maddr = (u16*)MEM_VIRTUAL_TO_PHYSICAL(_cardunlockdata);
 	card->dsp_task.iram_len = 352;
 	card->dsp_task.iram_addr = 0x0000;
@@ -2444,7 +2446,8 @@ static s32 __dounlock(s32 chn,u32 *key)
 
 s32 CARD_Init(const char *gamecode,const char *company)
 {
-	u32 i,level;
+	u32 i;
+	ISR_Level level;
 
 	if(card_inited) return CARD_ERROR_READY;
 #ifdef _CARD_DEBUG
@@ -2476,7 +2479,8 @@ s32 CARD_Probe(s32 chn)
 s32 CARD_ProbeEx(s32 chn,s32 *mem_size,s32 *sect_size)
 {
 	s32 ret;
-	u32 level,card_id;
+	ISR_Level level;
+	u32 card_id;
 	card_block *card = NULL;
 #ifdef _CARD_DEBUG
 	printf("CARD_ProbeEx(%d,%p,%p)\n",chn,mem_size,sect_size);
@@ -2528,7 +2532,7 @@ s32 CARD_ProbeEx(s32 chn,s32 *mem_size,s32 *sect_size)
 s32 CARD_MountAsync(s32 chn,void *workarea,cardcallback detach_cb,cardcallback attach_cb)
 {
 	s32 ret = CARD_ERROR_READY;
-	u32 level;
+	ISR_Level level;
 	cardcallback attachcb = NULL;
 	card_block *card = NULL;
 #ifdef _CARD_DEBUG
@@ -3245,7 +3249,8 @@ s32 CARD_SetAttributes(s32 chn,s32 fileno,u8 attr)
 
 s32 CARD_SetCompany(const char *company)
 {
-	u32 level,i;
+	ISR_Level level;
+	u32 i;
 
 	_ISR_Disable(level);
 	for(i=0;i<2;i++) card_company[i] = 0xff;
@@ -3257,7 +3262,8 @@ s32 CARD_SetCompany(const char *company)
 
 s32 CARD_SetGamecode(const char *gamecode)
 {
-	u32 level,i;
+	ISR_Level level;
+	u32 i;
 
 	_ISR_Disable(level);
 	for(i=0;i<4;i++) card_gamecode[i] = 0xff;

@@ -49,22 +49,22 @@ extern "C" {
 #define TB_NSPERUS					1000
 #define TB_USPERTICK				10000
 
-#define ticks_to_cycles(ticks)		((((u64)(ticks)*(u64)((TB_CORE_CLOCK*2)/TB_TIMER_CLOCK))/2))
-#define ticks_to_secs(ticks)		(((u64)(ticks)/(u64)(TB_TIMER_CLOCK*1000)))
-#define ticks_to_millisecs(ticks)	(((u64)(ticks)/(u64)(TB_TIMER_CLOCK)))
-#define ticks_to_microsecs(ticks)	((((u64)(ticks)*8)/(u64)(TB_TIMER_CLOCK/125)))
-#define ticks_to_nanosecs(ticks)	((((u64)(ticks)*8000)/(u64)(TB_TIMER_CLOCK/125)))
+#define ticks_to_cycles(ticks)		((((Watchdog_Interval)(ticks)*(Watchdog_Interval)((TB_CORE_CLOCK*2)/TB_TIMER_CLOCK))/2))
+#define ticks_to_secs(ticks)		(((Watchdog_Interval)(ticks)/(Watchdog_Interval)(TB_TIMER_CLOCK*1000)))
+#define ticks_to_millisecs(ticks)	(((Watchdog_Interval)(ticks)/(Watchdog_Interval)(TB_TIMER_CLOCK)))
+#define ticks_to_microsecs(ticks)	((((Watchdog_Interval)(ticks)*8)/(Watchdog_Interval)(TB_TIMER_CLOCK/125)))
+#define ticks_to_nanosecs(ticks)	((((Watchdog_Interval)(ticks)*8000)/(Watchdog_Interval)(TB_TIMER_CLOCK/125)))
 
-#define tick_microsecs(ticks)		((((u64)(ticks)*8)%(u64)(TB_TIMER_CLOCK/125)))
-#define tick_nanosecs(ticks)		((((u64)(ticks)*8000)%(u64)(TB_TIMER_CLOCK/125)))
+#define tick_microsecs(ticks)		((((Watchdog_Interval)(ticks)*8)%(Watchdog_Interval)(TB_TIMER_CLOCK/125)))
+#define tick_nanosecs(ticks)		((((Watchdog_Interval)(ticks)*8000)%(Watchdog_Interval)(TB_TIMER_CLOCK/125)))
 
 
-#define secs_to_ticks(sec)			((u64)(sec)*(TB_TIMER_CLOCK*1000))
-#define millisecs_to_ticks(msec)	((u64)(msec)*(TB_TIMER_CLOCK))
-#define microsecs_to_ticks(usec)	(((u64)(usec)*(TB_TIMER_CLOCK/125))/8)
-#define nanosecs_to_ticks(nsec)		(((u64)(nsec)*(TB_TIMER_CLOCK/125))/8000)
+#define secs_to_ticks(sec)			((Watchdog_Interval)(sec)*(TB_TIMER_CLOCK*1000))
+#define millisecs_to_ticks(msec)	((Watchdog_Interval)(msec)*(TB_TIMER_CLOCK))
+#define microsecs_to_ticks(usec)	(((Watchdog_Interval)(usec)*(TB_TIMER_CLOCK/125))/8)
+#define nanosecs_to_ticks(nsec)		(((Watchdog_Interval)(nsec)*(TB_TIMER_CLOCK/125))/8000)
 
-#define diff_ticks(tick0,tick1)		(((u64)(tick1)<(u64)(tick0))?((u64)-1-(u64)(tick0)+(u64)(tick1)):((u64)(tick1)-(u64)(tick0)))
+#define diff_ticks(tick0,tick1)		(((Watchdog_Interval)(tick1)<(Watchdog_Interval)(tick0))?((Watchdog_Interval)-1-(Watchdog_Interval)(tick0)+(Watchdog_Interval)(tick1)):((Watchdog_Interval)(tick1)-(Watchdog_Interval)(tick0)))
 
 /*
  *  The following enumerated type lists the states in which a
@@ -96,7 +96,7 @@ typedef enum {
 
 #define WATCHDOG_NO_TIMEOUT			0
 
-#define LWP_WD_ABS(x)				((s64)(x)>0?(s64)(x):-((s64)(x)))
+#define LWP_WD_ABS(x)				((signed64)(x)>0?(signed64)(x):-((signed64)(x)))
 
 /*
  *  The following are used for synchronization purposes
@@ -120,14 +120,14 @@ SCORE_EXTERN unsigned32 _Watchdog_Ticks_since_boot;
 
 SCORE_EXTERN Chain_Control _Watchdog_Ticks_chain;
 
-extern u32 gettick();
-extern u64 gettime();
-extern void settime(u64);
+extern unsigned32 gettick();
+extern Watchdog_Interval gettime();
+extern void settime(Watchdog_Interval);
 
-u32 diff_sec(u64 start,u64 end);
-u32 diff_msec(u64 start,u64 end);
-u32 diff_usec(u64 start,u64 end);
-u32 diff_nsec(u64 start,u64 end);
+unsigned32 diff_sec(Watchdog_Interval start,Watchdog_Interval end);
+unsigned32 diff_msec(Watchdog_Interval start,Watchdog_Interval end);
+unsigned32 diff_usec(Watchdog_Interval start,Watchdog_Interval end);
+unsigned32 diff_nsec(Watchdog_Interval start,Watchdog_Interval end);
 
 /*
  *  The following types define a pointer to a watchdog service routine.
@@ -233,7 +233,7 @@ void _Watchdog_Tickle (
 void _Watchdog_Adjust (
   Chain_Control              *header,
   Watchdog_Adjust_directions  direction,
-  s64                         units
+  signed64                    units
 );
 
 #ifdef __RTEMS_APPLICATION__

@@ -35,6 +35,7 @@ distribution.
 #include "processor.h"
 #include "irq.h"
 #include "dsp.h"
+#include "lwp_config.h"
 
 //#define _DSP_DEBUG
 
@@ -326,7 +327,7 @@ static void __dsp_inthandler(u32 nIrq,void *pCtx)
 
 void DSP_Init()
 {
-	u32 level;
+	ISR_Level level;
 #ifdef _DSP_DEBUG
 	printf("DSP_Init()\n");
 #endif
@@ -351,7 +352,7 @@ void DSP_Init()
 
 DSPCallback DSP_RegisterCallback(DSPCallback usr_cb)
 {
-	u32 level;
+	ISR_Level level;
 	DSPCallback ret;
 #ifdef _DSP_DEBUG
 	printf("DSP_RegisterCallback()\n");
@@ -418,7 +419,7 @@ u32 DSP_ReadCPUtoDSP()
 
 void DSP_AssertInt()
 {
-	u32 level;
+	ISR_Level level;
 #ifdef _DSP_DEBUG
 	printf("DSP_AssertInt()\n");
 #endif
@@ -430,7 +431,7 @@ void DSP_AssertInt()
 void DSP_Reset()
 {
 	u16 old;
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 	old = _dspReg[5];
@@ -440,7 +441,8 @@ void DSP_Reset()
 
 void DSP_Halt()
 {
-	u32 level,old;
+	ISR_Level level;
+	u32 old;
 
 	_ISR_Disable(level);
 	old = _dspReg[5];
@@ -450,7 +452,7 @@ void DSP_Halt()
 
 void DSP_Unhalt()
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 	_dspReg[5] = (_dspReg[5]&~(DSPCR_AIINT|DSPCR_ARINT|DSPCR_DSPINT|DSPCR_HALT));
@@ -464,7 +466,7 @@ u32 DSP_GetDMAStatus()
 
 dsptask_t* DSP_AddTask(dsptask_t *task)
 {
-	u32 level;
+	ISR_Level level;
 #ifdef _DSP_DEBUG
 	printf("DSP_AddTask(%p)\n",task);
 #endif
@@ -480,7 +482,7 @@ dsptask_t* DSP_AddTask(dsptask_t *task)
 
 void DSP_CancelTask(dsptask_t *task)
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 	task->flags |= DSPTASK_CANCEL;
@@ -489,7 +491,7 @@ void DSP_CancelTask(dsptask_t *task)
 
 dsptask_t* DSP_AssertTask(dsptask_t *task)
 {
-	u32 level;
+	ISR_Level level;
 	dsptask_t *ret = NULL;
 
 	_ISR_Disable(level);

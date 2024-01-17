@@ -45,8 +45,7 @@
 
 RTEMS_INLINE_ROUTINE void _Priority_Initialize_information(
   Priority_Information *the_priority_map,
-//  Priority_Control      new_priority
-  unsigned32            new_priority
+  Priority_Control      new_priority
 )
 {
   Priority_Bit_map_control major;
@@ -116,8 +115,7 @@ RTEMS_INLINE_ROUTINE void _Priority_Remove_from_bit_map (
  *  ready thread.
  */
 
-//RTEMS_INLINE_ROUTINE Priority_Control _Priority_Get_highest( void )
-RTEMS_INLINE_ROUTINE unsigned32 _Priority_Get_highest( void )
+RTEMS_INLINE_ROUTINE Priority_Control _Priority_Get_highest( void )
 {
   Priority_Bit_map_control minor;
   Priority_Bit_map_control major;

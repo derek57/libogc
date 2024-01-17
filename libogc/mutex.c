@@ -50,9 +50,9 @@ typedef struct
 
 Objects_Information _lwp_mutex_objects;
 
-static s32 __lwp_mutex_locksupp(pthread_mutex_t lock,u32 timeout,u8 block)
+static signed32 __lwp_mutex_locksupp(pthread_mutex_t lock,unsigned32 timeout,unsigned8 block)
 {
-	u32 level;
+	ISR_Level level;
 	POSIX_Mutex_Control *p;
 
 	if(lock==LWP_MUTEX_NULL || _Objects_Get_node(lock)!=OBJECTS_POSIX_MUTEXES) return -1;
@@ -96,7 +96,7 @@ static POSIX_Mutex_Control* __lwp_mutex_allocate()
 	return NULL;
 }
 
-s32 LWP_MutexInit(pthread_mutex_t *mutex,bool use_recursive)
+signed32 LWP_MutexInit(pthread_mutex_t *mutex,bool use_recursive)
 {
 	CORE_mutex_Attributes attr;
 	POSIX_Mutex_Control *ret;
@@ -109,7 +109,7 @@ s32 LWP_MutexInit(pthread_mutex_t *mutex,bool use_recursive)
 	attr.discipline = CORE_MUTEX_DISCIPLINES_FIFO;
 	attr.lock_nesting_behavior = use_recursive?CORE_MUTEX_NESTING_ACQUIRES:CORE_MUTEX_NESTING_IS_ERROR;
 	attr.only_owner_release = TRUE;
-	attr.priority_ceiling = 1; //__lwp_priotocore(PRIORITY_MAXIMUM-1);
+	attr.priority_ceiling = 1; //_POSIX_Priority_To_core(PRIORITY_MAXIMUM-1);
 	_CORE_mutex_Initialize(&ret->Mutex,&attr,CORE_MUTEX_UNLOCKED);
 
 	*mutex = (pthread_mutex_t)_Objects_Build_id(OBJECTS_POSIX_MUTEXES, _Objects_Get_index(ret->Object.id));
@@ -117,7 +117,7 @@ s32 LWP_MutexInit(pthread_mutex_t *mutex,bool use_recursive)
 	return 0;
 }
 
-s32 LWP_MutexDestroy(pthread_mutex_t mutex)
+signed32 LWP_MutexDestroy(pthread_mutex_t mutex)
 {
 	POSIX_Mutex_Control *p;
 
@@ -135,19 +135,19 @@ s32 LWP_MutexDestroy(pthread_mutex_t mutex)
 	return 0;
 }
 
-s32 LWP_MutexLock(pthread_mutex_t mutex)
+signed32 LWP_MutexLock(pthread_mutex_t mutex)
 {
 	return __lwp_mutex_locksupp(mutex,RTEMS_NO_TIMEOUT,TRUE);
 }
 
-s32 LWP_MutexTryLock(pthread_mutex_t mutex)
+signed32 LWP_MutexTryLock(pthread_mutex_t mutex)
 {
 	return __lwp_mutex_locksupp(mutex,RTEMS_NO_TIMEOUT,FALSE);
 }
 
-s32 LWP_MutexUnlock(pthread_mutex_t mutex)
+signed32 LWP_MutexUnlock(pthread_mutex_t mutex)
 {
-	u32 ret;
+	unsigned32 ret;
 	POSIX_Mutex_Control *lock;
 
 	lock = __lwp_mutex_open(mutex);

@@ -83,7 +83,7 @@ static POSIX_Semaphore_Control* __lwp_sema_allocate()
 	return NULL;
 }
 
-s32 LWP_SemInit(sem_t *sem,u32 start,u32 max)
+signed32 LWP_SemInit(sem_t *sem,unsigned32 start,unsigned32 max)
 {
 	CORE_semaphore_Attributes attr;
 	POSIX_Semaphore_Control *ret;
@@ -102,7 +102,7 @@ s32 LWP_SemInit(sem_t *sem,u32 start,u32 max)
 	return 0;
 }
 
-s32 LWP_SemWait(sem_t sem)
+signed32 LWP_SemWait(sem_t sem)
 {
 	POSIX_Semaphore_Control *lwp_sem;
 
@@ -126,7 +126,7 @@ s32 LWP_SemWait(sem_t sem)
 	return 0;
 }
 
-s32 LWP_SemPost(sem_t sem)
+signed32 LWP_SemPost(sem_t sem)
 {
 	POSIX_Semaphore_Control *lwp_sem;
 
@@ -139,7 +139,7 @@ s32 LWP_SemPost(sem_t sem)
 	return 0;
 }
 
-s32 LWP_SemDestroy(sem_t sem)
+signed32 LWP_SemDestroy(sem_t sem)
 {
 	POSIX_Semaphore_Control *lwp_sem;
 

@@ -314,9 +314,9 @@ Heap_Get_information_status _Heap_Get_information(
   Heap_Information_block  *the_info
 )
 {
+  unsigned32  notdone = 1;
   Heap_Block *the_block  = 0;  /* avoid warnings */
   Heap_Block *next_block = 0;  /* avoid warnings */
-  int         notdone = 1;
 
 
   the_info->free_blocks = 0;

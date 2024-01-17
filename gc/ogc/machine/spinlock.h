@@ -79,7 +79,7 @@ RTEMS_INLINE_ROUTINE void spin_lock(spinlock_t *lock)
 
 RTEMS_INLINE_ROUTINE void spin_lock_irqsave(spinlock_t *lock,register u32 *p_isr_level)
 {
-	register u32 level;
+	register ISR_Level level;
     register u32 tmp;
 
 	_ISR_Disable(level);

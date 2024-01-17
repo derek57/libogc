@@ -78,7 +78,7 @@ static void __ARClearArea(u32 aramaddr,u32 len);
 
 ARCallback AR_RegisterCallback(ARCallback callback)
 {
-	u32 level;
+	ISR_Level level;
 	ARCallback old;
 
 	_ISR_Disable(level);
@@ -90,7 +90,8 @@ ARCallback AR_RegisterCallback(ARCallback callback)
 
 u32 AR_GetDMAStatus()
 {
-	u32 level,ret;
+	ISR_Level level;
+	u32 ret;
 	_ISR_Disable(level);
 	ret = ((_dspReg[5]&DSPCR_DSPDMA)==DSPCR_DSPDMA);
 	_ISR_Enable(level);
@@ -102,7 +103,7 @@ u32 AR_Init(u32 *stack_idx_array,u32 num_entries)
 #ifdef _AR_DEBUG
 	u32 freq;
 #endif
-	u32 level;
+	ISR_Level level;
 	u32 aram_base = 0x4000;
 
 	if(__ARInit_Flag) return aram_base;
@@ -135,7 +136,7 @@ u32 AR_Init(u32 *stack_idx_array,u32 num_entries)
 
 void AR_StartDMA(u32 dir,u32 memaddr,u32 aramaddr,u32 len)
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 
@@ -157,7 +158,7 @@ void AR_StartDMA(u32 dir,u32 memaddr,u32 aramaddr,u32 len)
 
 u32 AR_Alloc(u32 len)
 {
-	u32 level;
+	ISR_Level level;
 	u32 curraddr;
 
 	_ISR_Disable(level);
@@ -172,7 +173,7 @@ u32 AR_Alloc(u32 len)
 
 u32 AR_Free(u32 *len)
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 	__ARBlockLen--;

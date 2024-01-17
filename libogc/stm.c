@@ -123,7 +123,7 @@ s32 __STM_Close()
 s32 __STM_SetEventHook()
 {
 	s32 ret;
-	u32 level;
+	ISR_Level level;
 
 	if(__stm_initialized==0) return STM_ENOTINIT;
 	

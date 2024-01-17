@@ -256,7 +256,7 @@ static s32 __ioctlvfmtCB(s32 result,void *userdata)
 static s32 __ipc_queuerequest(struct _ipcreq *req)
 {
 	u32 cnt;
-	u32 level;
+	ISR_Level level;
 #ifdef DEBUG_IPC
 	printf("__ipc_queuerequest(0x%p)\n",req);
 #endif
@@ -685,7 +685,7 @@ free_and_error:
 static s32 __ipc_asyncrequest(struct _ipcreq *req)
 {
 	s32 ret;
-	u32 level;
+	ISR_Level level;
 
 	ret = __ipc_queuerequest(req);
 	if(ret) __ipc_freereq(req);
@@ -700,7 +700,7 @@ static s32 __ipc_asyncrequest(struct _ipcreq *req)
 static s32 __ipc_syncrequest(struct _ipcreq *req)
 {
 	s32 ret;
-	u32 level;
+	ISR_Level level;
 
 	LWP_InitQueue(&req->syncqueue);
 
@@ -721,7 +721,7 @@ s32 iosCreateHeap(s32 size)
 {
 	s32 i,ret;
 	s32 free;
-	u32 level;
+	ISR_Level level;
 	u32 ipclo,ipchi;
 #ifdef DEBUG_IPC
 	printf("iosCreateHeap(%d)\n",size);
@@ -822,7 +822,7 @@ u32 __IPC_ClntInit(void)
 
 void __IPC_Reinitialize(void)
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 

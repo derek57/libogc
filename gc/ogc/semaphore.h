@@ -46,13 +46,13 @@ extern "C" {
 #endif
 
 
-/*! \typedef u32 sem_t
+/*! \typedef unsigned32 sem_t
 \brief typedef for the semaphore handle
 */
-typedef u32 sem_t;
+typedef unsigned32 sem_t;
 
 
-/*! \fn s32 LWP_SemInit(sem_t *sem,u32 start,u32 max)
+/*! \fn signed32 LWP_SemInit(sem_t *sem,unsigned32 start,unsigned32 max)
 \brief Initializes a semaphore.
 \param[out] sem pointer to a sem_t handle.
 \param[in] start start count of the semaphore
@@ -60,34 +60,34 @@ typedef u32 sem_t;
 
 \return 0 on success, <0 on error
 */
-s32 LWP_SemInit(sem_t *sem,u32 start,u32 max);
+signed32 LWP_SemInit(sem_t *sem,unsigned32 start,unsigned32 max);
 
 
-/*! \fn s32 LWP_SemDestroy(sem_t sem)
+/*! \fn signed32 LWP_SemDestroy(sem_t sem)
 \brief Close and destroy a semaphore, release all threads and handles locked on this semaphore.
 \param[in] sem handle to the sem_t structure.
 
 \return 0 on success, <0 on error
 */
-s32 LWP_SemDestroy(sem_t sem);
+signed32 LWP_SemDestroy(sem_t sem);
 
 
-/*! \fn s32 LWP_SemWait(sem_t sem)
+/*! \fn signed32 LWP_SemWait(sem_t sem)
 \brief Count down semaphore counter and enter lock if counter <=0
 \param[in] sem handle to the sem_t structure.
 
 \return 0 on success, <0 on error
 */
-s32 LWP_SemWait(sem_t sem);
+signed32 LWP_SemWait(sem_t sem);
 
 
-/*! \fn s32 LWP_SemPost(sem_t sem)
+/*! \fn signed32 LWP_SemPost(sem_t sem)
 \brief Count up semaphore counter and release lock if counter >0
 \param[in] sem handle to the sem_t structure.
 
 \return 0 on success, <0 on error
 */
-s32 LWP_SemPost(sem_t sem);
+signed32 LWP_SemPost(sem_t sem);
 
 #ifdef __cplusplus
 	}

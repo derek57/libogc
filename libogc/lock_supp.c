@@ -15,7 +15,7 @@
 
 int __libogc_lock_init(int *lock,int recursive)
 {
-	s32 ret;
+	signed32 ret;
 	pthread_mutex_t retlck = LWP_MUTEX_NULL;
 
 	if(!lock) return -1;
@@ -29,7 +29,7 @@ int __libogc_lock_init(int *lock,int recursive)
 
 int __libogc_lock_close(int *lock)
 {
-	s32 ret;
+	signed32 ret;
 	pthread_mutex_t plock;
 	
 	if(!lock || *lock==0) return -1;

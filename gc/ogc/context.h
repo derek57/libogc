@@ -19,26 +19,27 @@
 #define EX_RESV				13
 #define EX_THERM			14
 
-#ifndef _LANGUAGE_ASSEMBLY
+#ifndef ASM
 
 #include <gctypes.h>
+#include "lwp_config.h"
 
 #ifdef __cplusplus
    extern "C" {
 #endif /* __cplusplus */
 
 typedef struct {
-	u32 EXCPT_Number;
-	u32 SRR0,SRR1;
-	u32 GPR[32];
-	u32 GQR[8];
-	u32 CR, LR, CTR, XER, MSR, DAR;
+	unsigned32 EXCPT_Number;
+	unsigned32 SRR0,SRR1;
+	unsigned32 GPR[32];
+	unsigned32 GQR[8];
+	unsigned32 CR, LR, CTR, XER, MSR, DAR;
 
-	u16	state;		//used to determine whether to restore the fpu context or not
-	u16 mode;		//unused
+	unsigned16	state;		//used to determine whether to restore the fpu context or not
+	unsigned16 mode;		//unused
 
 	f64 FPR[32];
-	u64	FPSCR;
+	unsigned64	FPSCR;
 	f64 PSFPR[32];
 } Context_Control;
 
@@ -46,6 +47,6 @@ typedef struct {
    }
 #endif /* __cplusplus */
 
-#endif		//!_LANGUAGE_ASSEMBLY
+#endif  /* !ASM */
 
 #endif

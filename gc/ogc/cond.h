@@ -46,50 +46,50 @@ extern "C" {
 #endif
 
 
-/*! \typedef u32 pthread_cond_t
+/*! \typedef unsigned32 pthread_cond_t
 \brief typedef for the condition variable handle
 */
-typedef u32 pthread_cond_t;
+typedef unsigned32 pthread_cond_t;
 
 
-/*! \fn s32 LWP_CondInit(pthread_cond_t *cond)
+/*! \fn signed32 LWP_CondInit(pthread_cond_t *cond)
 \brief Initialize condition variable
 \param[out] cond pointer to the pthread_cond_t handle
 
 \return 0 on success, <0 on error
 */
-s32 LWP_CondInit(pthread_cond_t *cond);
+signed32 LWP_CondInit(pthread_cond_t *cond);
 
 
-/*! \fn s32 LWP_CondWait(pthread_cond_t cond,pthread_mutex_t mutex)
+/*! \fn signed32 LWP_CondWait(pthread_cond_t cond,pthread_mutex_t mutex)
 \brief Wait on condition variable. 
 \param[in] cond handle to the pthread_cond_t structure
 \param[in] mutex handle to the pthread_mutex_t structure
 
 \return 0 on success, <0 on error
 */
-s32 LWP_CondWait(pthread_cond_t cond,pthread_mutex_t mutex);
+signed32 LWP_CondWait(pthread_cond_t cond,pthread_mutex_t mutex);
 
 
-/*! \fn s32 LWP_CondSignal(pthread_cond_t cond)
+/*! \fn signed32 LWP_CondSignal(pthread_cond_t cond)
 \brief Signal a specific thread waiting on this condition variable to wake up.
 \param[in] cond handle to the pthread_cond_t structure
 
 \return 0 on success, <0 on error
 */
-s32 LWP_CondSignal(pthread_cond_t cond);
+signed32 LWP_CondSignal(pthread_cond_t cond);
 
 
-/*! \fn s32 LWP_CondBroadcast(pthread_cond_t cond)
+/*! \fn signed32 LWP_CondBroadcast(pthread_cond_t cond)
 \brief Broadcast all threads waiting on this condition variable to wake up.
 \param[in] cond handle to the pthread_cond_t structure
 
 \return 0 on success, <0 on error
 */
-s32 LWP_CondBroadcast(pthread_cond_t cond);
+signed32 LWP_CondBroadcast(pthread_cond_t cond);
 
 
-/*! \fn s32 LWP_CondTimedWait(pthread_cond_t cond,pthread_mutex_t mutex,const struct timespec *abstime)
+/*! \fn signed32 LWP_CondTimedWait(pthread_cond_t cond,pthread_mutex_t mutex,const struct timespec *abstime)
 \brief Timed wait on a conditionvariable.
 \param[in] cond handle to the pthread_cond_t structure
 \param[in] mutex handle to the pthread_mutex_t structure
@@ -97,16 +97,16 @@ s32 LWP_CondBroadcast(pthread_cond_t cond);
 
 \return 0 on success, <0 on error
 */
-s32 LWP_CondTimedWait(pthread_cond_t cond,pthread_mutex_t mutex,const struct timespec *abstime);
+signed32 LWP_CondTimedWait(pthread_cond_t cond,pthread_mutex_t mutex,const struct timespec *abstime);
 
 
-/*! \fn s32 LWP_CondDestroy(pthread_cond_t cond)
+/*! \fn signed32 LWP_CondDestroy(pthread_cond_t cond)
 \brief Destroy condition variable, release all threads and handles blocked on that condition variable.
 \param[in] cond handle to the pthread_cond_t structure
 
 \return 0 on success, <0 on error
 */
-s32 LWP_CondDestroy(pthread_cond_t cond);
+signed32 LWP_CondDestroy(pthread_cond_t cond);
 
 #ifdef __cplusplus
 	}

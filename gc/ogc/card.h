@@ -143,7 +143,7 @@ typedef struct _card_file {
 \param filename[CARD_FILENAMELEN] name of the file on card.
 \param gamecode[4] string identifier <=4.
 \param company[2] string identifier <=2.
-\param showall boolean flag whether to showall entries or ony those identified by card_gamecode and card_company, previously set within the call to CARD_Init()
+\param showall BOOL flag whether to showall entries or ony those identified by card_gamecode and card_company, previously set within the call to CARD_Init()
 */
 typedef struct _card_dir { 
       s32 chn; 

@@ -1870,7 +1870,8 @@ static u32 __VISendI2CData(u8 addr,void *val,u32 len)
 {
 	u8 c;
 	s32 i,j;
-	u32 level,ret;
+	ISR_Level level;
+	u32 ret;
 
 	if(i2cIdentFirst==0) {
 		__viCheckI2C();
@@ -2259,7 +2260,8 @@ void* VIDEO_GetCurrentFramebuffer()
 
 void VIDEO_Init()
 {
-	u32 level,vimode = 0;
+	ISR_Level level;
+	u32 vimode = 0;
 
 	_ISR_Disable(level);
 
@@ -2344,7 +2346,8 @@ void VIDEO_Init()
 void VIDEO_Configure(GXRModeObj *rmode)
 {
 	u16 dcr;
-	u32 nonint,vimode,level;
+	u32 nonint,vimode;
+	ISR_Level level;
 	const struct _timing *curtiming;
 #ifdef _VIDEO_DEBUG
 	if(rmode->viHeight&0x0001) printf("VIDEO_Configure(): Odd number(%d) is specified to viHeight\n",rmode->viHeight);
@@ -2420,7 +2423,7 @@ void VIDEO_Configure(GXRModeObj *rmode)
 
 void VIDEO_WaitVSync(void)
 {
-	u32 level;
+	ISR_Level level;
 	u32 retcnt;
 
 	_ISR_Disable(level);
@@ -2433,7 +2436,7 @@ void VIDEO_WaitVSync(void)
 
 void VIDEO_SetFramebuffer(void *fb)
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 	fbSet = 1;
@@ -2457,7 +2460,7 @@ void VIDEO_SetFramebuffer(void *fb)
 
 void VIDEO_SetNextFramebuffer(void *fb)
 {
-	u32 level;
+	ISR_Level level;
 #ifdef _VIDEO_DEBUG
 	if((u32)fb&0x1f) printf("VIDEO_SetNextFramebuffer(): Frame buffer address (%p) is not 32byte aligned\n",fb);
 #endif
@@ -2470,7 +2473,7 @@ void VIDEO_SetNextFramebuffer(void *fb)
 
 void VIDEO_SetNextRightFramebuffer(void *fb)
 {
-	u32 level;
+	ISR_Level level;
 
 	_ISR_Disable(level);
 	fbSet = 1;
@@ -2481,7 +2484,7 @@ void VIDEO_SetNextRightFramebuffer(void *fb)
 
 void VIDEO_Flush()
 {
-	u32 level;
+	ISR_Level level;
 	u32 val;
 	u64 mask;
 
@@ -2506,7 +2509,7 @@ void VIDEO_Flush()
 
 void VIDEO_SetBlack(bool black)
 {
-	u32 level;
+	ISR_Level level;
 	const struct _timing *curtiming;
 
 	_ISR_Disable(level);
@@ -2518,7 +2521,8 @@ void VIDEO_SetBlack(bool black)
 
 u32 VIDEO_GetNextField()
 {
-	u32 level,nextfield;
+	ISR_Level level;
+	u32 nextfield;
 
 	_ISR_Disable(level);
 	nextfield = __getCurrentFieldEvenOdd()^1;		//we've to swap the result because it shows us only the current field,so we've the next field either even or odd
@@ -2530,7 +2534,7 @@ u32 VIDEO_GetNextField()
 u32 VIDEO_GetCurrentTvMode()
 {
 	u32 mode;
-	u32 level;
+	ISR_Level level;
 	u32 tv;
 
 	_ISR_Disable(level);
@@ -2634,7 +2638,8 @@ GXRModeObj *rmode = NULL;
 
 u32 VIDEO_GetCurrentLine()
 {
-	u32 level,curr_hl = 0;
+	ISR_Level level;
+	u32 curr_hl = 0;
 
 	_ISR_Disable(level);
 	curr_hl = __getCurrentHalfLine();
@@ -2648,7 +2653,7 @@ u32 VIDEO_GetCurrentLine()
 
 VIRetraceCallback VIDEO_SetPreRetraceCallback(VIRetraceCallback callback)
 {
-	u32 level = 0;
+	ISR_Level level = 0;
 	VIRetraceCallback ret = preRetraceCB;
 	_ISR_Disable(level);
 	preRetraceCB = callback;
@@ -2658,7 +2663,7 @@ VIRetraceCallback VIDEO_SetPreRetraceCallback(VIRetraceCallback callback)
 
 VIRetraceCallback VIDEO_SetPostRetraceCallback(VIRetraceCallback callback)
 {
-	u32 level = 0;
+	ISR_Level level = 0;
 	VIRetraceCallback ret = postRetraceCB;
 	_ISR_Disable(level);
 	postRetraceCB = callback;

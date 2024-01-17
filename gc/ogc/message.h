@@ -52,10 +52,10 @@ extern "C" {
 #endif
 
 
-/*! \typedef u32 mqbox_t
+/*! \typedef unsigned32 mqbox_t
 \brief typedef for the message queue handle
 */
-typedef u32 mqbox_t;
+typedef unsigned32 mqbox_t;
 
 
 /*! \typedef void* mqmsg_t
@@ -65,14 +65,14 @@ typedef void* mqmsg_t;
 
 
 
-/*! \fn u32 MQ_Init(mqbox_t *mqbox,u32 count)
+/*! \fn unsigned32 MQ_Init(mqbox_t *mqbox,unsigned32 count)
 \brief Initializes a message queue
 \param[out] mqbox pointer to the mqbox_t handle.
 \param[in] count maximum number of messages the queue can hold
 
 \return 0 on success, <0 on error
 */
-s32 MQ_Init(mqbox_t *mqbox,u32 count);
+signed32 MQ_Init(mqbox_t *mqbox,unsigned32 count);
 
 
 /*! \fn void MQ_Close(mqbox_t mqbox)
@@ -84,37 +84,37 @@ s32 MQ_Init(mqbox_t *mqbox,u32 count);
 void MQ_Close(mqbox_t mqbox);
 
 
-/*! \fn BOOL MQ_Send(mqbox_t mqbox,mqmsg_t msg,u32 flags)
+/*! \fn boolean MQ_Send(mqbox_t mqbox,mqmsg_t msg,unsigned32 flags)
 \brief Sends a message to the given message queue.
 \param[in] mqbox mqbox_t handle to the message queue
 \param[in] msg message to send
 \param[in] flags message flags (MQ_MSG_BLOCK, MQ_MSG_NOBLOCK)
 
-\return bool result
+\return boolean result
 */
-BOOL MQ_Send(mqbox_t mqbox,mqmsg_t msg,u32 flags);
+boolean MQ_Send(mqbox_t mqbox,mqmsg_t msg,unsigned32 flags);
 
 
-/*! \fn BOOL MQ_Jam(mqbox_t mqbox,mqmsg_t msg,u32 flags)
+/*! \fn boolean MQ_Jam(mqbox_t mqbox,mqmsg_t msg,unsigned32 flags)
 \brief Sends a message to the given message queue and jams it in front of the queue.
 \param[in] mqbox mqbox_t handle to the message queue
 \param[in] msg message to send
 \param[in] flags message flags (MQ_MSG_BLOCK, MQ_MSG_NOBLOCK)
 
-\return bool result
+\return boolean result
 */
-BOOL MQ_Jam(mqbox_t mqbox,mqmsg_t msg,u32 flags);
+boolean MQ_Jam(mqbox_t mqbox,mqmsg_t msg,unsigned32 flags);
 
 
-/*! \fn BOOL MQ_Receive(mqbox_t mqbox,mqmsg_t *msg,u32 flags)
+/*! \fn boolean MQ_Receive(mqbox_t mqbox,mqmsg_t *msg,unsigned32 flags)
 \brief Sends a message to the given message queue.
 \param[in] mqbox mqbox_t handle to the message queue
 \param[in] msg pointer to a mqmsg_t_t-type message to receive.
 \param[in] flags message flags (MQ_MSG_BLOCK, MQ_MSG_NOBLOCK)
 
-\return bool result
+\return boolean result
 */
-BOOL MQ_Receive(mqbox_t mqbox,mqmsg_t *msg,u32 flags);
+boolean MQ_Receive(mqbox_t mqbox,mqmsg_t *msg,unsigned32 flags);
 
 #ifdef __cplusplus
 	}

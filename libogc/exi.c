@@ -76,7 +76,7 @@ typedef struct _exibus_priv {
 	u32 flags;
 	u32 lck_cnt;
 	u32 exi_id;
-	u64 exi_idtime;
+	Watchdog_Interval exi_idtime;
 	Chain_Control lckd_dev;
 	u32 lckd_dev_bits;
 } exibus_priv;
@@ -84,7 +84,7 @@ typedef struct _exibus_priv {
 static Chain_Control _lckdev_queue;
 static struct _lck_dev lckdevs[EXI_LOCK_DEVS];
 static exibus_priv eximap[EXI_MAX_CHANNELS];
-static u64 last_exi_idtime[EXI_MAX_CHANNELS];
+static Watchdog_Interval last_exi_idtime[EXI_MAX_CHANNELS];
 
 static u32 exi_id_serport1 = 0;
 
@@ -163,9 +163,9 @@ static void __exi_initmap(exibus_priv *exim)
 
 static s32 __exi_probe(s32 nChn)
 {
-	u64 time;
+	Watchdog_Interval time;
 	s32 ret = 1;
-	u32 level;
+	ISR_Level level;
 	u32 val;
 	exibus_priv *exi = &eximap[nChn];
 #ifdef _EXI_DEBUG
@@ -209,7 +209,7 @@ static s32 __exi_probe(s32 nChn)
 static s32 __exi_attach(s32 nChn,EXICallback ext_cb)
 {
 	s32 ret;
-	u32 level;
+	ISR_Level level;
 	exibus_priv *exi = &eximap[nChn];
 #ifdef _EXI_DEBUG
 	printf("__exi_attach(%d,%p)\n",nChn,ext_cb);
@@ -231,7 +231,7 @@ static s32 __exi_attach(s32 nChn,EXICallback ext_cb)
 
 s32 EXI_Lock(s32 nChn,s32 nDev,EXICallback unlockCB)
 {
-	u32 level;
+	ISR_Level level;
 	struct _lck_dev *lckd;
 	exibus_priv *exi = &eximap[nChn];
 #ifdef _EXI_DEBUG
@@ -263,7 +263,8 @@ s32 EXI_Lock(s32 nChn,s32 nDev,EXICallback unlockCB)
 
 s32 EXI_Unlock(s32 nChn)
 {
-	u32 level,dev;
+	ISR_Level level;
+	u32 dev;
 	EXICallback cb;
 	struct _lck_dev *lckd;
 	exibus_priv *exi = &eximap[nChn];
@@ -300,7 +301,7 @@ s32 EXI_Unlock(s32 nChn)
 s32 EXI_Select(s32 nChn,s32 nDev,s32 nFrq)
 {
 	u32 val;
-	u32 level;
+	ISR_Level level;
 	exibus_priv *exi = &eximap[nChn];
 #ifdef _EXI_DEBUG
 	printf("EXI_Select(%d,%d,%d)\n",nChn,nDev,nFrq);
@@ -349,7 +350,7 @@ s32 EXI_SelectSD(s32 nChn,s32 nDev,s32 nFrq)
 {
 	u32 val,id;
 	s32 ret;
-	u32 level;
+	ISR_Level level;
 	exibus_priv *exi = &eximap[nChn];
 #ifdef _EXI_DEBUG
 	printf("EXI_SelectSD(%d,%d,%d)\n",nChn,nDev,nFrq);
@@ -400,7 +401,7 @@ s32 EXI_SelectSD(s32 nChn,s32 nDev,s32 nFrq)
 s32 EXI_Deselect(s32 nChn)
 {
 	u32 val;
-	u32 level;
+	ISR_Level level;
 	exibus_priv *exi = &eximap[nChn];
 #ifdef _EXI_DEBUG
 	printf("EXI_Deselect(%d)\n",nChn);
@@ -435,7 +436,8 @@ s32 EXI_Sync(s32 nChn)
 {
 	u8 *buf;
 	s32 ret;
-	u32 level,i,cnt,val;
+	ISR_Level level;
+	u32 i,cnt,val;
 	exibus_priv *exi = &eximap[nChn];
 #ifdef _EXI_DEBUG
 	printf("EXI_Sync(%d)\n",nChn);
@@ -463,7 +465,7 @@ s32 EXI_Sync(s32 nChn)
 
 s32 EXI_Imm(s32 nChn,void *pData,u32 nLen,u32 nMode,EXICallback tc_cb)
 {
-	u32 level;
+	ISR_Level level;
 	u32 value,i;
 	exibus_priv *exi = &eximap[nChn];
 #ifdef _EXI_DEBUG
@@ -522,7 +524,7 @@ s32 EXI_ImmEx(s32 nChn,void *pData,u32 nLen,u32 nMode)
 
 s32 EXI_Dma(s32 nChn,void *pData,u32 nLen,u32 nMode,EXICallback tc_cb)
 {
-	u32 level;
+	ISR_Level level;
 	exibus_priv *exi = &eximap[nChn];
 #ifdef _EXI_DEBUG
 	printf("EXI_Dma(%d,%p,%d,%d,%p)\n",nChn,pData,nLen,nMode,tc_cb);
@@ -575,9 +577,10 @@ static s32 __unlocked_handler(s32 nChn,s32 nDev)
 
 s32 EXI_GetID(s32 nChn,s32 nDev,u32 *nId)
 {
-	u64 idtime = 0;
+	Watchdog_Interval idtime = 0;
 	s32 ret,lck;
-	u32 reg,level;
+	u32 reg;
+	ISR_Level level;
 	exibus_priv *exi = &eximap[nChn];
 
 #ifdef _EXI_DEBUG
@@ -640,7 +643,7 @@ s32 EXI_GetID(s32 nChn,s32 nDev,u32 *nId)
 s32 EXI_Attach(s32 nChn,EXICallback ext_cb)
 {
 	s32 ret;
-	u32 level;
+	ISR_Level level;
 	exibus_priv *exi = &eximap[nChn];
 #ifdef _EXI_DEBUG
 	printf("EXI_Attach(%d)\n",nChn);
@@ -658,7 +661,7 @@ s32 EXI_Attach(s32 nChn,EXICallback ext_cb)
 
 s32 EXI_Detach(s32 nChn)
 {
-	u32 level;
+	ISR_Level level;
 	s32 ret = 1;
 	exibus_priv *exi = &eximap[nChn];
 #ifdef _EXI_DEBUG
@@ -678,7 +681,7 @@ s32 EXI_Detach(s32 nChn)
 
 EXICallback EXI_RegisterEXICallback(s32 nChn,EXICallback exi_cb)
 {
-	u32 level;
+	ISR_Level level;
 	EXICallback old = NULL;
 	exibus_priv *exi = &eximap[nChn];
 #ifdef _EXI_DEBUG
@@ -696,7 +699,7 @@ EXICallback EXI_RegisterEXICallback(s32 nChn,EXICallback exi_cb)
 s32 EXI_Probe(s32 nChn)
 {
 	s32 ret;
-	u32 id;
+	Objects_Id id;
 	exibus_priv *exi = &eximap[nChn];
 #ifdef _EXI_DEBUG
 	printf("EXI_Probe(%d)\n",nChn);
@@ -886,7 +889,8 @@ static s32 __queuelength()
 
 void __SYS_EnableBarnacle(s32 chn,u32 dev)
 {
-	u32 id,rev;
+	Objects_Id id;
+	u32 rev;
 
 	if(EXI_GetID(chn,dev,&id)==0) return;
 
