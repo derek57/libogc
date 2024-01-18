@@ -406,8 +406,8 @@ _CPU_Context_restore:
 
 #ifdef _DEBUG
 	.align	5
-	.globl _cpu_context_switch_ex
-_cpu_context_switch_ex:
+	.globl _CPU_Context_switch_ex
+_CPU_Context_switch_ex:
 	sync
 	isync
 
@@ -523,8 +523,8 @@ _CPU_Context_save_ex:
 	blr
 
 	.align	5
-	.globl _cpu_context_restore_ex
-_cpu_context_restore_ex:
+	.globl _CPU_Context_restore_ex
+_CPU_Context_restore_ex:
 
 	lwz		r6, CTR_OFFSET-8(r3)
 	mtctr	r6

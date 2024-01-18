@@ -38,9 +38,9 @@ typedef struct {
 	unsigned16	state;		//used to determine whether to restore the fpu context or not
 	unsigned16 mode;		//unused
 
-	f64 FPR[32];
+	double_precision FPR[32];
 	unsigned64	FPSCR;
-	f64 PSFPR[32];
+	double_precision PSFPR[32];
 } Context_Control;
 
 #ifdef __cplusplus

@@ -473,7 +473,7 @@ done:
 	return ret;
 }
 
-static inline s32 __usb_interrupt_bulk_message(s32 device_id,u8 ioctl,u8 bEndpoint,u16 wLength,void *rpData,usbcallback cb,void *userdata)
+RTEMS_INLINE_ROUTINE s32 __usb_interrupt_bulk_message(s32 device_id,u8 ioctl,u8 bEndpoint,u16 wLength,void *rpData,usbcallback cb,void *userdata)
 {
 	s32 ret = IPC_ENOMEM;
 	struct _usb_msg *msg;
@@ -558,7 +558,7 @@ done:
 	return ret;
 }
 
-static inline s32 __usb_getdesc(s32 fd, u8 *buffer, u8 valuehi, u8 valuelo, u16 index, u16 size)
+RTEMS_INLINE_ROUTINE s32 __usb_getdesc(s32 fd, u8 *buffer, u8 valuehi, u8 valuelo, u16 index, u16 size)
 {
 	u8 requestType = USB_CTRLTYPE_DIR_DEVICE2HOST;
 

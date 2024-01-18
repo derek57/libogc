@@ -30,7 +30,7 @@ extern "C" {
 #define __set_gqr(_reg,_val)	asm volatile("mtspr %0,%1" : : "i"(_reg), "b"(_val))
 
 // does a default init
-static inline void CAST_Init()
+RTEMS_INLINE_ROUTINE void CAST_Init()
 {
 	__asm__ __volatile__ (
 		"li		3,0x0004\n\
@@ -49,37 +49,37 @@ static inline void CAST_Init()
 	);
 }
 
-static inline void CAST_SetGQR2(u32 type,u32 scale)
+RTEMS_INLINE_ROUTINE void CAST_SetGQR2(u32 type,u32 scale)
 {
 	register u32 val = (((((scale)<<8)|(type))<<16)|(((scale)<<8)|(type)));
 	__set_gqr(GQR2,val);
 }
 
-static inline void CAST_SetGQR3(u32 type,u32 scale)
+RTEMS_INLINE_ROUTINE void CAST_SetGQR3(u32 type,u32 scale)
 {
 	register u32 val = (((((scale)<<8)|(type))<<16)|(((scale)<<8)|(type)));
 	__set_gqr(GQR3,val);
 }
 
-static inline void CAST_SetGQR4(u32 type,u32 scale)
+RTEMS_INLINE_ROUTINE void CAST_SetGQR4(u32 type,u32 scale)
 {
 	register u32 val = (((((scale)<<8)|(type))<<16)|(((scale)<<8)|(type)));
 	__set_gqr(GQR4,val);
 }
 
-static inline void CAST_SetGQR5(u32 type,u32 scale)
+RTEMS_INLINE_ROUTINE void CAST_SetGQR5(u32 type,u32 scale)
 {
 	register u32 val = (((((scale)<<8)|(type))<<16)|(((scale)<<8)|(type)));
 	__set_gqr(GQR5,val);
 }
 
-static inline void CAST_SetGQR6(u32 type,u32 scale)
+RTEMS_INLINE_ROUTINE void CAST_SetGQR6(u32 type,u32 scale)
 {
 	register u32 val = (((((scale)<<8)|(type))<<16)|(((scale)<<8)|(type)));
 	__set_gqr(GQR6,val);
 }
 
-static inline void CAST_SetGQR7(u32 type,u32 scale)
+RTEMS_INLINE_ROUTINE void CAST_SetGQR7(u32 type,u32 scale)
 {
 	register u32 val = (((((scale)<<8)|(type))<<16)|(((scale)<<8)|(type)));
 	__set_gqr(GQR7,val);
@@ -92,7 +92,7 @@ static inline void CAST_SetGQR7(u32 type,u32 scale)
 /*																  */
 /******************************************************************/
 
-static inline f32 __castu8f32(register u8 *in)
+RTEMS_INLINE_ROUTINE f32 __castu8f32(register u8 *in)
 {
 	register f32 rval;
 	__asm__ __volatile__ (
@@ -101,7 +101,7 @@ static inline f32 __castu8f32(register u8 *in)
 	return rval;
 }
 
-static inline f32 __castu16f32(register u16 *in)
+RTEMS_INLINE_ROUTINE f32 __castu16f32(register u16 *in)
 {
 	register f32 rval;
 	__asm__ __volatile__ (
@@ -110,7 +110,7 @@ static inline f32 __castu16f32(register u16 *in)
 	return rval;
 }
 
-static inline f32 __casts8f32(register s8 *in)
+RTEMS_INLINE_ROUTINE f32 __casts8f32(register s8 *in)
 {
 	register f32 rval;
 	__asm__ __volatile__ (
@@ -119,7 +119,7 @@ static inline f32 __casts8f32(register s8 *in)
 	return rval;
 }
 
-static inline f32 __casts16f32(register s16 *in)
+RTEMS_INLINE_ROUTINE f32 __casts16f32(register s16 *in)
 {
 	register f32 rval;
 	__asm__ __volatile__ (
@@ -128,22 +128,22 @@ static inline f32 __casts16f32(register s16 *in)
 	return rval;
 }
 
-static inline void castu8f32(register u8 *in,register volatile f32 *out)
+RTEMS_INLINE_ROUTINE void castu8f32(register u8 *in,register volatile f32 *out)
 {
 	*out = __castu8f32(in);
 }
 
-static inline void castu16f32(register u16 *in,register volatile f32 *out)
+RTEMS_INLINE_ROUTINE void castu16f32(register u16 *in,register volatile f32 *out)
 {
 	*out = __castu16f32(in);
 }
 
-static inline void casts8f32(register s8 *in,register volatile f32 *out)
+RTEMS_INLINE_ROUTINE void casts8f32(register s8 *in,register volatile f32 *out)
 {
 	*out = __casts8f32(in);
 }
 
-static inline void casts16f32(register s16 *in,register volatile f32 *out)
+RTEMS_INLINE_ROUTINE void casts16f32(register s16 *in,register volatile f32 *out)
 {
 	*out = __casts16f32(in);
 }
@@ -154,7 +154,7 @@ static inline void casts16f32(register s16 *in,register volatile f32 *out)
 /*																  */
 /******************************************************************/
 
-static inline u8 __castf32u8(register f32 in)
+RTEMS_INLINE_ROUTINE u8 __castf32u8(register f32 in)
 {
 	f32 a;
 	register u8 rval;
@@ -168,7 +168,7 @@ static inline u8 __castf32u8(register f32 in)
 	return rval;
 }
 
-static inline u16 __castf32u16(register f32 in)
+RTEMS_INLINE_ROUTINE u16 __castf32u16(register f32 in)
 {
 	f32 a;
 	register u16 rval;
@@ -182,7 +182,7 @@ static inline u16 __castf32u16(register f32 in)
 	return rval;
 }
 
-static inline s8 __castf32s8(register f32 in)
+RTEMS_INLINE_ROUTINE s8 __castf32s8(register f32 in)
 {
 	f32 a;
 	register s8 rval;
@@ -196,7 +196,7 @@ static inline s8 __castf32s8(register f32 in)
 	return rval;
 }
 
-static inline s16 __castf32s16(register f32 in)
+RTEMS_INLINE_ROUTINE s16 __castf32s16(register f32 in)
 {
 	f32 a;
 	register s16 rval;
@@ -210,22 +210,22 @@ static inline s16 __castf32s16(register f32 in)
 	return rval;
 }
 
-static inline void castf32u8(register f32 *in,register vu8 *out)
+RTEMS_INLINE_ROUTINE void castf32u8(register f32 *in,register vu8 *out)
 {
 	*out = __castf32u8(*in);
 }
 
-static inline void castf32u16(register f32 *in,register vu16 *out)
+RTEMS_INLINE_ROUTINE void castf32u16(register f32 *in,register vu16 *out)
 {
 	*out = __castf32u16(*in);
 }
 
-static inline void castf32s8(register f32 *in,register vs8 *out)
+RTEMS_INLINE_ROUTINE void castf32s8(register f32 *in,register vs8 *out)
 {
 	*out = __castf32s8(*in);
 }
 
-static inline void castf32s16(register f32 *in,register vs16 *out)
+RTEMS_INLINE_ROUTINE void castf32s16(register f32 *in,register vs16 *out)
 {
 	*out = __castf32s16(*in);
 }

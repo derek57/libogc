@@ -116,7 +116,7 @@ boolean _ISR_Is_in_progress( void )
  *  routine exits.
  */
 
-static inline void _CPU_ISR_Set_level( unsigned32 level )
+RTEMS_INLINE_ROUTINE void _CPU_ISR_Set_level( unsigned32 level )
 {
   register unsigned int msr;
   _CPU_MSR_GET(msr);
@@ -137,7 +137,7 @@ static inline void _CPU_ISR_Set_level( unsigned32 level )
  *  This routine returns the current interrupt level.
  */
 
-static inline unsigned32 _CPU_ISR_Get_level( void )
+RTEMS_INLINE_ROUTINE unsigned32 _CPU_ISR_Get_level( void )
 {
   register unsigned int msr;
   _CPU_MSR_GET(msr);

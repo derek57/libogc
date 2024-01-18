@@ -1,6 +1,6 @@
 /*  tqdata.inl
  *
- *  This file contains the static inline implementation of the inlined
+ *  This file contains the RTEMS_INLINE_ROUTINE implementation of the inlined
  *  routines needed to support the Thread Queue Data.
  *
  *  COPYRIGHT (c) 1989-1999.

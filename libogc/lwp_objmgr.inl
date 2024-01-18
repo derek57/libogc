@@ -1,6 +1,6 @@
 /*  object.inl
  *
- *  This include file contains the static inline implementation of all
+ *  This include file contains the RTEMS_INLINE_ROUTINE implementation of all
  *  of the inlined routines in the Object Handler.
  *
  *  COPYRIGHT (c) 1989-2002.

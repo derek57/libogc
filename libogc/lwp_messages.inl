@@ -1,6 +1,6 @@
 /*  coremsg.inl
  *
- *  This include file contains the static inline implementation of all
+ *  This include file contains the RTEMS_INLINE_ROUTINE implementation of all
  *  inlined routines in the Core Message Handler.
  *
  *  COPYRIGHT (c) 1989-1999.

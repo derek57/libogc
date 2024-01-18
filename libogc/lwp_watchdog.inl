@@ -1,6 +1,6 @@
 /*  watchdog.inl
  *
- *  This file contains the static inline implementation of all inlined
+ *  This file contains the RTEMS_INLINE_ROUTINE implementation of all inlined
  *  routines in the Watchdog Handler.
  *
  *  COPYRIGHT (c) 1989-1999.

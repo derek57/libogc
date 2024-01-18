@@ -1493,21 +1493,21 @@ static const struct _timing* __gettiming(u32 vimode)
 }
 
 #if defined(HW_RVL)
-static inline void __viOpenI2C(u32 channel)
+RTEMS_INLINE_ROUTINE void __viOpenI2C(u32 channel)
 {
 	u32 val = ((_i2cReg[49]&~0x8000)|0x4000);
 	val |= _SHIFTL(channel,15,1);
 	_i2cReg[49] = val;
 }
 
-static inline u32 __viSetSCL(u32 channel)
+RTEMS_INLINE_ROUTINE u32 __viSetSCL(u32 channel)
 {
 	u32 val = (_i2cReg[48]&~0x4000);
 	val |= _SHIFTL(channel,14,1);
 	_i2cReg[48] = val;
 	return 1;
 }
-static inline u32 __viSetSDA(u32 channel)
+RTEMS_INLINE_ROUTINE u32 __viSetSDA(u32 channel)
 {
 	u32 val = (_i2cReg[48]&~0x8000);
 	val |= _SHIFTL(channel,15,1);
@@ -1515,12 +1515,12 @@ static inline u32 __viSetSDA(u32 channel)
 	return 1;
 }
 
-static inline u32 __viGetSDA()
+RTEMS_INLINE_ROUTINE u32 __viGetSDA()
 {
 	return _SHIFTR(_i2cReg[50],15,1);
 }
 
-static inline void __viCheckI2C()
+RTEMS_INLINE_ROUTINE void __viCheckI2C()
 {
 	__viOpenI2C(0);
 	udelay(4);
@@ -1565,7 +1565,7 @@ static u32 __sendSlaveAddress(u8 addr)
 }
 #endif
 
-static inline void __setInterruptRegs(const struct _timing *tm)
+RTEMS_INLINE_ROUTINE void __setInterruptRegs(const struct _timing *tm)
 {
 	u16 hlw;
 
@@ -1577,7 +1577,7 @@ static inline void __setInterruptRegs(const struct _timing *tm)
 	changed |= VI_REGCHANGE(25);
 }
 
-static inline void __setPicConfig(u16 fbSizeX,u32 xfbMode,u16 panPosX,u16 panSizeX,u8 *wordPerLine,u8 *std,u8 *wpl,u8 *xof)
+RTEMS_INLINE_ROUTINE void __setPicConfig(u16 fbSizeX,u32 xfbMode,u16 panPosX,u16 panSizeX,u8 *wordPerLine,u8 *std,u8 *wpl,u8 *xof)
 {
 	*wordPerLine = (fbSizeX+15)/16;
 	*std = *wordPerLine;
@@ -1589,7 +1589,7 @@ static inline void __setPicConfig(u16 fbSizeX,u32 xfbMode,u16 panPosX,u16 panSiz
 	changed |= VI_REGCHANGE(36);
 }
 
-static inline void __setBBIntervalRegs(const struct _timing *tm)
+RTEMS_INLINE_ROUTINE void __setBBIntervalRegs(const struct _timing *tm)
 {
 	regs[10] = (tm->be3<<5)|tm->bs3;
 	regs[11] = (tm->be1<<5)|tm->bs1;
@@ -1616,7 +1616,7 @@ static void __setScalingRegs(u16 panSizeX,u16 dispSizeX,s32 threeD)
 	}
 }
 
-static inline void __calcFbbs(u32 bufAddr,u16 panPosX,u16 panPosY,u8 wordperline,u32 xfbMode,u16 dispPosY,u32 *tfbb,u32 *bfbb)
+RTEMS_INLINE_ROUTINE void __calcFbbs(u32 bufAddr,u16 panPosX,u16 panPosY,u8 wordperline,u32 xfbMode,u16 dispPosY,u32 *tfbb,u32 *bfbb)
 {
 	u32 bytesPerLine,tmp;
 
@@ -1636,7 +1636,7 @@ static inline void __calcFbbs(u32 bufAddr,u16 panPosX,u16 panPosY,u8 wordperline
 	*bfbb = MEM_VIRTUAL_TO_PHYSICAL(*bfbb);
 }
 
-static inline void __setFbbRegs(struct _horVer *horVer,u32 *tfbb,u32 *bfbb,u32 *rtfbb,u32 *rbfbb)
+RTEMS_INLINE_ROUTINE void __setFbbRegs(struct _horVer *horVer,u32 *tfbb,u32 *bfbb,u32 *rtfbb,u32 *rbfbb)
 {
 	u32 flag;
 	__calcFbbs((u32)horVer->bufAddr,horVer->panPosX,horVer->adjustedPanPosY,horVer->wordPerLine,horVer->fbMode,horVer->adjustedDispPosY,tfbb,bfbb);
@@ -1676,7 +1676,7 @@ static inline void __setFbbRegs(struct _horVer *horVer,u32 *tfbb,u32 *bfbb,u32 *
 	}
 }
 
-static inline void __setHorizontalRegs(const struct _timing *tm,u16 dispPosX,u16 dispSizeX)
+RTEMS_INLINE_ROUTINE void __setHorizontalRegs(const struct _timing *tm,u16 dispPosX,u16 dispSizeX)
 {
 	u32 val1,val2;
 
@@ -1693,7 +1693,7 @@ static inline void __setHorizontalRegs(const struct _timing *tm,u16 dispPosX,u16
 	changed |= VI_REGCHANGE(5);
 }
 
-static inline void __setVerticalRegs(u16 dispPosY,u16 dispSizeY,u8 equ,u16 acv,u16 prbOdd,u16 prbEven,u16 psbOdd,u16 psbEven,s32 black)
+RTEMS_INLINE_ROUTINE void __setVerticalRegs(u16 dispPosY,u16 dispSizeY,u8 equ,u16 acv,u16 prbOdd,u16 prbEven,u16 psbOdd,u16 psbEven,s32 black)
 {
 	u16 tmp;
 	u32 div1,div2;
@@ -1745,7 +1745,7 @@ static inline void __setVerticalRegs(u16 dispPosY,u16 dispSizeY,u8 equ,u16 acv,u
 	changed |= VI_REGCHANGE(9);
 }
 
-static inline void __adjustPosition(u16 acv)
+RTEMS_INLINE_ROUTINE void __adjustPosition(u16 acv)
 {
 	u32 fact,field;
 	s16 dispPosX,dispPosY;
@@ -1790,7 +1790,7 @@ static inline void __adjustPosition(u16 acv)
 	HorVer.adjustedPanSizeY = HorVer.panSizeY+(dispPosY/fact)-(dispSizeY/fact);
 }
 
-static inline void __importAdjustingValues()
+RTEMS_INLINE_ROUTINE void __importAdjustingValues()
 {
 #ifdef HW_DOL
 	syssram *sram;
@@ -2036,7 +2036,7 @@ static void __VISetupEncoder(void)
 }
 #endif
 
-static inline void __getCurrentDisplayPosition(u32 *px,u32 *py)
+RTEMS_INLINE_ROUTINE void __getCurrentDisplayPosition(u32 *px,u32 *py)
 {
 	u32 hpos = 0;
 	u32 vpos = 0;
@@ -2052,7 +2052,7 @@ static inline void __getCurrentDisplayPosition(u32 *px,u32 *py)
 	*py = vpos;
 }
 
-static inline u32 __getCurrentHalfLine()
+RTEMS_INLINE_ROUTINE u32 __getCurrentHalfLine()
 {
 	u32 vpos = 0;
 	u32 hpos = 0;
@@ -2066,7 +2066,7 @@ static inline u32 __getCurrentHalfLine()
 	return vpos+(hpos/currTiming->hlw);
 }
 
-static inline u32 __getCurrentFieldEvenOdd()
+RTEMS_INLINE_ROUTINE u32 __getCurrentFieldEvenOdd()
 {
 	u32 hline;
 
@@ -2076,7 +2076,7 @@ static inline u32 __getCurrentFieldEvenOdd()
 	return 0;
 }
 
-static inline u32 __VISetRegs()
+RTEMS_INLINE_ROUTINE u32 __VISetRegs()
 {
 	u32 val;
 	u64 mask;
@@ -2171,7 +2171,7 @@ static void __VIDisplayPositionToXY(s32 xpos,s32 ypos,s32 *px,s32 *py)
 	}
 }
 
-static inline void __VIGetCurrentPosition(s32 *px,s32 *py)
+RTEMS_INLINE_ROUTINE void __VIGetCurrentPosition(s32 *px,s32 *py)
 {
 	s32 xpos,ypos;
 

@@ -51,6 +51,9 @@ typedef signed long long    signed64;   /* 64 bit signed integer */
 
 typedef unsigned32          boolean;    /* Boolean value   */
 
+typedef float               single_precision;     /* single precision float */
+typedef double              double_precision;     /* double precision float */ 
+
 /*
  *  The following type defines the control block used to manage a
  *  thread's state.
@@ -91,7 +94,7 @@ typedef uint64_t            Watchdog_Interval;
  *     Bits 11 .. 15    = class  (up to 31 object types per API)
  */
 
-typedef unsigned32          Objects_Id; 
+typedef unsigned32          Objects_Id;
 
 /**
  * This type is used to store the maximum number of allowed objects
@@ -376,8 +379,8 @@ const unsigned char __log2table[256] = {
 
 /*
  *  The following (in conjunction with compiler arguments) are used
- *  to choose between the use of static inline functions and macro
- *  functions.   The static inline implementation allows better
+ *  to choose between the use of RTEMS_INLINE_ROUTINE functions and macro
+ *  functions.   The RTEMS_INLINE_ROUTINE implementation allows better
  *  type checking with no cost in code size or execution speed.
  */
 
@@ -463,8 +466,8 @@ const unsigned char __log2table[256] = {
 
 /*
  *  The following (in conjunction with compiler arguments) are used
- *  to choose between the use of static inline functions and macro
- *  functions.   The static inline implementation allows better
+ *  to choose between the use of RTEMS_INLINE_ROUTINE functions and macro
+ *  functions.   The RTEMS_INLINE_ROUTINE implementation allows better
  *  type checking with no cost in code size or execution speed.
  */
 
@@ -472,7 +475,7 @@ const unsigned char __log2table[256] = {
 # ifdef __GNUC__
 #  define RTEMS_INLINE_ROUTINE  static __inline__
 # else
-#  define RTEMS_INLINE_ROUTINE  static inline
+#  define RTEMS_INLINE_ROUTINE  RTEMS_INLINE_ROUTINE
 # endif
 #else
 # define RTEMS_INLINE_ROUTINE

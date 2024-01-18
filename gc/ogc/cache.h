@@ -33,20 +33,16 @@ distribution.
 #ifndef __CACHE_H__
 #define __CACHE_H__
 
+#ifdef __cplusplus
+   extern "C" {
+#endif /* __cplusplus */
+
 /*! \file cache.h
 \brief Cache subsystem
 
 */
 
 #include <gctypes.h>
-
-#define LC_BASEPREFIX		0xe000
-#define LC_BASE				(LC_BASEPREFIX<<16)
-
-#ifdef __cplusplus
-   extern "C" {
-#endif /* __cplusplus */
-
 
 /*!
  * \fn void DCEnable()

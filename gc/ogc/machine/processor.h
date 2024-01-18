@@ -179,19 +179,19 @@
    extern "C" {
 #endif /* __cplusplus */
 
-static inline unsigned16 bswap16(unsigned16 val)
+RTEMS_INLINE_ROUTINE unsigned16 bswap16(unsigned16 val)
 {
 	unsigned16 tmp = val;
 	return __lhbrx(&tmp,0);
 }
 
-static inline unsigned32 bswap32(unsigned32 val)
+RTEMS_INLINE_ROUTINE unsigned32 bswap32(unsigned32 val)
 {
 	unsigned32 tmp = val;
 	return __lwbrx(&tmp,0);
 }
 
-static inline unsigned64 bswap64(unsigned64 val)
+RTEMS_INLINE_ROUTINE unsigned64 bswap64(unsigned64 val)
 {
 	union ullc {
 		unsigned64 ull;
@@ -207,48 +207,48 @@ static inline unsigned64 bswap64(unsigned64 val)
 
 // Basic I/O
 
-static inline unsigned32 read32(unsigned32 addr)
+RTEMS_INLINE_ROUTINE unsigned32 read32(unsigned32 addr)
 {
 	unsigned32 x;
 	asm volatile("lwz %0,0(%1) ; sync" : "=r"(x) : "b"(0xc0000000 | addr));
 	return x;
 }
 
-static inline void write32(unsigned32 addr, unsigned32 x)
+RTEMS_INLINE_ROUTINE void write32(unsigned32 addr, unsigned32 x)
 {
 	asm("stw %0,0(%1) ; eieio" : : "r"(x), "b"(0xc0000000 | addr));
 }
 
-static inline void mask32(unsigned32 addr, unsigned32 clear, unsigned32 set)
+RTEMS_INLINE_ROUTINE void mask32(unsigned32 addr, unsigned32 clear, unsigned32 set)
 {
 	write32(addr, (read32(addr)&(~clear)) | set);
 }
 
-static inline unsigned16 read16(unsigned32 addr)
+RTEMS_INLINE_ROUTINE unsigned16 read16(unsigned32 addr)
 {
 	unsigned16 x;
 	asm volatile("lhz %0,0(%1) ; sync" : "=r"(x) : "b"(0xc0000000 | addr));
 	return x;
 }
 
-static inline void write16(unsigned32 addr, unsigned16 x)
+RTEMS_INLINE_ROUTINE void write16(unsigned32 addr, unsigned16 x)
 {
 	asm("sth %0,0(%1) ; eieio" : : "r"(x), "b"(0xc0000000 | addr));
 }
 
-static inline unsigned8 read8(unsigned32 addr)
+RTEMS_INLINE_ROUTINE unsigned8 read8(unsigned32 addr)
 {
 	unsigned8 x;
 	asm volatile("lbz %0,0(%1) ; sync" : "=r"(x) : "b"(0xc0000000 | addr));
 	return x;
 }
 
-static inline void write8(unsigned32 addr, unsigned8 x)
+RTEMS_INLINE_ROUTINE void write8(unsigned32 addr, unsigned8 x)
 {
 	asm("stb %0,0(%1) ; eieio" : : "r"(x), "b"(0xc0000000 | addr));
 }
 
-static inline void writef32(unsigned32 addr, f32 x)
+RTEMS_INLINE_ROUTINE void writef32(unsigned32 addr, single_precision x)
 {
 	asm("stfs %0,0(%1) ; eieio" : : "f"(x), "b"(0xc0000000 | addr));
 }
