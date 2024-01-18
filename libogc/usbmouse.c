@@ -74,7 +74,7 @@ static bool _mouse_thread_running = false;
 static bool _mouse_thread_quit = false;
 static struct umouse *_mouse = NULL;
 static s8 *_mousedata = NULL;
-static sem_t _mousesema = LWP_SEM_NULL;
+static sem_t _mousesema = SEM_FAILED;
 
 static u8 _mouse_stack[MOUSE_THREAD_STACKSIZE] ATTRIBUTE_ALIGN(8);
 
@@ -112,8 +112,8 @@ static s32 _mouse_event_cb(s32 result, mouse_event *event)
 	else
 		_mouse->connected = false;
 
-	if (_mousesema != LWP_SEM_NULL)
-		LWP_SemPost(_mousesema);
+	if (_mousesema != SEM_FAILED)
+		sem_post(_mousesema);
 
 	return 0;
 }
@@ -122,16 +122,16 @@ static s32 _mouse_event_cb(s32 result, mouse_event *event)
 static s32 _disconnect(s32 retval, void *data)
 {
 	_mouse->connected = false;
-	if (_mousesema != LWP_SEM_NULL)
-		LWP_SemPost(_mousesema);
+	if (_mousesema != SEM_FAILED)
+		sem_post(_mousesema);
 	return 1;
 }
 
 //Callback when a device is connected/disconnected (for notification when we're looking for a mouse)
 static s32 _device_change(s32 retval, void *data)
 {
-	if (_mousesema != LWP_SEM_NULL)
-		LWP_SemPost(_mousesema);
+	if (_mousesema != SEM_FAILED)
+		sem_post(_mousesema);
 	return 1;
 }
 
@@ -296,14 +296,14 @@ static void * _mouse_thread_func(void *arg)
 			if (USBMouse_Open() < 0) {
 				// wait for something to be inserted
 				USB_DeviceChangeNotifyAsync(USB_CLASS_HID, _device_change, NULL);
-				LWP_SemWait(_mousesema);
+				sem_wait(_mousesema);
 				continue;
 			}
 		}
 
 		if (USB_ReadIntrMsgAsync(_mouse->fd, _mouse->ep, _mouse->ep_size, _mousedata, (usbcallback)_mouse_event_cb, &event) < 0)
 			break;
-		LWP_SemWait(_mousesema);
+		sem_wait(_mousesema);
 		_mouse_addEvent(&event);
 		memset(&event, 0, sizeof(event));
 	}
@@ -326,7 +326,7 @@ s32 MOUSE_Init(void)
 	_mouse = (struct umouse *) malloc(sizeof(struct umouse));
 	memset(_mouse, 0, sizeof(struct umouse));
 	_mouse->fd = -1;
-	LWP_SemInit(&_mousesema, 0, 1);
+	sem_init(&_mousesema, 0, 1);
 
 	if (!_mouse_thread_running)
 	{
@@ -360,7 +360,7 @@ s32 MOUSE_Deinit(void)
 
 	if (_mouse_thread_running) {
 		_mouse_thread_quit = true;
-		LWP_SemPost(_mousesema);
+		sem_post(_mousesema);
 		LWP_JoinThread(_mouse_thread, NULL);
 		_mouse_thread_running = false;
 	}
@@ -369,9 +369,9 @@ s32 MOUSE_Deinit(void)
 	MOUSE_FlushEvents();
 	if(_mousedata!=NULL) iosFree(hId,_mousedata);
 	free(_mouse);
-	if (_mousesema != LWP_SEM_NULL) {
-		LWP_SemDestroy(_mousesema);
-		_mousesema = LWP_SEM_NULL;
+	if (_mousesema != SEM_FAILED) {
+		sem_destroy(_mousesema);
+		_mousesema = SEM_FAILED;
 	}
 	_mouse_is_inited = false;
 	return 1;

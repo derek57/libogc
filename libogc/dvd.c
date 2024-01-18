@@ -398,7 +398,7 @@ s32 __issuecommand(s32 prio,dvdcmdblk *block);
 
 extern void udelay(int us);
 extern u32 diff_msec(unsigned long long start,unsigned long long end);
-extern long long gettime(void);
+extern Watchdog_Interval gettime(void);
 extern void __MaskIrq(u32);
 extern void __UnmaskIrq(u32);
 extern syssramex* __SYS_LockSramEx(void);

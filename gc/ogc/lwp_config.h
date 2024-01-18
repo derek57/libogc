@@ -487,4 +487,7 @@ const unsigned char __log2table[256] = {
 # define RTEMS_INLINE_ROUTINE
 #endif
 
+#define rtems_set_errno_and_return_minus_one( _error ) \
+  do { /* errno = (_error); */ return -1; } while(0)
+
 #endif

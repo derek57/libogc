@@ -108,7 +108,7 @@ RTEMS_INLINE_ROUTINE POSIX_Condition_variables_Control
   /* XXX should support COND_INITIALIZER */ 
   LWP_CHECK_COND( cond );
 
-  return ( POSIX_Condition_variables_Control *)_Objects_Get(
+  return ( POSIX_Condition_variables_Control *)_Objects_Get (
     &_POSIX_Condition_variables_Information,
     _Objects_Get_index( cond )
   );
@@ -124,7 +124,7 @@ RTEMS_INLINE_ROUTINE POSIX_Condition_variables_Control
  *  inactive chain of free condition variable control blocks.
  */
 
-RTEMS_INLINE_ROUTINE void _POSIX_Condition_variables_Free(
+RTEMS_INLINE_ROUTINE void _POSIX_Condition_variables_Free (
   POSIX_Condition_variables_Control *the_condition_variable
 )
 {

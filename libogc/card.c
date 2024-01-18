@@ -254,8 +254,8 @@ static sys_resetinfo card_resetinfo = {
 	127
 };
 
-extern unsigned long gettick();
-extern long long gettime();
+extern unsigned32 gettick();
+extern Watchdog_Interval gettime();
 extern syssram* __SYS_LockSram();
 extern syssramex* __SYS_LockSramEx();
 extern u32 __SYS_UnlockSram(u32 write);

@@ -88,7 +88,7 @@ static u16 _ioCrc16Table[256];
 static u32 _initType[MAX_DRIVE];
 static u32 _ioAddressingType[MAX_DRIVE];
 
-extern unsigned long gettick();
+extern unsigned32 gettick();
 
 RTEMS_INLINE_ROUTINE u32 __check_response(s32 drv_no,u8 res)
 {
