@@ -16,7 +16,7 @@
 int __libogc_lock_init(int *lock,int recursive)
 {
 	signed32 ret;
-	pthread_mutex_t retlck = LWP_MUTEX_NULL;
+	pthread_mutex_t retlck = POSIX_CONDITION_VARIABLES_NO_MUTEX;
 
 	if(!lock) return -1;
 	
@@ -48,7 +48,7 @@ int __libogc_lock_acquire(int *lock)
 	if(!lock || *lock==0) return -1;
 
 	plock = (pthread_mutex_t)*lock;
-	return LWP_MutexLock(plock);
+	return pthread_mutex_lock(plock);
 }
 
 
@@ -59,6 +59,6 @@ int __libogc_lock_release(int *lock)
 	if(!lock || *lock==0) return -1;
 
 	plock = (pthread_mutex_t)*lock;
-	return LWP_MutexUnlock(plock);
+	return pthread_mutex_unlock(plock);
 }
 

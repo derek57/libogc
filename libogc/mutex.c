@@ -38,7 +38,7 @@ distribution.
 
 #define LWP_CHECK_MUTEX(hndl)		\
 {									\
-	if(((hndl)==LWP_MUTEX_NULL) || (_Objects_Get_node(hndl)!=OBJECTS_POSIX_MUTEXES))	\
+	if(((hndl)==POSIX_CONDITION_VARIABLES_NO_MUTEX) || (_Objects_Get_node(hndl)!=OBJECTS_POSIX_MUTEXES))	\
 		return NULL;				\
 }
 
@@ -55,7 +55,7 @@ static signed32 __lwp_mutex_locksupp(pthread_mutex_t lock,unsigned32 timeout,uns
 	ISR_Level level;
 	POSIX_Mutex_Control *p;
 
-	if(lock==LWP_MUTEX_NULL || _Objects_Get_node(lock)!=OBJECTS_POSIX_MUTEXES) return -1;
+	if(lock==POSIX_CONDITION_VARIABLES_NO_MUTEX || _Objects_Get_node(lock)!=OBJECTS_POSIX_MUTEXES) return -1;
 	
 	p = (POSIX_Mutex_Control*)_Objects_Get_isr_disable(&_lwp_mutex_objects,_Objects_Get_index(lock),&level);
 	if(!p) return -1;
@@ -135,7 +135,7 @@ signed32 LWP_MutexDestroy(pthread_mutex_t mutex)
 	return 0;
 }
 
-signed32 LWP_MutexLock(pthread_mutex_t mutex)
+signed32 pthread_mutex_lock(pthread_mutex_t mutex)
 {
 	return __lwp_mutex_locksupp(mutex,RTEMS_NO_TIMEOUT,TRUE);
 }
@@ -145,7 +145,7 @@ signed32 LWP_MutexTryLock(pthread_mutex_t mutex)
 	return __lwp_mutex_locksupp(mutex,RTEMS_NO_TIMEOUT,FALSE);
 }
 
-signed32 LWP_MutexUnlock(pthread_mutex_t mutex)
+signed32 pthread_mutex_unlock(pthread_mutex_t mutex)
 {
 	unsigned32 ret;
 	POSIX_Mutex_Control *lock;

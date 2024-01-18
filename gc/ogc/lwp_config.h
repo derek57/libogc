@@ -75,14 +75,20 @@ typedef uint64_t            Watchdog_Interval;
  *  referenced as "external" in every other file.
  */
 
-//#define SCORE_INIT
-
 #ifdef SCORE_INIT
 #undef  SCORE_EXTERN
 #define SCORE_EXTERN
 #else
 #undef  SCORE_EXTERN
 #define SCORE_EXTERN        extern
+#endif
+
+#ifdef POSIX_API_INIT
+#undef  POSIX_EXTERN
+#define POSIX_EXTERN
+#else
+#undef  POSIX_EXTERN
+#define POSIX_EXTERN        extern
 #endif
 
 /**

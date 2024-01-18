@@ -296,7 +296,7 @@ static s32 __cycle(usbstorage_handle *dev, u8 lun, u8 *buffer, u32 len, u8 *cb, 
 	else
 		max_size=MAX_TRANSFER_SIZE_V0;
 
-	LWP_MutexLock(dev->lock);
+	pthread_mutex_lock(dev->lock);
 	do
 	{
 		u8 *_buffer = buffer;
@@ -337,7 +337,7 @@ static s32 __cycle(usbstorage_handle *dev, u8 lun, u8 *buffer, u32 len, u8 *cb, 
 		}
 	} while (retval < 0 && retries > 0);
 
-	LWP_MutexUnlock(dev->lock);
+	pthread_mutex_unlock(dev->lock);
 
 	if(_status != NULL)
 		*_status = status;
@@ -493,9 +493,9 @@ found:
 
 	dev->suspended = 0;
 
-	LWP_MutexLock(dev->lock);
+	pthread_mutex_lock(dev->lock);
 	retval = __USB_CtrlMsgTimeout(dev, (USB_CTRLTYPE_DIR_DEVICE2HOST | USB_CTRLTYPE_TYPE_CLASS | USB_CTRLTYPE_REC_INTERFACE), USBSTORAGE_GET_MAX_LUN, 0, dev->interface, 1, max_lun);
-	LWP_MutexUnlock(dev->lock);
+	pthread_mutex_unlock(dev->lock);
 	
 	if (retval < 0)
 		dev->max_lun = 1;
@@ -575,9 +575,9 @@ s32 USBStorage_Reset(usbstorage_handle *dev)
 {
 	s32 retval;
 
-	LWP_MutexLock(dev->lock);
+	pthread_mutex_lock(dev->lock);
 	retval = __usbstorage_reset(dev);
-	LWP_MutexUnlock(dev->lock);
+	pthread_mutex_unlock(dev->lock);
 
 	return retval;
 }
@@ -702,7 +702,7 @@ s32 USBStorage_StartStop(usbstorage_handle *dev, u8 lun, u8 lo_ej, u8 start, u8 
 	if(lun >= dev->max_lun)
 		return IPC_EINVAL;
 
-	LWP_MutexLock(dev->lock);
+	pthread_mutex_lock(dev->lock);
 
 	retval = __send_cbw(dev, lun, 0, CBW_IN, cmd, sizeof(cmd));
 
@@ -710,7 +710,7 @@ s32 USBStorage_StartStop(usbstorage_handle *dev, u8 lun, u8 lo_ej, u8 start, u8 
 	if (retval >= 0)
 		retval = __read_csw(dev, &status, NULL, (imm ? USBSTORAGE_TIMEOUT : 10));
 
-	LWP_MutexUnlock(dev->lock);
+	pthread_mutex_unlock(dev->lock);
 
 	if(retval >=0 && status != 0)
 		retval = USBSTORAGE_ESTATUS;

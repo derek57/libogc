@@ -36,14 +36,19 @@ distribution.
 
 */ 
 
-#include <gctypes.h>
-#include "lwp_config.h"
-
-#define LWP_MUTEX_NULL		0xffffffff
-
 #ifdef __cplusplus
 	extern "C" {
 #endif
+
+#include <gctypes.h>
+#include "lwp_config.h"
+
+/*
+ *  Constant to indicate condition variable does not currently have
+ *  a mutex assigned to it.
+ */
+
+#define POSIX_CONDITION_VARIABLES_NO_MUTEX		0xffffffff
 
 
 /*! \typedef unsigned32 pthread_mutex_t
@@ -71,13 +76,13 @@ signed32 LWP_MutexInit(pthread_mutex_t *mutex,bool use_recursive);
 signed32 LWP_MutexDestroy(pthread_mutex_t mutex);
 
 
-/*! \fn signed32 LWP_MutexLock(pthread_mutex_t mutex)
+/*! \fn signed32 pthread_mutex_lock(pthread_mutex_t mutex)
 \brief Enter the mutex lock.
 \param[in] mutex handle to the mutext_t structure.
 
 \return 0 on success, <0 on error
 */
-signed32 LWP_MutexLock(pthread_mutex_t mutex);
+signed32 pthread_mutex_lock(pthread_mutex_t mutex);
 
 
 /*! \fn signed32 LWP_MutexTryLock(pthread_mutex_t mutex)
@@ -89,13 +94,13 @@ signed32 LWP_MutexLock(pthread_mutex_t mutex);
 signed32 LWP_MutexTryLock(pthread_mutex_t mutex);
 
 
-/*! \fn signed32 LWP_MutexUnlock(pthread_mutex_t mutex)
+/*! \fn signed32 pthread_mutex_unlock(pthread_mutex_t mutex)
 \brief Release the mutex lock and let other threads process further on this mutex.
 \param[in] mutex handle to the pthread_mutex_t structure.
 
 \return 0 on success, <0 on error
 */
-signed32 LWP_MutexUnlock(pthread_mutex_t mutex);
+signed32 pthread_mutex_unlock(pthread_mutex_t mutex);
 
 #ifdef __cplusplus
 	}

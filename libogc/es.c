@@ -940,7 +940,7 @@ static int _ES_open_r (struct _reent *r, void *fileStruct, const char *path, int
 static int _ES_close_r (struct _reent *r, int fd) {
 	es_fd *file = (es_fd *) fd;
 
-	LWP_MutexLock(file->mutex);
+	pthread_mutex_lock(file->mutex);
 
 	if(ES_CloseContent(file->cfd) < 0) {
 		r->_errno = EBADF;
@@ -950,7 +950,7 @@ static int _ES_close_r (struct _reent *r, int fd) {
 
 	if(file->iobuf) _free_r(r,file->iobuf);
 
-	LWP_MutexUnlock(file->mutex);
+	pthread_mutex_unlock(file->mutex);
 	LWP_MutexDestroy(file->mutex);
 	return 0;
 }
@@ -961,9 +961,9 @@ static int _ES_read_r (struct _reent *r, int fd, char *ptr, size_t len) {
 	int res;
 
 	
-	LWP_MutexLock(file->mutex);
+	pthread_mutex_lock(file->mutex);
 	if(file->cfd < 0) {
-		LWP_MutexUnlock(file->mutex);
+		pthread_mutex_unlock(file->mutex);
 		r->_errno = EBADF;
 		return -1;
 	}
@@ -973,7 +973,7 @@ static int _ES_read_r (struct _reent *r, int fd, char *ptr, size_t len) {
 	{
 		res = ES_ReadContent(file->cfd, (u8*)ptr, len);
 		if(res < 0) {
-			LWP_MutexUnlock(file->mutex);
+			pthread_mutex_unlock(file->mutex);
 			// we don't really know what the error codes mean...
 			r->_errno = EIO;
 			return -1;
@@ -994,7 +994,7 @@ static int _ES_read_r (struct _reent *r, int fd, char *ptr, size_t len) {
 			else chunk = len;
 			res = ES_ReadContent(file->cfd, file->iobuf, chunk);
 			if(res < 0) {
-				LWP_MutexUnlock(file->mutex);
+				pthread_mutex_unlock(file->mutex);
 				// we don't really know what the error codes mean...
 				r->_errno = EIO;
 				return -1;
@@ -1007,7 +1007,7 @@ static int _ES_read_r (struct _reent *r, int fd, char *ptr, size_t len) {
 		}
 	}
 
-	LWP_MutexUnlock(file->mutex);
+	pthread_mutex_unlock(file->mutex);
 	return read;
 }
 
@@ -1015,15 +1015,15 @@ static off_t _ES_seek_r (struct _reent *r, int fd, off_t where, int whence) {
 	es_fd *file = (es_fd *) fd;
 	s32 res;
 
-	LWP_MutexLock(file->mutex);
+	pthread_mutex_lock(file->mutex);
 	if(file->cfd < 0) {
-		LWP_MutexUnlock(file->mutex);
+		pthread_mutex_unlock(file->mutex);
 		r->_errno = EBADF;
 		return -1;
 	}
 
 	res = ES_SeekContent(file->cfd, where, whence);
-	LWP_MutexUnlock(file->mutex);
+	pthread_mutex_unlock(file->mutex);
 
 	if(res < 0) {
 		r->_errno = EINVAL;
@@ -1066,15 +1066,15 @@ static void _ES_fillstat(u64 titleID, tmd_content *content, struct stat *st) {
 static int _ES_fstat_r (struct _reent *r, int fd, struct stat *st) {
 	es_fd *file = (es_fd *) fd;
 
-	LWP_MutexLock(file->mutex);
+	pthread_mutex_lock(file->mutex);
 	if(file->cfd < 0) {
-		LWP_MutexUnlock(file->mutex);
+		pthread_mutex_unlock(file->mutex);
 		r->_errno = EBADF;
 		return -1;
 	}
 
 	_ES_fillstat(file->titleID, &file->content, st);
-	LWP_MutexUnlock(file->mutex);
+	pthread_mutex_unlock(file->mutex);
 
 	return 0;
 }
