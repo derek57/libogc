@@ -36,11 +36,15 @@ distribution.
 #include <lwp_config.h>
 #include "message.h"
 
-#define LWP_CHECK_MBOX(hndl)		\
-{									\
-	if(((hndl)==MQ_BOX_NULL) || (_Objects_Get_node(hndl)!=OBJECTS_POSIX_MESSAGE_QUEUES))	\
-		return NULL;				\
+#define LWP_CHECK_MBOX(hndl)    \
+{                               \
+	if ( ( ( hndl ) == MQ_BOX_NULL) || ( _Objects_Get_node( hndl ) != OBJECTS_POSIX_MESSAGE_QUEUES ) )  \
+		return NULL;            \
 }
+
+/*
+ *  Data Structure used to manage a POSIX message queue
+ */
 
 typedef struct
 {
@@ -48,118 +52,269 @@ typedef struct
 	CORE_message_queue_Control Message_queue;
 } POSIX_Message_queue_Control;
 
-Objects_Information _lwp_mqbox_objects;
+/*
+ *  The following defines the information control block used to manage
+ *  this class of objects.  The second item is used to manage the set
+ *  of "file descriptors" associated with the message queues.
+ */
 
-void __lwp_mqbox_init()
+Objects_Information _POSIX_Message_queue_Information;
+
+/*PAGE
+ *
+ *  _POSIX_Message_queue_Manager_initialization
+ *
+ *  This routine initializes all message_queue manager related data structures.
+ *
+ *  Input parameters:
+ *    maximum_message_queues - maximum configured message_queues
+ *
+ *  Output parameters:  NONE
+ */
+
+void _POSIX_Message_queue_Manager_initialization( void )
 {
-	_Objects_Initialize_information(&_lwp_mqbox_objects,CONFIGURE_MAXIMUM_POSIX_MESSAGE_QUEUES,sizeof(POSIX_Message_queue_Control));
+	_Objects_Initialize_information(
+	  &_POSIX_Message_queue_Information,
+	  CONFIGURE_MAXIMUM_POSIX_MESSAGE_QUEUES,
+	  sizeof( POSIX_Message_queue_Control )
+	);
 }
 
-RTEMS_INLINE_ROUTINE POSIX_Message_queue_Control* __lwp_mqbox_open(mqbox_t mbox)
+/*
+ *  _POSIX_Message_queue_Get
+ *
+ *  DESCRIPTION:
+ *
+ *  This function maps message queue IDs to message queue control blocks.
+ *  If ID corresponds to a local message queue, then it returns
+ *  the_mq control pointer which maps to ID and location
+ *  is set to OBJECTS_LOCAL.  if the message queue ID is global and
+ *  resides on a remote node, then location is set to OBJECTS_REMOTE,
+ *  and the_message queue is undefined.  Otherwise, location is set
+ *  to OBJECTS_ERROR and the_mq is undefined.
+ */
+
+RTEMS_INLINE_ROUTINE POSIX_Message_queue_Control *_POSIX_Message_queue_Get(
+  mqd_t mbox
+)
 {
-	LWP_CHECK_MBOX(mbox);
-	return (POSIX_Message_queue_Control*)_Objects_Get(&_lwp_mqbox_objects,_Objects_Get_index(mbox));
+	LWP_CHECK_MBOX( mbox );
+	return (POSIX_Message_queue_Control *)_Objects_Get( &_POSIX_Message_queue_Information, _Objects_Get_index( mbox ) );
 }
 
-RTEMS_INLINE_ROUTINE void __lwp_mqbox_free(POSIX_Message_queue_Control *mqbox)
+/*
+ *  _POSIX_Message_queue_Free
+ *
+ *  DESCRIPTION:
+ *
+ *  This routine frees a message queue control block to the
+ *  inactive chain of free message queue control blocks.
+ */
+
+RTEMS_INLINE_ROUTINE void _POSIX_Message_queue_Free(
+  POSIX_Message_queue_Control *the_mq
+)
 {
-	_Objects_Close(&_lwp_mqbox_objects,&mqbox->Object);
-	_Objects_Free(&_lwp_mqbox_objects,&mqbox->Object);
+	_Objects_Close( &_POSIX_Message_queue_Information, &the_mq->Object );
+	_Objects_Free( &_POSIX_Message_queue_Information, &the_mq->Object );
 }
 
-static POSIX_Message_queue_Control* __lwp_mqbox_allocate()
+/*
+ *  _POSIX_Message_queue_Allocate
+ *
+ *  DESCRIPTION:
+ *
+ *  This function allocates a message queue control block from
+ *  the inactive chain of free message queue control blocks.
+ */
+
+STATIC POSIX_Message_queue_Control *_POSIX_Message_queue_Allocate( void )
 {
-	POSIX_Message_queue_Control *mqbox;
+	POSIX_Message_queue_Control *the_mq;
 
 	_Thread_Disable_dispatch();
-	mqbox = (POSIX_Message_queue_Control*)_Objects_Allocate(&_lwp_mqbox_objects);
-	if(mqbox) {
-		_Objects_Open(&_lwp_mqbox_objects,&mqbox->Object);
-		return mqbox;
+	the_mq = (POSIX_Message_queue_Control *)_Objects_Allocate( &_POSIX_Message_queue_Information );
+
+	if ( the_mq ) {
+		_Objects_Open( &_POSIX_Message_queue_Information, &the_mq->Object );
+		return the_mq;
 	}
+
 	_Thread_Enable_dispatch();
 	return NULL;
 }
 
-signed32 MQ_Init(mqbox_t *mqbox,unsigned32 count)
+/*PAGE
+ *
+ *  15.2.2 Open a Message Queue, P1003.1b-1993, p. 272
+ */
+
+int mq_open(
+  mqd_t      *mqdes,
+  unsigned32  count
+)
 {
-	CORE_message_queue_Attributes attr;
-	POSIX_Message_queue_Control *ret = NULL;
+  CORE_message_queue_Attributes  the_mq_attr;
+  POSIX_Message_queue_Control   *the_mq = NULL;
 
-	if(!mqbox) return -1;
+  if ( !mqdes )
+    rtems_set_errno_and_return_minus_one( EINVAL ); 
 
-	ret = __lwp_mqbox_allocate();
-	if(!ret) return MQ_ERROR_TOOMANY;
+  the_mq = _POSIX_Message_queue_Allocate();
 
-	attr.discipline = CORE_MESSAGE_QUEUE_DISCIPLINES_FIFO;
-	if(!_CORE_message_queue_Initialize(&ret->Message_queue,&attr,count,sizeof(mqmsg_t))) {
-		__lwp_mqbox_free(ret);
-		_Thread_Enable_dispatch();
-		return MQ_ERROR_TOOMANY;
-	}
+  if ( !the_mq )
+    return MQ_ERROR_TOOMANY;
 
-	*mqbox = (mqbox_t)_Objects_Build_id(OBJECTS_POSIX_MESSAGE_QUEUES, _Objects_Get_index(ret->Object.id));
-	_Thread_Enable_dispatch();
-	return MQ_ERROR_SUCCESSFUL;
+  the_mq_attr.discipline = CORE_MESSAGE_QUEUE_DISCIPLINES_FIFO;
+
+  if ( !_CORE_message_queue_Initialize(
+          &the_mq->Message_queue,
+          &the_mq_attr,
+          count,
+          sizeof( char * )
+      ) ) {
+    _POSIX_Message_queue_Free( the_mq );
+    _Thread_Enable_dispatch();
+    return MQ_ERROR_TOOMANY;
+  }
+
+  *mqdes = (mqd_t)_Objects_Build_id( OBJECTS_POSIX_MESSAGE_QUEUES, _Objects_Get_index( the_mq->Object.id ) );
+  _Thread_Enable_dispatch();
+  return MQ_ERROR_SUCCESSFUL;
 }
 
-void MQ_Close(mqbox_t mqbox)
+/*
+ *
+ *  15.2.2 Close a Message Queue, P1003.1b-1993, p. 275
+ */
+
+void mq_close(
+  mqd_t  mqdes
+)
 {
-	POSIX_Message_queue_Control *mbox;
+  POSIX_Message_queue_Control *the_mq;
 
-	mbox = __lwp_mqbox_open(mqbox);
-	if(!mbox) return;
+  the_mq = _POSIX_Message_queue_Get( mqdes );
 
-	_CORE_message_queue_Close(&mbox->Message_queue,0);
-	_Thread_Enable_dispatch();
+  if ( !the_mq )
+    return;
 
-	__lwp_mqbox_free(mbox);
+  _CORE_message_queue_Close( &the_mq->Message_queue, 0 );
+  _Thread_Enable_dispatch();
+
+  _POSIX_Message_queue_Free( the_mq );
 }
 
-boolean MQ_Send(mqbox_t mqbox,mqmsg_t msg,unsigned32 flags)
+/*PAGE
+ *
+ *  15.2.4 Send a Message to a Message Queue, P1003.1b-1993, p. 277
+ *
+ *  NOTE: P1003.4b/D8, p. 45 adds mq_timedsend().
+ */
+
+boolean mq_send(
+  mqd_t      mqdes,
+  char      *msg_ptr,
+  unsigned32 oflag
+)
 {
-	boolean ret;
-	POSIX_Message_queue_Control *mbox;
-	unsigned32 wait = (flags==MQ_MSG_BLOCK)?TRUE:FALSE;
+  boolean                      ret;
+  POSIX_Message_queue_Control *the_mq;
+  unsigned32                   wait = (oflag == MQ_MSG_BLOCK ) ? TRUE : FALSE;
 
-	mbox = __lwp_mqbox_open(mqbox);
-	if(!mbox) return FALSE;
+  the_mq = _POSIX_Message_queue_Get( mqdes );
 
-	ret = FALSE;
-	if(_CORE_message_queue_Submit(&mbox->Message_queue,mbox->Object.id,(void*)&msg,sizeof(mqmsg_t),CORE_MESSAGE_QUEUE_SEND_REQUEST,wait,RTEMS_NO_TIMEOUT)==CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL) ret = TRUE;
-	_Thread_Enable_dispatch();
+  if ( !the_mq )
+    return FALSE;
 
-	return ret;
+  ret = FALSE;
+
+  if ( _CORE_message_queue_Submit(
+      &the_mq->Message_queue,
+      the_mq->Object.id,
+      (void *)&msg_ptr,
+      sizeof( char * ),
+      CORE_MESSAGE_QUEUE_SEND_REQUEST,
+      wait,
+      RTEMS_NO_TIMEOUT ) == CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL
+    )
+    ret = TRUE;
+
+  _Thread_Enable_dispatch();
+
+  return ret;
 }
 
-boolean MQ_Receive(mqbox_t mqbox,mqmsg_t *msg,unsigned32 flags)
+/*PAGE
+ *
+ *  15.2.5 Receive a Message From a Message Queue, P1003.1b-1993, p. 279
+ *
+ *  NOTE: P1003.4b/D8, p. 45 adds mq_timedreceive().
+ */
+
+boolean mq_receive(
+  mqd_t         mqdes,
+  char         *msg_ptr,
+  unsigned32    oflag
+)
 {
-	boolean ret;
-	POSIX_Message_queue_Control *mbox;
-	unsigned32 tmp,wait = (flags==MQ_MSG_BLOCK)?TRUE:FALSE;
+  boolean                      ret;
+  POSIX_Message_queue_Control *the_mq;
+  unsigned32                   tmp;
+  unsigned32                   wait = (oflag == MQ_MSG_BLOCK) ? TRUE : FALSE;
 
-	mbox = __lwp_mqbox_open(mqbox);
-	if(!mbox) return FALSE;
+  the_mq = _POSIX_Message_queue_Get( mqdes );
 
-	ret = FALSE;
-	if(_CORE_message_queue_Seize(&mbox->Message_queue,mbox->Object.id,(void*)msg,&tmp,wait,RTEMS_NO_TIMEOUT)==CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL) ret = TRUE;
-	_Thread_Enable_dispatch();
+  if ( !the_mq )
+    return FALSE;
 
-	return ret;
+  ret = FALSE;
+
+  if ( _CORE_message_queue_Seize(
+      &the_mq->Message_queue,
+      the_mq->Object.id,
+      (void *)msg_ptr,
+      &tmp,
+      wait,
+      RTEMS_NO_TIMEOUT) == CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL
+	  )
+    ret = TRUE;
+
+  _Thread_Enable_dispatch();
+
+  return ret;
 }
 
-boolean MQ_Jam(mqbox_t mqbox,mqmsg_t msg,unsigned32 flags)
+boolean MQ_Jam(
+  mqd_t       mqdes,
+  char       *msg_ptr,
+  unsigned32  oflag
+)
 {
-	boolean ret;
-	POSIX_Message_queue_Control *mbox;
-	unsigned32 wait = (flags==MQ_MSG_BLOCK)?TRUE:FALSE;
+  boolean                      ret;
+  POSIX_Message_queue_Control *the_mq;
+  unsigned32                   wait = (oflag == MQ_MSG_BLOCK) ? TRUE : FALSE;
 
-	mbox = __lwp_mqbox_open(mqbox);
-	if(!mbox) return FALSE;
+  the_mq = _POSIX_Message_queue_Get( mqdes );
 
-	ret = FALSE;
-	if(_CORE_message_queue_Submit(&mbox->Message_queue,mbox->Object.id,(void*)&msg,sizeof(mqmsg_t),CORE_MESSAGE_QUEUE_URGENT_REQUEST,wait,RTEMS_NO_TIMEOUT)==CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL) ret = TRUE;
-	_Thread_Enable_dispatch();
+  if ( !the_mq )
+    return FALSE;
 
-	return ret;
+  ret = FALSE;
+
+  if ( _CORE_message_queue_Submit(
+      &the_mq->Message_queue,
+      the_mq->Object.id,
+      (void *)&msg_ptr,
+      sizeof( char * ),
+      CORE_MESSAGE_QUEUE_URGENT_REQUEST,
+      wait,
+      RTEMS_NO_TIMEOUT) == CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL
+      )
+    ret = TRUE;
+
+  _Thread_Enable_dispatch();
+
+  return ret;
 }

@@ -174,7 +174,15 @@ extern void __lwp_mutex_init(void);
 
 POSIX_EXTERN void _POSIX_Condition_variables_Manager_initialization(void);
 
-extern void __lwp_mqbox_init(void);
+/*
+ *  _POSIX_Message_queue_Manager_initialization
+ *
+ *  DESCRIPTION:
+ *
+ *  This routine performs the initialization necessary for this manager.
+ */
+
+POSIX_EXTERN void _POSIX_Message_queue_Manager_initialization(void);
 
 /*
  *  _POSIX_Semaphore_Manager_initialization
@@ -1087,7 +1095,7 @@ void rtems_initialize_executive_early()
 	_Thread_Handler_initialization();
 	__lwp_sysinit();
 	__memlock_init();
-	__lwp_mqbox_init();
+	_POSIX_Message_queue_Manager_initialization();
 	_POSIX_Semaphore_Manager_initialization();
 	__lwp_mutex_init();
 	_POSIX_Condition_variables_Manager_initialization();

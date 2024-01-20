@@ -52,69 +52,75 @@ extern "C" {
 #endif
 
 
-/*! \typedef unsigned32 mqbox_t
+/*! \typedef unsigned32 mqd_t
 \brief typedef for the message queue handle
 */
-typedef unsigned32 mqbox_t;
+typedef Objects_Id  mqd_t;
 
 
-/*! \typedef void* mqmsg_t
-\brief typedef for the message pointer
-*/
-typedef void* mqmsg_t;
-
-
-
-/*! \fn unsigned32 MQ_Init(mqbox_t *mqbox,unsigned32 count)
+/*! \fn unsigned32 mq_open(mqd_t *mqbox,unsigned32 count)
 \brief Initializes a message queue
-\param[out] mqbox pointer to the mqbox_t handle.
+\param[out] mqbox pointer to the mqd_t handle.
 \param[in] count maximum number of messages the queue can hold
 
 \return 0 on success, <0 on error
 */
-signed32 MQ_Init(mqbox_t *mqbox,unsigned32 count);
+int mq_open(
+  mqd_t      *mqdes,
+  unsigned32  count
+);
 
 
-/*! \fn void MQ_Close(mqbox_t mqbox)
+/*! \fn void mq_close(mqd_t mqbox)
 \brief Closes the message queue and releases all memory.
-\param[in] mqbox handle to the mqbox_t structure.
+\param[in] mqbox handle to the mqd_t structure.
 
 \return none
 */
-void MQ_Close(mqbox_t mqbox);
+void mq_close(
+  mqd_t  mqdes
+);
 
 
-/*! \fn boolean MQ_Send(mqbox_t mqbox,mqmsg_t msg,unsigned32 flags)
+/*! \fn boolean mq_send(mqd_t mqbox,char *msg,unsigned32 flags)
 \brief Sends a message to the given message queue.
-\param[in] mqbox mqbox_t handle to the message queue
+\param[in] mqbox mqd_t handle to the message queue
 \param[in] msg message to send
 \param[in] flags message flags (MQ_MSG_BLOCK, MQ_MSG_NOBLOCK)
 
 \return boolean result
 */
-boolean MQ_Send(mqbox_t mqbox,mqmsg_t msg,unsigned32 flags);
+boolean mq_send(
+  mqd_t      mqdes,
+  char      *msg_ptr,
+  unsigned32 oflag
+);
 
 
-/*! \fn boolean MQ_Jam(mqbox_t mqbox,mqmsg_t msg,unsigned32 flags)
+/*! \fn boolean MQ_Jam(mqd_t mqdes, char *msg_ptr, unsigned32 oflag)
 \brief Sends a message to the given message queue and jams it in front of the queue.
-\param[in] mqbox mqbox_t handle to the message queue
-\param[in] msg message to send
-\param[in] flags message flags (MQ_MSG_BLOCK, MQ_MSG_NOBLOCK)
+\param[in] mqdes mqd_t handle to the message queue
+\param[in] msg_ptr message to send
+\param[in] oflag message flags (MQ_MSG_BLOCK, MQ_MSG_NOBLOCK)
 
 \return boolean result
 */
-boolean MQ_Jam(mqbox_t mqbox,mqmsg_t msg,unsigned32 flags);
+boolean MQ_Jam(mqd_t mqdes, char *msg_ptr, unsigned32 oflag);
 
 
-/*! \fn boolean MQ_Receive(mqbox_t mqbox,mqmsg_t *msg,unsigned32 flags)
+/*! \fn boolean mq_receive(mqd_t mqbox,char **msg,unsigned32 oflag)
 \brief Sends a message to the given message queue.
-\param[in] mqbox mqbox_t handle to the message queue
-\param[in] msg pointer to a mqmsg_t_t-type message to receive.
-\param[in] flags message flags (MQ_MSG_BLOCK, MQ_MSG_NOBLOCK)
+\param[in] mqdes mqd_t handle to the message queue
+\param[in] msg_ptr pointer to a mqmsg_t_t-type message to receive.
+\param[in] oflag message flags (MQ_MSG_BLOCK, MQ_MSG_NOBLOCK)
 
 \return boolean result
 */
-boolean MQ_Receive(mqbox_t mqbox,mqmsg_t *msg,unsigned32 flags);
+boolean mq_receive(
+  mqd_t         mqdes,
+  char         *msg_ptr,
+  unsigned32    oflag
+);
 
 #ifdef __cplusplus
 	}
