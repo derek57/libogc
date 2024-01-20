@@ -17,8 +17,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_QUEUE_INL__
-#define __LWP_QUEUE_INL__
+#ifndef __INLINE_CHAIN_inl
+#define __INLINE_CHAIN_inl
 
 #include "lwp_config.h"
 

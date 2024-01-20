@@ -17,7 +17,7 @@
 		#include <ogcsys.h>
 		#include "bte.h"
 		#include "network.h"
-		#include "lwp_queue.h"
+		#include "chain.h"
 		#include "asm.h"
 		#include "processor.h"
 		#include "wkspace.h"

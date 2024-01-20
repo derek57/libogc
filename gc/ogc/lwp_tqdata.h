@@ -20,7 +20,7 @@
 extern "C" {
 #endif
 
-#include "lwp_queue.h"
+#include "chain.h"
 #include "lwp_priority.h"
 
 /*

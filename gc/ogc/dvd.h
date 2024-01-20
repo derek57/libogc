@@ -38,7 +38,7 @@ distribution.
  */ 
 
 #include <gctypes.h>
-#include <ogc/lwp_queue.h>
+#include <ogc/chain.h>
 #include <ogc/disc_io.h>
 
 /*! 

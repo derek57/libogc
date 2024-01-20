@@ -13,8 +13,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_QUEUE_H__
-#define __LWP_QUEUE_H__
+#ifndef __CHAIN_h
+#define __CHAIN_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -169,7 +169,7 @@ void _Chain_Append(
 );
 
 #ifdef __RTEMS_APPLICATION__
-#include <libogc/lwp_queue.inl>
+#include <libogc/chain.inl>
 #endif
 
 #ifdef __cplusplus

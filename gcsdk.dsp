@@ -268,11 +268,11 @@ SOURCE=.\libogc\lwp_priority.inl
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_queue.c
+SOURCE=.\libogc\chain.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_queue.inl
+SOURCE=.\libogc\chain.inl
 # End Source File
 # Begin Source File
 
@@ -1200,7 +1200,7 @@ SOURCE=.\gc\ogc\lwp_priority.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\gc\ogc\lwp_queue.h
+SOURCE=.\gc\ogc\chain.h
 # End Source File
 # Begin Source File
 

@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 #include <gctypes.h>
-#include "lwp_queue.h"
+#include "chain.h"
 #include <time.h>
 
 #if defined(HW_RVL)

@@ -34,7 +34,7 @@ distribution.
 
 #include <gccore.h>
 #include <ogc/usb.h>
-#include <ogc/lwp_queue.h>
+#include <ogc/chain.h>
 #include <ogc/usbmouse.h>
 #include <ogc/semaphore.h>
 

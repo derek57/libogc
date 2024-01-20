@@ -227,7 +227,7 @@ typedef struct _smbhandle
 static u32 smb_dialectcnt = 1;
 static bool smb_inited = false;
 static lwp_objinfo smb_handle_objects;
-static lwp_queue smb_filehandle_queue;
+static Chain_Control smb_filehandle_queue;
 static struct _smbfile smb_filehandles[SMB_FILEHANDLES_MAX];
 static const char *smb_dialects[] = {"NT LM 0.12",NULL};
 
@@ -400,7 +400,7 @@ static void __smb_init()
 {
 	smb_inited = true;
 	_Objects_Initialize_information(&smb_handle_objects,SMB_CONNHANDLES_MAX,sizeof(SMBHANDLE));
-	__lwp_queue_initialize(&smb_filehandle_queue,smb_filehandles,SMB_FILEHANDLES_MAX,sizeof(struct _smbfile));
+	_Chain_Initialize(&smb_filehandle_queue,smb_filehandles,SMB_FILEHANDLES_MAX,sizeof(struct _smbfile));
 }
 
 static SMBHANDLE* __smb_allocate_handle()
@@ -1424,7 +1424,7 @@ SMBFILE SMB_OpenFile(const char *filename, u16 access, u16 creation,SMBCONN smbh
 
 	if(SMBCheck(SMB_OPEN_ANDX,handle)==SMB_SUCCESS) {
 		/*** Check file handle ***/
-		fid = (struct _smbfile*)__lwp_queue_get(&smb_filehandle_queue);
+		fid = (struct _smbfile*)_Chain_Get(&smb_filehandle_queue);
 		if(fid) {
 			fid->conn = smbhndl;
 			fid->sfid = getUShort(handle->message.smb,(SMB_HEADER_SIZE+5));
@@ -1471,7 +1471,7 @@ void SMB_CloseFile(SMBFILE sfid)
 	ret = smb_send(handle->sck_server,(char*)&handle->message,pos);
 	if(ret<0) handle->conn_valid = false;
 	else SMBCheck(SMB_CLOSE,handle);
-	__lwp_queue_append(&smb_filehandle_queue,&fid->node);
+	_Chain_Append(&smb_filehandle_queue,&fid->node);
 }
 
 /**

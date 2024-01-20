@@ -41,7 +41,7 @@ distribution.
 #include <gctypes.h>
 #include <gcutil.h>
 #include <time.h>
-#include <ogc/lwp_queue.h>
+#include <ogc/chain.h>
 #include "gx_struct.h"
 
 #define SYS_BASE_CACHED					(0x80000000)

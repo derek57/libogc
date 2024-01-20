@@ -40,7 +40,7 @@ distribution.
 
 #include <gccore.h>
 #include <ogc/usb.h>
-#include <ogc/lwp_queue.h>
+#include <ogc/chain.h>
 
 #include <wiikeyboard/usbkeyboard.h>
 #include <wiikeyboard/keyboard.h>
@@ -52,7 +52,7 @@ distribution.
 #define KBD_THREAD_UDELAY (1000 * 10)
 #define KBD_THREAD_KBD_SCAN_INTERVAL (3 * 100)
 
-static lwp_queue _queue;
+static Chain_Control _queue;
 static lwp_t _kbd_thread = LWP_THREAD_NULL;
 static lwp_t _kbd_buf_thread = LWP_THREAD_NULL;
 static bool _kbd_thread_running = false;
@@ -154,7 +154,7 @@ static s32 _kbd_addEvent(const keyboard_event *event) {
 	_node *n = malloc(sizeof(_node));
 	n->event = *event;
 
-	__lwp_queue_append(&_queue, (lwp_node*) n);
+	_Chain_Append(&_queue, (lwp_node*) n);
 
 	return 1;
 }
@@ -553,7 +553,7 @@ s32 KEYBOARD_Init(keyPressCallback keypress_cb)
 		return -4;
 	}
 
-	__lwp_queue_init_empty(&_queue);
+	_Chain_Initialize_empty(&_queue);
 
 	if (!_kbd_thread_running) {
 		// start the keyboard thread
@@ -630,7 +630,7 @@ s32 KEYBOARD_Deinit(void)
 //Get the first event of the event queue
 s32 KEYBOARD_GetEvent(keyboard_event *event)
 {
-	_node *n = (_node *) __lwp_queue_get(&_queue);
+	_node *n = (_node *) _Chain_Get(&_queue);
 
 	if (!n)
 		return 0;
@@ -650,7 +650,7 @@ s32 KEYBOARD_FlushEvents(void)
 
 	res = 0;
 	while (true) {
-		n = (_node *) __lwp_queue_get(&_queue);
+		n = (_node *) _Chain_Get(&_queue);
 
 		if (!n)
 			break;

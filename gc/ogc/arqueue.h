@@ -33,7 +33,7 @@ distribution.
 #define __ARQUEUE_H__
 
 #include <gctypes.h>
-#include <ogc/lwp_queue.h>
+#include <ogc/chain.h>
 #include "aram.h"
 
 #define ARQ_MRAMTOARAM			AR_MRAMTOARAM

@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 #include <gctypes.h>
-#include "lwp_queue.h"
+#include "chain.h"
 
 /**
  *  This is the bit position of the starting bit of the index portion of

@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include "asm.h"
 #include "processor.h"
-#include "lwp_queue.h"
+#include "chain.h"
 
 /*PAGE
  *
