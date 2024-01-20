@@ -23,7 +23,7 @@ extern "C" {
 #include <gctypes.h>
 #include <stdlib.h>
 #include "states.h"
-#include "lwp_tqdata.h"
+#include "tqdata.h"
 #include "watchdog.h"
 #include "object.h"
 #include "context.h"

@@ -3976,7 +3976,7 @@
 					>
 				</File>
 				<File
-					RelativePath="gc\ogc\lwp_tqdata.h"
+					RelativePath="gc\ogc\tqdata.h"
 					>
 				</File>
 				<File

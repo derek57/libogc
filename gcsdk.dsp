@@ -1224,7 +1224,7 @@ SOURCE=.\gc\ogc\lwp_threads.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\gc\ogc\lwp_tqdata.h
+SOURCE=.\gc\ogc\tqdata.h
 # End Source File
 # Begin Source File
 

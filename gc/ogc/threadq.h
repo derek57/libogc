@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 #include <gctypes.h>
-#include <lwp_tqdata.h>
+#include <tqdata.h>
 #include <lwp_threads.h>
 #include <watchdog.h>
 
