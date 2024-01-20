@@ -13,8 +13,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_MESSAGES_H__
-#define __LWP_MESSAGES_H__
+#ifndef __RTEMS_CORE_MESSAGE_QUEUE_h
+#define __RTEMS_CORE_MESSAGE_QUEUE_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -288,7 +288,7 @@ void _CORE_message_queue_Flush_waiting_threads(
 );
 
 #ifdef __RTEMS_APPLICATION__
-#include <libogc/lwp_messages.inl>
+#include <libogc/coremsg.inl>
 #endif
 
 #ifdef __cplusplus

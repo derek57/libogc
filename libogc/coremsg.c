@@ -19,7 +19,7 @@
 
 #include <stdlib.h>
 #include "asm.h"
-#include "lwp_messages.h"
+#include "coremsg.h"
 #include "wkspace.h"
 
 /*PAGE

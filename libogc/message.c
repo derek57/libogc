@@ -31,7 +31,7 @@ distribution.
 
 #include <asm.h>
 #include <stdlib.h>
-#include <lwp_messages.h>
+#include <coremsg.h>
 #include <lwp_objmgr.h>
 #include <lwp_config.h>
 #include "message.h"

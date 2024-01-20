@@ -13,8 +13,8 @@
  *  $Id$
  */
 
-#ifndef __MESSAGE_INL__
-#define __MESSAGE_INL__
+#ifndef __CORE_MESSAGE_QUEUE_inl
+#define __CORE_MESSAGE_QUEUE_inl
 
 /*PAGE
  *

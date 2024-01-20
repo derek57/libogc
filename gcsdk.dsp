@@ -236,11 +236,11 @@ SOURCE=.\libogc\heap.inl
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_messages.c
+SOURCE=.\libogc\coremsg.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_messages.inl
+SOURCE=.\libogc\coremsg.inl
 # End Source File
 # Begin Source File
 
@@ -1184,7 +1184,7 @@ SOURCE=.\gc\ogc\heap.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\gc\ogc\lwp_messages.h
+SOURCE=.\gc\ogc\coremsg.h
 # End Source File
 # Begin Source File
 

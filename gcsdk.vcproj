@@ -809,7 +809,7 @@
 					>
 				</File>
 				<File
-					RelativePath="libogc\lwp_messages.c"
+					RelativePath="libogc\coremsg.c"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -829,7 +829,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="libogc\lwp_messages.inl"
+					RelativePath="libogc\coremsg.inl"
 					>
 				</File>
 				<File
@@ -3936,7 +3936,7 @@
 					>
 				</File>
 				<File
-					RelativePath="gc\ogc\lwp_messages.h"
+					RelativePath="gc\ogc\coremsg.h"
 					>
 				</File>
 				<File
