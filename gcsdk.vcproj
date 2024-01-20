@@ -781,7 +781,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="libogc\lwp_handler.S"
+					RelativePath="libogc\cpu_asm.S"
 					>
 				</File>
 				<File

@@ -224,7 +224,7 @@ SOURCE=.\libogc\lwp.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_handler.S
+SOURCE=.\libogc\cpu_asm.S
 # End Source File
 # Begin Source File
 
