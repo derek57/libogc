@@ -36,7 +36,7 @@ distribution.
 #include <lwp_config.h>
 #include "message.h"
 
-#define LWP_CHECK_MBOX(hndl)    \
+#define LWP_CHECK_MBOX( hndl )  \
 {                               \
 	if ( ( ( hndl ) == MQ_BOX_NULL) || ( _Objects_Get_node( hndl ) != OBJECTS_POSIX_MESSAGE_QUEUES ) )  \
 		return NULL;            \
@@ -74,11 +74,11 @@ Objects_Information _POSIX_Message_queue_Information;
 
 void _POSIX_Message_queue_Manager_initialization( void )
 {
-	_Objects_Initialize_information(
-	  &_POSIX_Message_queue_Information,
-	  CONFIGURE_MAXIMUM_POSIX_MESSAGE_QUEUES,
-	  sizeof( POSIX_Message_queue_Control )
-	);
+  _Objects_Initialize_information(
+    &_POSIX_Message_queue_Information,
+    CONFIGURE_MAXIMUM_POSIX_MESSAGE_QUEUES,
+    sizeof( POSIX_Message_queue_Control )
+  );
 }
 
 /*
@@ -92,15 +92,15 @@ void _POSIX_Message_queue_Manager_initialization( void )
  *  is set to OBJECTS_LOCAL.  if the message queue ID is global and
  *  resides on a remote node, then location is set to OBJECTS_REMOTE,
  *  and the_message queue is undefined.  Otherwise, location is set
- *  to OBJECTS_ERROR and the_mq is undefined.
+ *  to OBJECTS_ERROR and tµhe_mq is undefined.
  */
 
 RTEMS_INLINE_ROUTINE POSIX_Message_queue_Control *_POSIX_Message_queue_Get(
   mqd_t mbox
 )
 {
-	LWP_CHECK_MBOX( mbox );
-	return (POSIX_Message_queue_Control *)_Objects_Get( &_POSIX_Message_queue_Information, _Objects_Get_index( mbox ) );
+  LWP_CHECK_MBOX( mbox );
+  return (POSIX_Message_queue_Control *)_Objects_Get( &_POSIX_Message_queue_Information, _Objects_Get_index( mbox ) );
 }
 
 /*
@@ -116,8 +116,8 @@ RTEMS_INLINE_ROUTINE void _POSIX_Message_queue_Free(
   POSIX_Message_queue_Control *the_mq
 )
 {
-	_Objects_Close( &_POSIX_Message_queue_Information, &the_mq->Object );
-	_Objects_Free( &_POSIX_Message_queue_Information, &the_mq->Object );
+  _Objects_Close( &_POSIX_Message_queue_Information, &the_mq->Object );
+  _Objects_Free( &_POSIX_Message_queue_Information, &the_mq->Object );
 }
 
 /*
@@ -131,18 +131,18 @@ RTEMS_INLINE_ROUTINE void _POSIX_Message_queue_Free(
 
 STATIC POSIX_Message_queue_Control *_POSIX_Message_queue_Allocate( void )
 {
-	POSIX_Message_queue_Control *the_mq;
+  POSIX_Message_queue_Control *the_mq;
 
-	_Thread_Disable_dispatch();
-	the_mq = (POSIX_Message_queue_Control *)_Objects_Allocate( &_POSIX_Message_queue_Information );
+  _Thread_Disable_dispatch();
+  the_mq = (POSIX_Message_queue_Control *)_Objects_Allocate( &_POSIX_Message_queue_Information );
 
-	if ( the_mq ) {
-		_Objects_Open( &_POSIX_Message_queue_Information, &the_mq->Object );
-		return the_mq;
-	}
+  if ( the_mq ) {
+    _Objects_Open( &_POSIX_Message_queue_Information, &the_mq->Object );
+    return the_mq;
+  }
 
-	_Thread_Enable_dispatch();
-	return NULL;
+  _Thread_Enable_dispatch();
+  return NULL;
 }
 
 /*PAGE
@@ -166,7 +166,17 @@ int mq_open(
   if ( !the_mq )
     return MQ_ERROR_TOOMANY;
 
+  /* XXX
+   *
+   *  Note that thread blocking discipline should be based on the
+   *  current scheduling policy.
+   */
+
   the_mq_attr.discipline = CORE_MESSAGE_QUEUE_DISCIPLINES_FIFO;
+
+  /*
+   * errno was set by Create_support, so don't set it again.
+   */
 
   if ( !_CORE_message_queue_Initialize(
           &the_mq->Message_queue,
@@ -219,7 +229,7 @@ boolean mq_send(
   unsigned32 oflag
 )
 {
-  boolean                      ret;
+  boolean                      msg_status;
   POSIX_Message_queue_Control *the_mq;
   unsigned32                   wait = (oflag == MQ_MSG_BLOCK ) ? TRUE : FALSE;
 
@@ -228,7 +238,7 @@ boolean mq_send(
   if ( !the_mq )
     return FALSE;
 
-  ret = FALSE;
+  msg_status = FALSE;
 
   if ( _CORE_message_queue_Submit(
       &the_mq->Message_queue,
@@ -239,11 +249,11 @@ boolean mq_send(
       wait,
       RTEMS_NO_TIMEOUT ) == CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL
     )
-    ret = TRUE;
+    msg_status = TRUE;
 
   _Thread_Enable_dispatch();
 
-  return ret;
+  return msg_status;
 }
 
 /*PAGE
@@ -259,7 +269,7 @@ boolean mq_receive(
   unsigned32    oflag
 )
 {
-  boolean                      ret;
+  boolean                      msg_status;
   POSIX_Message_queue_Control *the_mq;
   unsigned32                   tmp;
   unsigned32                   wait = (oflag == MQ_MSG_BLOCK) ? TRUE : FALSE;
@@ -269,7 +279,7 @@ boolean mq_receive(
   if ( !the_mq )
     return FALSE;
 
-  ret = FALSE;
+  msg_status = FALSE;
 
   if ( _CORE_message_queue_Seize(
       &the_mq->Message_queue,
@@ -278,12 +288,12 @@ boolean mq_receive(
       &tmp,
       wait,
       RTEMS_NO_TIMEOUT) == CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL
-	  )
-    ret = TRUE;
+	)
+    msg_status = TRUE;
 
   _Thread_Enable_dispatch();
 
-  return ret;
+  return msg_status;
 }
 
 boolean MQ_Jam(
@@ -292,7 +302,7 @@ boolean MQ_Jam(
   unsigned32  oflag
 )
 {
-  boolean                      ret;
+  boolean                      msg_status;
   POSIX_Message_queue_Control *the_mq;
   unsigned32                   wait = (oflag == MQ_MSG_BLOCK) ? TRUE : FALSE;
 
@@ -301,7 +311,7 @@ boolean MQ_Jam(
   if ( !the_mq )
     return FALSE;
 
-  ret = FALSE;
+  msg_status = FALSE;
 
   if ( _CORE_message_queue_Submit(
       &the_mq->Message_queue,
@@ -311,10 +321,10 @@ boolean MQ_Jam(
       CORE_MESSAGE_QUEUE_URGENT_REQUEST,
       wait,
       RTEMS_NO_TIMEOUT) == CORE_MESSAGE_QUEUE_STATUS_SUCCESSFUL
-      )
-    ret = TRUE;
+    )
+    msg_status = TRUE;
 
   _Thread_Enable_dispatch();
 
-  return ret;
+  return msg_status;
 }

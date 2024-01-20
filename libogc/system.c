@@ -162,7 +162,16 @@ extern void __exception_init(void);
 extern void __exception_closeall(void);
 extern void __systemcall_init(void);
 extern void __decrementer_init(void);
-extern void __lwp_mutex_init(void);
+
+/*
+ *  _POSIX_Mutex_Manager_initialization
+ *
+ *  DESCRIPTION:
+ *
+ *  This routine performs the initialization necessary for this manager.
+ */
+
+POSIX_EXTERN void _POSIX_Mutex_Manager_initialization(void);
 
 /*
  *  _POSIX_Condition_variables_Manager_initialization
@@ -1097,7 +1106,7 @@ void rtems_initialize_executive_early()
 	__memlock_init();
 	_POSIX_Message_queue_Manager_initialization();
 	_POSIX_Semaphore_Manager_initialization();
-	__lwp_mutex_init();
+	_POSIX_Mutex_Manager_initialization();
 	_POSIX_Condition_variables_Manager_initialization();
 	__timesystem_init();
 	__dsp_bootstrap();

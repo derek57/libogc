@@ -932,7 +932,7 @@ static int _ES_open_r (struct _reent *r, void *fileStruct, const char *path, int
 
 	file->iobuf = NULL;
 
-	LWP_MutexInit(&file->mutex, false);
+	pthread_mutex_init(&file->mutex, false);
 
 	return (int)file;
 }
@@ -951,7 +951,7 @@ static int _ES_close_r (struct _reent *r, int fd) {
 	if(file->iobuf) _free_r(r,file->iobuf);
 
 	pthread_mutex_unlock(file->mutex);
-	LWP_MutexDestroy(file->mutex);
+	pthread_mutex_destroy(file->mutex);
 	return 0;
 }
 

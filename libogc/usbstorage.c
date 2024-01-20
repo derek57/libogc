@@ -413,7 +413,7 @@ s32 USBStorage_Open(usbstorage_handle *dev, s32 device_id, u16 vid, u16 pid)
 
 	dev->tag = TAG_START;
 
-	if (LWP_MutexInit(&dev->lock, false) < 0)
+	if (pthread_mutex_init(&dev->lock, false) < 0)
 		goto free_and_return;
 
 	if (SYS_CreateAlarm(&dev->alarm) < 0)
@@ -557,7 +557,7 @@ s32 USBStorage_Close(usbstorage_handle *dev)
 	if (dev->usb_fd != -1)
 		USB_CloseDevice(&dev->usb_fd);
 
-	LWP_MutexDestroy(dev->lock);
+	pthread_mutex_destroy(dev->lock);
 	SYS_RemoveAlarm(dev->alarm);
 
 	if(dev->sector_size)

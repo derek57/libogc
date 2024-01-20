@@ -42,7 +42,11 @@ typedef unsigned32 sem_t;
 
 \return 0 on success, <0 on error
 */
-int sem_init(sem_t *sem,unsigned32 start,unsigned32 max);
+int sem_init(
+  sem_t      *sem,
+  unsigned32  value,
+  unsigned32  max
+);
 
 
 /*! \fn int sem_destroy(sem_t sem)
@@ -51,7 +55,9 @@ int sem_init(sem_t *sem,unsigned32 start,unsigned32 max);
 
 \return 0 on success, <0 on error
 */
-int sem_destroy(sem_t sem);
+int sem_destroy(
+  sem_t sem
+);
 
 
 /*! \fn int sem_wait(sem_t sem)
@@ -60,7 +66,9 @@ int sem_destroy(sem_t sem);
 
 \return 0 on success, <0 on error
 */
-int sem_wait(sem_t sem);
+int sem_wait(
+  sem_t sem
+);
 
 
 /*! \fn int sem_post(sem_t sem)
@@ -69,7 +77,9 @@ int sem_wait(sem_t sem);
 
 \return 0 on success, <0 on error
 */
-int sem_post(sem_t sem);
+int sem_post(
+  sem_t sem
+);
 
 #ifdef __cplusplus
 	}

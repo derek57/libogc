@@ -1,31 +1,17 @@
-/*-------------------------------------------------------------
-
-message.h -- Thread subsystem II
-
-Copyright (C) 2004
-Michael Wiedenbauer (shagkur)
-Dave Murphy (WinterMute)
-
-This software is provided 'as-is', without any express or implied
-warranty.  In no event will the authors be held liable for any
-damages arising from the use of this software.
-
-Permission is granted to anyone to use this software for any
-purpose, including commercial applications, and to alter it and
-redistribute it freely, subject to the following restrictions:
-
-1.	The origin of this software must not be misrepresented; you
-must not claim that you wrote the original software. If you use
-this software in a product, an acknowledgment in the product
-documentation would be appreciated but is not required.
-
-2.	Altered source versions must be plainly marked as such, and
-must not be misrepresented as being the original software.
-
-3.	This notice may not be removed or altered from any source
-distribution.
-
--------------------------------------------------------------*/
+/*  rtems/posix/mqueue.h
+ *
+ *  This include file contains all the private support information for
+ *  POSIX Message Queues.
+ *
+ *  COPYRIGHT (c) 1989-1999.
+ *  On-Line Applications Research Corporation (OAR).
+ *
+ *  The license and distribution terms for this file may be
+ *  found in the file LICENSE in this distribution or at
+ *  http://www.OARcorp.com/rtems/license.html.
+ *
+ *  $Id$
+ */
 
 
 #ifndef __MESSAGE_H__
@@ -36,6 +22,10 @@ distribution.
 
 */ 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <gctypes.h>
 
 #define MQ_BOX_NULL				0xffffffff
@@ -45,11 +35,6 @@ distribution.
 
 #define MQ_MSG_BLOCK			0
 #define MQ_MSG_NOBLOCK			1
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 
 /*! \typedef unsigned32 mqd_t

@@ -21,7 +21,7 @@ int __libogc_lock_init(int *lock,int recursive)
 	if(!lock) return -1;
 	
 	*lock = 0;
-	ret = LWP_MutexInit(&retlck,(recursive?TRUE:FALSE));
+	ret = pthread_mutex_init(&retlck,(recursive?TRUE:FALSE));
 	if(ret==0) *lock = (int)retlck;
 
 	return ret;
@@ -35,7 +35,7 @@ int __libogc_lock_close(int *lock)
 	if(!lock || *lock==0) return -1;
 	
 	plock = (pthread_mutex_t)*lock;
-	ret = LWP_MutexDestroy(plock);
+	ret = pthread_mutex_destroy(plock);
 	if(ret==0) *lock = 0;
 
 	return ret;
