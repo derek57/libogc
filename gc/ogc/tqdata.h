@@ -13,8 +13,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_TQDATA_H__
-#define __LWP_TQDATA_H__
+#ifndef __THREAD_QUEUE_DATA_h
+#define __THREAD_QUEUE_DATA_h
 
 #ifdef __cplusplus
 extern "C" {
