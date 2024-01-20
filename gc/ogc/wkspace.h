@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 #include <gctypes.h>
-#include <lwp_heap.h>
+#include <heap.h>
 
 /*
  *  The following is used to manage the Workspace.

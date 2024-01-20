@@ -13,8 +13,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_HEAP_INL__
-#define __LWP_HEAP_INL__
+#ifndef __HEAP_inl
+#define __HEAP_inl
 
 /*PAGE
  *

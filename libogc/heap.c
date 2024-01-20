@@ -17,7 +17,7 @@
 #include <sys_state.h>
 #include <lwp_config.h>
 
-#include "lwp_heap.h"
+#include "heap.h"
 
 
 /*PAGE

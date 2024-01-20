@@ -228,11 +228,11 @@ SOURCE=.\libogc\lwp_handler.S
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_heap.c
+SOURCE=.\libogc\heap.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_heap.inl
+SOURCE=.\libogc\heap.inl
 # End Source File
 # Begin Source File
 
@@ -1180,7 +1180,7 @@ SOURCE=.\gc\ogc\lwp_config.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\gc\ogc\lwp_heap.h
+SOURCE=.\gc\ogc\heap.h
 # End Source File
 # Begin Source File
 

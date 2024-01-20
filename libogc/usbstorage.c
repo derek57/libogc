@@ -36,7 +36,7 @@ distribution.
 #include <stdarg.h>
 #include <sys/time.h>
 #include <errno.h>
-#include <lwp_heap.h>
+#include <heap.h>
 #include <malloc.h>
 
 #include "asm.h"

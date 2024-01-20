@@ -18,8 +18,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_HEAP_H__
-#define __LWP_HEAP_H__
+#ifndef __RTEMS_HEAP_h
+#define __RTEMS_HEAP_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -219,7 +219,7 @@ Heap_Get_information_status _Heap_Get_information(
 );
 
 #ifdef __RTEMS_APPLICATION__
-#include <libogc/lwp_heap.inl>
+#include <libogc/heap.inl>
 #endif
 
 #ifdef __cplusplus

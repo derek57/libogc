@@ -55,7 +55,7 @@ distribution.
 #include "processor.h"
 #include "network.h"
 #include "ogcsys.h"
-#include "lwp_heap.h"
+#include "heap.h"
 
 #define NET_HEAP_SIZE				64*1024
 
