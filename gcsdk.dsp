@@ -296,11 +296,11 @@ SOURCE=.\libogc\lwp_states.inl
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_threadq.c
+SOURCE=.\libogc\threadq.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_threadq.inl
+SOURCE=.\libogc\tqdata.inl
 # End Source File
 # Begin Source File
 
@@ -1216,7 +1216,7 @@ SOURCE=.\gc\ogc\lwp_states.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\gc\ogc\lwp_threadq.h
+SOURCE=.\gc\ogc\threadq.h
 # End Source File
 # Begin Source File
 

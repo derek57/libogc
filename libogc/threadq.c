@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <lwp_watchdog.h>
 #include "asm.h"
-#include "lwp_threadq.h"
+#include "threadq.h"
 
 //#define _LWPTHRQ_DEBUG
 

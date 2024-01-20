@@ -23,7 +23,7 @@ extern "C" {
 #endif
 
 #include <gctypes.h>
-#include <lwp_threadq.h>
+#include <threadq.h>
 
 /*
  *  Blocking disciplines for a semaphore.

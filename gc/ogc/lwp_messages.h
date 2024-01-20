@@ -23,7 +23,7 @@ extern "C" {
 #include <gctypes.h>
 #include <limits.h>
 #include <string.h>
-#include <lwp_threadq.h>
+#include <threadq.h>
 
 //#define _LWPMQ_DEBUG
 

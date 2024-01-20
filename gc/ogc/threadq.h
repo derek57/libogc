@@ -13,8 +13,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_THREADQ_H__
-#define __LWP_THREADQ_H__
+#ifndef __THREAD_QUEUE_h
+#define __THREAD_QUEUE_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -268,7 +268,7 @@ Thread_Control *_Thread_queue_First_fifo(
 );
 
 #ifdef __RTEMS_APPLICATION__
-#include <libogc/lwp_threadq.inl>
+#include <libogc/tqdata.inl>
 #endif
 
 #ifdef __cplusplus

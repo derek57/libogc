@@ -13,8 +13,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_THREADQ_INL__
-#define __LWP_THREADQ_INL__
+#ifndef __THREAD_QUEUE_DATA_inl
+#define __THREAD_QUEUE_DATA_inl
 
 /*PAGE
  *

@@ -23,7 +23,7 @@ extern "C" {
 #endif
 
 #include <gctypes.h>
-#include <lwp_threadq.h>
+#include <threadq.h>
 
 #include "lwp_config.h"
 

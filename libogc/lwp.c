@@ -32,7 +32,7 @@ distribution.
 #include <errno.h>
 #include "asm.h"
 #include "processor.h"
-#include "lwp_threadq.h"
+#include "threadq.h"
 #include "lwp_threads.h"
 #include "lwp_wkspace.h"
 #include "lwp_objmgr.h"

@@ -133,7 +133,7 @@ LWIPOBJ		:=	network.o netio.o gcif.o	\
 
 #---------------------------------------------------------------------------------
 OGCOBJ		:=	\
-			console.o  lwp_priority.o lwp_queue.o lwp_threadq.o lwp_threads.o lwp_sema.o	\
+			console.o  lwp_priority.o lwp_queue.o threadq.o lwp_threads.o lwp_sema.o	\
 			lwp_messages.o lwp.o lwp_handler.o lwp_stack.o lwp_mutex.o 	\
 			lwp_watchdog.o lwp_wkspace.o lwp_objmgr.o lwp_heap.o sys_state.o \
 			exception_handler.o exception.o irq.o irq_handler.o semaphore.o \

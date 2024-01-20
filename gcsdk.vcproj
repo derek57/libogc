@@ -981,7 +981,7 @@
 					>
 				</File>
 				<File
-					RelativePath="libogc\lwp_threadq.c"
+					RelativePath="libogc\threadq.c"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1001,7 +1001,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="libogc\lwp_threadq.inl"
+					RelativePath="libogc\tqdata.inl"
 					>
 				</File>
 				<File
@@ -3968,7 +3968,7 @@
 					>
 				</File>
 				<File
-					RelativePath="gc\ogc\lwp_threadq.h"
+					RelativePath="gc\ogc\threadq.h"
 					>
 				</File>
 				<File
