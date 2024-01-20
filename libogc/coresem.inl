@@ -13,8 +13,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_SEMA_INL__
-#define __LWP_SEMA_INL__
+#ifndef __INLINE_CORE_SEMAPHORE_inl
+#define __INLINE_CORE_SEMAPHORE_inl
 
 /*PAGE
  *

@@ -11,7 +11,7 @@ extern lwp_objinfo _lwp_thr_objects;
 extern lwp_objinfo _lwp_tqueue_objects;
 extern lwp_objinfo _lwp_mqbox_objects;
 extern Objects_Information _POSIX_Mutex_Information;
-extern lwp_objinfo _lwp_sema_objects;
+extern Objects_Information _POSIX_Semaphore_Information;
 
 extern const u8 hexchars[];
 

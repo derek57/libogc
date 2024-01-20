@@ -18,7 +18,7 @@
  */
 
 #include "asm.h"
-#include "lwp_sema.h"
+#include "coresem.h"
 
 /*PAGE
  *

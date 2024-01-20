@@ -15,8 +15,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_SEMA_H__
-#define __LWP_SEMA_H__
+#ifndef __RTEMS_CORE_COUNTING_SEMAPHORE_h
+#define __RTEMS_CORE_COUNTING_SEMAPHORE_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -159,7 +159,7 @@ void _CORE_semaphore_Flush(
 );
 
 #ifdef __RTEMS_APPLICATION__
-#include <libogc/lwp_sema.inl>
+#include <libogc/coresem.inl>
 #endif
 
 #ifdef __cplusplus

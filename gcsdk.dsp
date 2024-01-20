@@ -276,11 +276,11 @@ SOURCE=.\libogc\lwp_queue.inl
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_sema.c
+SOURCE=.\libogc\coresem.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_sema.inl
+SOURCE=.\libogc\coresem.inl
 # End Source File
 # Begin Source File
 
@@ -1204,7 +1204,7 @@ SOURCE=.\gc\ogc\lwp_queue.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\gc\ogc\lwp_sema.h
+SOURCE=.\gc\ogc\coresem.h
 # End Source File
 # Begin Source File
 

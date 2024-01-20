@@ -929,7 +929,7 @@
 					>
 				</File>
 				<File
-					RelativePath="libogc\lwp_sema.c"
+					RelativePath="libogc\coresem.c"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -949,7 +949,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="libogc\lwp_sema.inl"
+					RelativePath="libogc\coresem.inl"
 					>
 				</File>
 				<File
@@ -3956,7 +3956,7 @@
 					>
 				</File>
 				<File
-					RelativePath="gc\ogc\lwp_sema.h"
+					RelativePath="gc\ogc\coresem.h"
 					>
 				</File>
 				<File
