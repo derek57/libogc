@@ -304,11 +304,11 @@ SOURCE=.\libogc\tqdata.inl
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_threads.c
+SOURCE=.\libogc\thread.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_threads.inl
+SOURCE=.\libogc\thread.inl
 # End Source File
 # Begin Source File
 
@@ -1220,7 +1220,7 @@ SOURCE=.\gc\ogc\threadq.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\gc\ogc\lwp_threads.h
+SOURCE=.\gc\ogc\thread.h
 # End Source File
 # Begin Source File
 

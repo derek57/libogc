@@ -4,7 +4,7 @@
 #include <malloc.h>
 #include <ogcsys.h>
 #include <gccore.h>
-#include <lwp_threads.h>
+#include <thread.h>
 
 #include "bt.h"
 #include "bte.h"

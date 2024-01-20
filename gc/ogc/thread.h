@@ -13,8 +13,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_THREADS_H__
-#define __LWP_THREADS_H__
+#ifndef __THREAD_h
+#define __THREAD_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -539,7 +539,7 @@ void _Thread_Tickle_timeslice(
 );
 
 #ifdef __RTEMS_APPLICATION__
-#include <libogc/lwp_threads.inl>
+#include <libogc/thread.inl>
 #endif
 
 #ifdef __cplusplus

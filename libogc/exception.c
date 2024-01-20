@@ -44,7 +44,7 @@ distribution.
 #include "pad.h"
 #include "consol.h"
 #include "console.h"
-#include "lwp_threads.h"
+#include "thread.h"
 #include "ios.h"
 
 #include "ogc/video_types.h"

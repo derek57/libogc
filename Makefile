@@ -133,7 +133,7 @@ LWIPOBJ		:=	network.o netio.o gcif.o	\
 
 #---------------------------------------------------------------------------------
 OGCOBJ		:=	\
-			console.o  exinit.o chain.o threadq.o lwp_threads.o coresem.o	\
+			console.o  exinit.o chain.o threadq.o thread.o coresem.o	\
 			coremsg.o lwp.o cpu_asm.o lwp_stack.o coremutex.o 	\
 			watchdog.o wkspace.o object.o heap.o sys_state.o \
 			exception_handler.o exception.o irq.o irq_handler.o semaphore.o \

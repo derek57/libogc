@@ -42,7 +42,7 @@
 #include <gccore.h>
 #include <network.h>
 #include <processor.h>
-#include <lwp_threads.h>
+#include <thread.h>
 #include <object.h>
 #include <ogc/watchdog.h>
 #include <sys/statvfs.h>

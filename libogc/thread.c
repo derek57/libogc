@@ -20,7 +20,7 @@
 #include "processor.h"
 #include "sysstate.h"
 #include "stack.h"
-#include "lwp_threads.h"
+#include "thread.h"
 #include "threadq.h"
 #include "watchdog.h"
 

@@ -22,7 +22,7 @@ extern "C" {
 
 #include <gctypes.h>
 #include <tqdata.h>
-#include <lwp_threads.h>
+#include <thread.h>
 #include <watchdog.h>
 
 /*

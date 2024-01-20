@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <lwp_threads.h>
+#include <thread.h>
 #include <wkspace.h>
 #include <lwp_config.h>
 

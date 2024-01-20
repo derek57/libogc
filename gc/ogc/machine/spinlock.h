@@ -2,7 +2,7 @@
 #define __SPINLOCK_H__
 
 #include <gctypes.h>
-#include <lwp_threads.h>
+#include <thread.h>
 
 typedef struct {
 	vu32 lock;

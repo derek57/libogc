@@ -9,7 +9,7 @@
 #include <cond.h>
 #include <semaphore.h>
 #include <processor.h>
-#include <lwp_threads.h>
+#include <thread.h>
 #include <watchdog.h>
 #include <lwip/debug.h>
 #include <lwip/opt.h>

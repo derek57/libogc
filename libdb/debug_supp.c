@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <gccore.h>
 
-#include "lwp_threads.h"
+#include "thread.h"
 #include "debug_supp.h"
 
 extern lwp_objinfo _lwp_cond_objects;

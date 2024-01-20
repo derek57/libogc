@@ -45,7 +45,7 @@ distribution.
 #include "wiiboard.h"
 #include "wiiuse_internal.h"
 #include "wiiuse/wpad.h"
-#include "lwp_threads.h"
+#include "thread.h"
 #include "ogcsys.h"
 
 #define MAX_STREAMDATA_LEN			20

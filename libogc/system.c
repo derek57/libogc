@@ -50,7 +50,7 @@ distribution.
 #include "video.h"
 #include "system.h"
 #include "sysstate.h"
-#include "lwp_threads.h"
+#include "thread.h"
 #include "priority.h"
 #include "watchdog.h"
 #include "wkspace.h"

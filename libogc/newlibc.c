@@ -18,7 +18,7 @@
 
 #include <sys/reent.h>          /* for extern of _REENT (aka _impure_ptr) */
 #include "sysstate.h"
-#include "lwp_threads.h"
+#include "thread.h"
 
 int              libc_reentrant;        /* do we think we are reentrant? */
 struct _reent    libc_global_reent;

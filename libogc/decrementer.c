@@ -33,7 +33,7 @@ distribution.
 #include <stdlib.h>
 #include "asm.h"
 #include "processor.h"
-#include "lwp_threads.h"
+#include "thread.h"
 #include "watchdog.h"
 #include "context.h"
 

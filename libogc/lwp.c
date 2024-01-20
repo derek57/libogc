@@ -33,7 +33,7 @@ distribution.
 #include "asm.h"
 #include "processor.h"
 #include "threadq.h"
-#include "lwp_threads.h"
+#include "thread.h"
 #include "wkspace.h"
 #include "object.h"
 #include "lwp_config.h"

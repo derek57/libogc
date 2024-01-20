@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 #include <gctypes.h>
-#include <lwp_threads.h>
+#include <thread.h>
 
 /*
  *  This number corresponds to the byte alignment requirement for the

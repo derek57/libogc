@@ -34,7 +34,7 @@ distribution.
 #include "cache.h"
 #include "context.h"
 #include "processor.h"
-#include "lwp_threads.h"
+#include "thread.h"
 #include "irq.h"
 #include "console.h"
 
@@ -86,7 +86,7 @@ extern s8 irqhandler_start[],irqhandler_end[];
 extern u8 __intrstack_addr[],__intrstack_end[];
 
 #ifdef _IRQ_DEBUG
-#include <lwp_threads.h>
+#include <thread.h>
 
 static void __irq_printHex(u32 num,u8 *buf)
 {

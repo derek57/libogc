@@ -7,7 +7,7 @@
 #include "processor.h"
 #include "spinlock.h"
 #include "lwp.h"
-#include "lwp_threads.h"
+#include "thread.h"
 #include "sysstate.h"
 #include "context.h"
 #include "cache.h"

@@ -1,5 +1,5 @@
-#ifndef __LWP_INL__
-#define __LWP_INL__
+#ifndef __THREAD_inl
+#define __THREAD_inl
 
 /*PAGE
  *
