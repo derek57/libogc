@@ -13,8 +13,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_STACK_INL__
-#define __LWP_STACK_INL__
+#ifndef __STACK_inl
+#define __STACK_inl
 
 /*PAGE
  *

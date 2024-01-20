@@ -288,7 +288,7 @@ SOURCE=.\libogc\lwp_stack.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_stack.inl
+SOURCE=.\libogc\stack.inl
 # End Source File
 # Begin Source File
 
@@ -1208,7 +1208,7 @@ SOURCE=.\gc\ogc\lwp_sema.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\gc\ogc\lwp_stack.h
+SOURCE=.\gc\ogc\stack.h
 # End Source File
 # Begin Source File
 

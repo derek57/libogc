@@ -19,7 +19,7 @@
 #include "asm.h"
 #include "processor.h"
 #include "sys_state.h"
-#include "lwp_stack.h"
+#include "stack.h"
 #include "lwp_threads.h"
 #include "threadq.h"
 #include "watchdog.h"

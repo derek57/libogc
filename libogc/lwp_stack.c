@@ -13,7 +13,7 @@
  */
 
 #include <stdlib.h>
-#include "lwp_stack.h"
+#include "stack.h"
 #include "wkspace.h"
 
 /*PAGE

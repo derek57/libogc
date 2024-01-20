@@ -14,8 +14,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_STACK_H__
-#define __LWP_STACK_H__
+#ifndef __STACK_h
+#define __STACK_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -97,7 +97,7 @@ void _Thread_Stack_Free(
 );
 
 #ifdef __RTEMS_APPLICATION__
-#include <libogc/lwp_stack.inl>
+#include <libogc/stack.inl>
 #endif
 	
 #ifdef __cplusplus
