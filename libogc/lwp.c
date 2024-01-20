@@ -35,7 +35,7 @@ distribution.
 #include "threadq.h"
 #include "lwp_threads.h"
 #include "wkspace.h"
-#include "lwp_objmgr.h"
+#include "object.h"
 #include "lwp_config.h"
 #include "lwp.h"
 

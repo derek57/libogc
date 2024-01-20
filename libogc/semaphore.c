@@ -33,7 +33,7 @@ distribution.
 #include <errno.h>
 #include <asm.h>
 #include "lwp_sema.h"
-#include "lwp_objmgr.h"
+#include "object.h"
 #include "lwp_config.h"
 #include "semaphore.h"
 

@@ -14,8 +14,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_OBJMGR_H__
-#define __LWP_OBJMGR_H__
+#ifndef __OBJECTS_h
+#define __OBJECTS_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -264,7 +264,7 @@ Objects_Control *_Objects_Get_no_protection(
 );
 
 #ifdef __RTEMS_APPLICATION__
-#include <libogc/lwp_objmgr.inl>
+#include <libogc/object.inl>
 #endif
 
 #ifdef __cplusplus

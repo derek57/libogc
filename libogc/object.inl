@@ -13,8 +13,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_OBJMGR_INL__
-#define __LWP_OBJMGR_INL__
+#ifndef __OBJECTS_inl
+#define __OBJECTS_inl
 
 /**
  *  This function sets the pointer to the local_table object

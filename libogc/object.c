@@ -21,7 +21,7 @@
 #include <wkspace.h>
 #include <lwp_config.h>
 
-#include "lwp_objmgr.h"
+#include "object.h"
 
 static unsigned32 _lwp_objmgr_memsize = 0;
 static Objects_Control *null_local_table = NULL;

@@ -32,7 +32,7 @@ distribution.
 #include <asm.h>
 #include <stdlib.h>
 #include <coremsg.h>
-#include <lwp_objmgr.h>
+#include <object.h>
 #include <lwp_config.h>
 #include "message.h"
 

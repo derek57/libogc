@@ -43,7 +43,7 @@
 #include <network.h>
 #include <processor.h>
 #include <lwp_threads.h>
-#include <lwp_objmgr.h>
+#include <object.h>
 #include <ogc/lwp_watchdog.h>
 #include <sys/statvfs.h>
 #include <errno.h>
@@ -380,7 +380,7 @@ static __inline__ SMBHANDLE* __smb_handle_open(SMBCONN smbhndl)
 	SMB_CHECK_HANDLE(smbhndl);
 
 	_CPU_ISR_Disable(level);
-	handle = (SMBHANDLE*)__lwp_objmgr_getnoprotection(&smb_handle_objects,LWP_OBJMASKID(smbhndl));
+	handle = (SMBHANDLE*)_Objects_Get_no_protection(&smb_handle_objects,LWP_OBJMASKID(smbhndl));
 	_CPU_ISR_Restore(level);
 	return handle;
 }
@@ -391,15 +391,15 @@ static __inline__ void __smb_handle_free(SMBHANDLE *handle)
 	u32 level;
 
 	_CPU_ISR_Disable(level);
-	__lwp_objmgr_close(&smb_handle_objects,&handle->object);
-	__lwp_objmgr_free(&smb_handle_objects,&handle->object);
+	_Objects_Close(&smb_handle_objects,&handle->object);
+	_Objects_Free(&smb_handle_objects,&handle->object);
 	_CPU_ISR_Restore(level);
 }
 
 static void __smb_init()
 {
 	smb_inited = true;
-	__lwp_objmgr_initinfo(&smb_handle_objects,SMB_CONNHANDLES_MAX,sizeof(SMBHANDLE));
+	_Objects_Initialize_information(&smb_handle_objects,SMB_CONNHANDLES_MAX,sizeof(SMBHANDLE));
 	__lwp_queue_initialize(&smb_filehandle_queue,smb_filehandles,SMB_FILEHANDLES_MAX,sizeof(struct _smbfile));
 }
 
@@ -409,7 +409,7 @@ static SMBHANDLE* __smb_allocate_handle()
 	SMBHANDLE *handle;
 
 	_CPU_ISR_Disable(level);
-	handle = (SMBHANDLE*)__lwp_objmgr_allocate(&smb_handle_objects);
+	handle = (SMBHANDLE*)_Objects_Allocate(&smb_handle_objects);
 	if(handle) {
 		handle->user = NULL;
 		handle->pwd = NULL;
@@ -417,7 +417,7 @@ static SMBHANDLE* __smb_allocate_handle()
 		handle->share_name = NULL;
 		handle->sck_server = INVALID_SOCKET;
 		handle->conn_valid = false;
-		__lwp_objmgr_open(&smb_handle_objects,&handle->object);
+		_Objects_Open(&smb_handle_objects,&handle->object);
 	}
 	_CPU_ISR_Restore(level);
 	return handle;

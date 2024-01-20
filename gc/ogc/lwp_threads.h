@@ -25,7 +25,7 @@ extern "C" {
 #include "lwp_states.h"
 #include "lwp_tqdata.h"
 #include "lwp_watchdog.h"
-#include "lwp_objmgr.h"
+#include "object.h"
 #include "context.h"
 
 //#define _LWPTHREADS_DEBUG

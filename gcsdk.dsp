@@ -252,11 +252,11 @@ SOURCE=.\libogc\coremutex.inl
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_objmgr.c
+SOURCE=.\libogc\object.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_objmgr.inl
+SOURCE=.\libogc\object.inl
 # End Source File
 # Begin Source File
 
@@ -1192,7 +1192,7 @@ SOURCE=.\gc\ogc\coremutex.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\gc\ogc\lwp_objmgr.h
+SOURCE=.\gc\ogc\object.h
 # End Source File
 # Begin Source File
 

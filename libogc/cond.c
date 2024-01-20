@@ -33,7 +33,7 @@ distribution.
 #include "asm.h"
 #include "mutex.h"
 #include "threadq.h"
-#include "lwp_objmgr.h"
+#include "object.h"
 #include "lwp_config.h"
 #include "cond.h"
 

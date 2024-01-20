@@ -857,7 +857,7 @@
 					>
 				</File>
 				<File
-					RelativePath="libogc\lwp_objmgr.c"
+					RelativePath="libogc\object.c"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -877,7 +877,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="libogc\lwp_objmgr.inl"
+					RelativePath="libogc\object.inl"
 					>
 				</File>
 				<File
@@ -3944,7 +3944,7 @@
 					>
 				</File>
 				<File
-					RelativePath="gc\ogc\lwp_objmgr.h"
+					RelativePath="gc\ogc\object.h"
 					>
 				</File>
 				<File
