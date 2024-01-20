@@ -15,8 +15,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_MUTEX_H__
-#define __LWP_MUTEX_H__
+#ifndef __RTEMS_CORE_MUTEX_h
+#define __RTEMS_CORE_MUTEX_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -296,7 +296,7 @@ void _CORE_mutex_Flush(
 );
 
 #ifdef __RTEMS_APPLICATION__
-#include <libogc/lwp_mutex.inl>
+#include <libogc/coremutex.inl>
 #endif
 
 #ifdef __cplusplus

@@ -244,11 +244,11 @@ SOURCE=.\libogc\coremsg.inl
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_mutex.c
+SOURCE=.\libogc\coremutex.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_mutex.inl
+SOURCE=.\libogc\coremutex.inl
 # End Source File
 # Begin Source File
 
@@ -1188,7 +1188,7 @@ SOURCE=.\gc\ogc\coremsg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\gc\ogc\lwp_mutex.h
+SOURCE=.\gc\ogc\coremutex.h
 # End Source File
 # Begin Source File
 

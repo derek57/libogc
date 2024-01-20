@@ -833,7 +833,7 @@
 					>
 				</File>
 				<File
-					RelativePath="libogc\lwp_mutex.c"
+					RelativePath="libogc\coremutex.c"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -853,7 +853,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="libogc\lwp_mutex.inl"
+					RelativePath="libogc\coremutex.inl"
 					>
 				</File>
 				<File
@@ -3940,7 +3940,7 @@
 					>
 				</File>
 				<File
-					RelativePath="gc\ogc\lwp_mutex.h"
+					RelativePath="gc\ogc\coremutex.h"
 					>
 				</File>
 				<File

@@ -9,7 +9,7 @@ extern int errno;
 
 #include "asm.h"
 #include "processor.h"
-#include "lwp_mutex.h"
+#include "coremutex.h"
 
 #define MEMLOCK_MUTEX_ID			0x00030040
 

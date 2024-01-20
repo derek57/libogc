@@ -103,12 +103,12 @@ static smb_env SMBEnv[MAX_SMB_MOUNTED];
 
 static inline void _SMB_lock(int i)
 {
-	if(SMBEnv[i]._SMB_mutex!=LWP_MUTEX_NULL) LWP_MutexLock(SMBEnv[i]._SMB_mutex);
+	if(SMBEnv[i]._SMB_mutex!=POSIX_CONDITION_VARIABLES_NO_MUTEX) pthread_mutex_lock(SMBEnv[i]._SMB_mutex);
 }
 
 static inline void _SMB_unlock(int i)
 {
-	if(SMBEnv[i]._SMB_mutex!=LWP_MUTEX_NULL) LWP_MutexUnlock(SMBEnv[i]._SMB_mutex);
+	if(SMBEnv[i]._SMB_mutex!=POSIX_CONDITION_VARIABLES_NO_MUTEX) pthread_mutex_unlock(SMBEnv[i]._SMB_mutex);
 }
 
 ///////////////////////////////////////////
@@ -1477,7 +1477,7 @@ bool smbInitDevice(const char* name, const char *user, const char *password, con
 			SMBEnv[i].first_item_dir=false;
 			SMBEnv[i].pos=i;
 			SMBEnv[i].SMBReadAheadCache=NULL;
-			LWP_MutexInit(&SMBEnv[i]._SMB_mutex, false);
+			pthread_mutex_init(&SMBEnv[i]._SMB_mutex, false);
 		}
 
 		if(cache_thread == LWP_THREAD_NULL)

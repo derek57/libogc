@@ -13,8 +13,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_MUTEX_INL__
-#define __LWP_MUTEX_INL__
+#ifndef __INLINE_CORE_MUTEX_inl
+#define __INLINE_CORE_MUTEX_inl
 
 /*PAGE
  *

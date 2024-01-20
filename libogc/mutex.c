@@ -31,7 +31,7 @@ distribution.
 #include <stdlib.h>
 #include <errno.h>
 #include "asm.h"
-#include "lwp_mutex.h"
+#include "coremutex.h"
 #include "lwp_objmgr.h"
 #include "lwp_config.h"
 #include "mutex.h"

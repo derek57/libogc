@@ -17,7 +17,7 @@
  */
 
 #include "asm.h"
-#include "lwp_mutex.h"
+#include "coremutex.h"
 
 /*PAGE
  *
