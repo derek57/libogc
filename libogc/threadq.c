@@ -13,7 +13,7 @@
  */
 
 #include <stdio.h>
-#include <lwp_watchdog.h>
+#include <watchdog.h>
 #include "asm.h"
 #include "threadq.h"
 

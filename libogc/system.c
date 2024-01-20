@@ -52,7 +52,7 @@ distribution.
 #include "sys_state.h"
 #include "lwp_threads.h"
 #include "lwp_priority.h"
-#include "lwp_watchdog.h"
+#include "watchdog.h"
 #include "wkspace.h"
 #include "object.h"
 #include "lwp_config.h"

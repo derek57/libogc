@@ -23,7 +23,7 @@ extern "C" {
 #include <gctypes.h>
 #include <lwp_tqdata.h>
 #include <lwp_threads.h>
-#include <lwp_watchdog.h>
+#include <watchdog.h>
 
 /*
  *  Constant for indefinite wait.

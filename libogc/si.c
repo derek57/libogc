@@ -9,7 +9,7 @@
 #include "video.h"
 #include "irq.h"
 #include "si.h"
-#include "lwp_watchdog.h"
+#include "watchdog.h"
 
 //#define _SI_DEBUG
 

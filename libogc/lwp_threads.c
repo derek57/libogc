@@ -22,7 +22,7 @@
 #include "lwp_stack.h"
 #include "lwp_threads.h"
 #include "threadq.h"
-#include "lwp_watchdog.h"
+#include "watchdog.h"
 
 #define LWP_MAXPRIORITIES		256
 

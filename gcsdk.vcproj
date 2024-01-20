@@ -1029,7 +1029,7 @@
 					>
 				</File>
 				<File
-					RelativePath="libogc\lwp_watchdog.c"
+					RelativePath="libogc\watchdog.c"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1049,7 +1049,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="libogc\lwp_watchdog.inl"
+					RelativePath="libogc\watchdog.inl"
 					>
 				</File>
 				<File
@@ -3980,7 +3980,7 @@
 					>
 				</File>
 				<File
-					RelativePath="gc\ogc\lwp_watchdog.h"
+					RelativePath="gc\ogc\watchdog.h"
 					>
 				</File>
 				<File

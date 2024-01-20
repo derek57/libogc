@@ -16,7 +16,7 @@
 #include <limits.h>
 #include "asm.h"
 #include "lwp_threads.h"
-#include "lwp_watchdog.h"
+#include "watchdog.h"
 
 //#define _LWPWD_DEBUG
 

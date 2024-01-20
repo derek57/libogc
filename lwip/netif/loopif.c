@@ -31,7 +31,7 @@
  */
 
 #include <time.h>
-#include "lwp_watchdog.h"
+#include "watchdog.h"
 #include "lwip/opt.h"
 
 #if LWIP_HAVE_LOOPIF
@@ -46,7 +46,7 @@
 #include "lwip/tcp.h"
 #include "lwip/ip.h"
 
-#include "lwp_watchdog.h"
+#include "watchdog.h"
 
 #define LOOP_TIMER_ID			0x00070045
 

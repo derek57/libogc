@@ -44,7 +44,7 @@
 #include <processor.h>
 #include <lwp_threads.h>
 #include <object.h>
-#include <ogc/lwp_watchdog.h>
+#include <ogc/watchdog.h>
 #include <sys/statvfs.h>
 #include <errno.h>
 #include <fcntl.h>

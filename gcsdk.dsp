@@ -312,11 +312,11 @@ SOURCE=.\libogc\lwp_threads.inl
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_watchdog.c
+SOURCE=.\libogc\watchdog.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_watchdog.inl
+SOURCE=.\libogc\watchdog.inl
 # End Source File
 # Begin Source File
 
@@ -1228,7 +1228,7 @@ SOURCE=.\gc\ogc\lwp_tqdata.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\gc\ogc\lwp_watchdog.h
+SOURCE=.\gc\ogc\watchdog.h
 # End Source File
 # Begin Source File
 

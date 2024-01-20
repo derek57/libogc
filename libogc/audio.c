@@ -34,7 +34,7 @@ distribution.
 #include "processor.h"
 #include "irq.h"
 #include "audio.h"
-#include "lwp_watchdog.h"
+#include "watchdog.h"
 
 #define STACKSIZE			16384
 

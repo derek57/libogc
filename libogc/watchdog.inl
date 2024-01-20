@@ -13,8 +13,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_WATCHDOG_INL__
-#define __LWP_WATCHDOG_INL__
+#ifndef __WATCHDOG_inl
+#define __WATCHDOG_inl
 
 /*PAGE
  *

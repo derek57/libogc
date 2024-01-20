@@ -14,8 +14,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_WATCHDOG_H__
-#define __LWP_WATCHDOG_H__
+#ifndef __WATCHDOG_h
+#define __WATCHDOG_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -237,7 +237,7 @@ void _Watchdog_Adjust (
 );
 
 #ifdef __RTEMS_APPLICATION__
-#include <libogc/lwp_watchdog.inl>
+#include <libogc/watchdog.inl>
 #endif
 
 #ifdef __cplusplus

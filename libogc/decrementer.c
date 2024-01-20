@@ -34,7 +34,7 @@ distribution.
 #include "asm.h"
 #include "processor.h"
 #include "lwp_threads.h"
-#include "lwp_watchdog.h"
+#include "watchdog.h"
 #include "context.h"
 
 //#define _DECEX_DEBUG

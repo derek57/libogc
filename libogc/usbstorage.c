@@ -42,7 +42,7 @@ distribution.
 #include "asm.h"
 #include "processor.h"
 #include "disc_io.h"
-#include "lwp_watchdog.h"
+#include "watchdog.h"
 
 #define ROUNDDOWN32(v)				(((u32)(v)-0x1f)&~0x1f)
 

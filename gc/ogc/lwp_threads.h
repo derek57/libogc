@@ -24,7 +24,7 @@ extern "C" {
 #include <stdlib.h>
 #include "lwp_states.h"
 #include "lwp_tqdata.h"
-#include "lwp_watchdog.h"
+#include "watchdog.h"
 #include "object.h"
 #include "context.h"
 
