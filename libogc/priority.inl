@@ -13,8 +13,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_PRIORITY_INL__
-#define __LWP_PRIORITY_INL__
+#ifndef __PRIORITY_inl
+#define __PRIORITY_inl
 
 /*PAGE
  *

@@ -881,7 +881,7 @@
 					>
 				</File>
 				<File
-					RelativePath="libogc\lwp_priority.c"
+					RelativePath="libogc\exinit.c"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -901,7 +901,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="libogc\lwp_priority.inl"
+					RelativePath="libogc\priority.inl"
 					>
 				</File>
 				<File
@@ -3948,7 +3948,7 @@
 					>
 				</File>
 				<File
-					RelativePath="gc\ogc\lwp_priority.h"
+					RelativePath="gc\ogc\priority.h"
 					>
 				</File>
 				<File

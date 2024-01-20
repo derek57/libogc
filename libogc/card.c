@@ -43,7 +43,7 @@ distribution.
 #include "lwp.h"
 #include "exi.h"
 #include "card.h"
-#include "lwp_priority.h"
+#include "priority.h"
 
 //#define _CARD_DEBUG
 

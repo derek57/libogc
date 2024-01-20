@@ -260,11 +260,11 @@ SOURCE=.\libogc\object.inl
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_priority.c
+SOURCE=.\libogc\exinit.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_priority.inl
+SOURCE=.\libogc\priority.inl
 # End Source File
 # Begin Source File
 
@@ -1196,7 +1196,7 @@ SOURCE=.\gc\ogc\object.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\gc\ogc\lwp_priority.h
+SOURCE=.\gc\ogc\priority.h
 # End Source File
 # Begin Source File
 

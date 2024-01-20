@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 #include "chain.h"
-#include "lwp_priority.h"
+#include "priority.h"
 
 /*
  *  The following constants are used to manage the priority queues.

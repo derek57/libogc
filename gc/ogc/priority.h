@@ -14,8 +14,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_PRIORITY_H__
-#define __LWP_PRIORITY_H__
+#ifndef __PRIORITY_h
+#define __PRIORITY_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -58,7 +58,7 @@ SCORE_EXTERN Priority_Bit_map_control
 void _Priority_Handler_initialization( void );
 
 #ifdef __RTEMS_APPLICATION__
-#include <libogc/lwp_priority.inl>
+#include <libogc/priority.inl>
 #endif
 
 #ifdef __cplusplus
