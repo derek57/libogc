@@ -292,7 +292,7 @@ SOURCE=.\libogc\stack.inl
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_states.inl
+SOURCE=.\libogc\states.inl
 # End Source File
 # Begin Source File
 
@@ -1212,7 +1212,7 @@ SOURCE=.\gc\ogc\stack.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\gc\ogc\lwp_states.h
+SOURCE=.\gc\ogc\states.h
 # End Source File
 # Begin Source File
 
@@ -1260,7 +1260,7 @@ SOURCE=.\gc\ogc\stm.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\gc\ogc\sys_state.h
+SOURCE=.\gc\ogc\sysstate.h
 # End Source File
 # Begin Source File
 

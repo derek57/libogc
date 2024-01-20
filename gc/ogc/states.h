@@ -1,5 +1,5 @@
-#ifndef ___LWP_STATES_H__
-#define ___LWP_STATES_H__
+#ifndef __RTEMS_STATES_h
+#define __RTEMS_STATES_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,7 +48,7 @@ extern "C" {
                                  STATES_INTERRUPTIBLE_BY_SIGNAL ) 
 
 #ifdef __RTEMS_APPLICATION__
-#include <libogc/lwp_states.inl>
+#include <libogc/states.inl>
 #endif
 	
 #ifdef __cplusplus

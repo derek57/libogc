@@ -12,8 +12,8 @@
  *  $Id$
  */
 
-#ifndef __SYS_STATE_H__
-#define __SYS_STATE_H__
+#ifndef __RTEMS_SYSTEM_STATE_h
+#define __RTEMS_SYSTEM_STATE_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,7 +45,7 @@ typedef enum {
 SCORE_EXTERN System_state_Codes _System_state_Current;
 
 #ifdef __RTEMS_APPLICATION__
-#include <libogc/sys_state.inl>
+#include <libogc/sysstate.inl>
 #endif
 
 #ifdef __cplusplus

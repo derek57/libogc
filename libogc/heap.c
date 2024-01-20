@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <system.h>
 #include <processor.h>
-#include <sys_state.h>
+#include <sysstate.h>
 #include <lwp_config.h>
 
 #include "heap.h"

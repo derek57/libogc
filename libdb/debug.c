@@ -8,7 +8,7 @@
 #include "spinlock.h"
 #include "lwp.h"
 #include "lwp_threads.h"
-#include "sys_state.h"
+#include "sysstate.h"
 #include "context.h"
 #include "cache.h"
 #include "video.h"

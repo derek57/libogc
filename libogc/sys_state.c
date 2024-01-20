@@ -1,4 +1,4 @@
-#include "sys_state.h"
+#include "sysstate.h"
 
 /*
  *  The following variable contains the current system state.

@@ -49,7 +49,7 @@ distribution.
 #include "cache.h"
 #include "video.h"
 #include "system.h"
-#include "sys_state.h"
+#include "sysstate.h"
 #include "lwp_threads.h"
 #include "priority.h"
 #include "watchdog.h"

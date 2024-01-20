@@ -22,7 +22,7 @@ extern "C" {
 
 #include <gctypes.h>
 #include <stdlib.h>
-#include "lwp_states.h"
+#include "states.h"
 #include "lwp_tqdata.h"
 #include "watchdog.h"
 #include "object.h"

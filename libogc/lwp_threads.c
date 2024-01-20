@@ -18,7 +18,7 @@
 #include <string.h>
 #include "asm.h"
 #include "processor.h"
-#include "sys_state.h"
+#include "sysstate.h"
 #include "stack.h"
 #include "lwp_threads.h"
 #include "threadq.h"

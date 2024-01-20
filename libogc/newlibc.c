@@ -17,7 +17,7 @@
 #include <string.h>             /* for memset() */
 
 #include <sys/reent.h>          /* for extern of _REENT (aka _impure_ptr) */
-#include "sys_state.h"
+#include "sysstate.h"
 #include "lwp_threads.h"
 
 int              libc_reentrant;        /* do we think we are reentrant? */

@@ -13,8 +13,8 @@
  *  $Id$
  */
 
-#ifndef __SYS_STATE_INL__
-#define __SYS_STATE_INL__
+#ifndef __SYSTEM_STATE_inl
+#define __SYSTEM_STATE_inl
 
 #include "lwp_config.h"
 
