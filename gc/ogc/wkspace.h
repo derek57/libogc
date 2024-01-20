@@ -14,8 +14,8 @@
  *  $Id$
  */
 
-#ifndef __LWP_WKSPACE_H__
-#define __LWP_WKSPACE_H__
+#ifndef __WORKSPACE_h
+#define __WORKSPACE_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,7 +44,7 @@ void _Workspace_Handler_initialization(
 );
 
 #ifdef __RTEMS_APPLICATION__
-#include <libogc/lwp_wkspace.inl>
+#include <libogc/wkspace.inl>
 #endif
 
 #ifdef __cplusplus

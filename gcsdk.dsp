@@ -320,11 +320,11 @@ SOURCE=.\libogc\lwp_watchdog.inl
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_wkspace.c
+SOURCE=.\libogc\wkspace.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\libogc\lwp_wkspace.inl
+SOURCE=.\libogc\wkspace.inl
 # End Source File
 # Begin Source File
 
@@ -1232,7 +1232,7 @@ SOURCE=.\gc\ogc\lwp_watchdog.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\gc\ogc\lwp_wkspace.h
+SOURCE=.\gc\ogc\wkspace.h
 # End Source File
 # Begin Source File
 

@@ -21,7 +21,7 @@
 #include <asm.h>
 #include <processor.h>
 #include "system.h"
-#include "lwp_wkspace.h"
+#include "wkspace.h"
 
 #define ROUND32UP(v)			(((unsigned32)(v) + 31) & ~31)
 

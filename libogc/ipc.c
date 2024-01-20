@@ -46,7 +46,7 @@ distribution.
 #include "cache.h"
 #include "system.h"
 #include "lwp_heap.h"
-#include "lwp_wkspace.h"
+#include "wkspace.h"
 
 //#define DEBUG_IPC
 

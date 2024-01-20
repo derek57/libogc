@@ -53,7 +53,7 @@ distribution.
 #include "lwp_threads.h"
 #include "lwp_priority.h"
 #include "lwp_watchdog.h"
-#include "lwp_wkspace.h"
+#include "wkspace.h"
 #include "lwp_objmgr.h"
 #include "lwp_config.h"
 #include "libversion.h"

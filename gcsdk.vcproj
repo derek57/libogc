@@ -1053,7 +1053,7 @@
 					>
 				</File>
 				<File
-					RelativePath="libogc\lwp_wkspace.c"
+					RelativePath="libogc\wkspace.c"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -1073,7 +1073,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="libogc\lwp_wkspace.inl"
+					RelativePath="libogc\wkspace.inl"
 					>
 				</File>
 				<File
@@ -3984,7 +3984,7 @@
 					>
 				</File>
 				<File
-					RelativePath="gc\ogc\lwp_wkspace.h"
+					RelativePath="gc\ogc\wkspace.h"
 					>
 				</File>
 				<File

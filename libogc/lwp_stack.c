@@ -14,7 +14,7 @@
 
 #include <stdlib.h>
 #include "lwp_stack.h"
-#include "lwp_wkspace.h"
+#include "wkspace.h"
 
 /*PAGE
  *

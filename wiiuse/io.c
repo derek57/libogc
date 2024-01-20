@@ -9,7 +9,7 @@
 #include "wiiboard.h"
 #include "motion_plus.h"
 #include "io.h"
-#include "lwp_wkspace.h"
+#include "wkspace.h"
 
 void wiiuse_handshake(struct wiimote_t *wm,ubyte *data,uword len)
 {
