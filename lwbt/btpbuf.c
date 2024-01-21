@@ -119,7 +119,7 @@ u8_t btpbuf_free(struct pbuf *p)
 
 	cnt = 0;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	while(p!=NULL) {
 		p->ref--;
 		if(p->ref==0) {
@@ -136,7 +136,7 @@ u8_t btpbuf_free(struct pbuf *p)
 		} else 
 			p = NULL;
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return cnt;
 }
@@ -209,9 +209,9 @@ void btpbuf_ref(struct pbuf *p)
 	u32 level;
 
 	if(p!=NULL) {
-		_CPU_ISR_Disable(level);
+		_ISR_Disable(level);
 		++(p->ref);
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 	}
 }
 

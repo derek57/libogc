@@ -78,13 +78,13 @@ static struct bp_entry {
 } bp_entries[GEKKO_MAX_BP];
 
 static struct bp_entry *p_bpentries = NULL;
-static frame_context current_thread_registers;
+static Context_Control current_thread_registers;
 
 void __breakinst();
-void c_debug_handler(frame_context *ctx);
+void c_debug_handler(Context_Control *ctx);
 
 extern void dbg_exceptionhandler();
-extern void __exception_sethandler(u32 nExcept, void (*pHndl)(frame_context*));
+extern void __exception_sethandler(u32 nExcept, void (*pHndl)(Context_Control*));
 
 extern void __clr_iabr();
 extern void __enable_iabr();
@@ -366,32 +366,32 @@ static void process_query(const char *inp,char *outp,s32 thread)
 	}
 }
 
-static s32 gdbstub_setthreadregs(s32 thread,frame_context *frame)
+static s32 gdbstub_setthreadregs(s32 thread,Context_Control *frame)
 {
 	return 1;
 }
 
-static s32 gdbstub_getthreadregs(s32 thread,frame_context *frame)
+static s32 gdbstub_getthreadregs(s32 thread,Context_Control *frame)
 {
-	lwp_cntrl *th;
+	Thread_Control *th;
 
 	th = gdbstub_indextoid(thread);
 	if(th) {
-		memcpy(frame->GPR,th->context.GPR,(32*4));
-		memcpy(frame->FPR,th->context.FPR,(32*8));
-		frame->SRR0 = th->context.LR;
-		frame->SRR1 = th->context.MSR;
-		frame->CR = th->context.CR;
-		frame->LR = th->context.LR;
-		frame->CTR = th->context.CTR;
-		frame->XER = th->context.XER;
-		frame->FPSCR = th->context.FPSCR;
+		memcpy(frame->GPR,th->Registers.GPR,(32*4));
+		memcpy(frame->FPR,th->Registers.FPR,(32*8));
+		frame->SRR0 = th->Registers.LR;
+		frame->SRR1 = th->Registers.MSR;
+		frame->CR = th->Registers.CR;
+		frame->LR = th->Registers.LR;
+		frame->CTR = th->Registers.CTR;
+		frame->XER = th->Registers.XER;
+		frame->FPSCR = th->Registers.FPSCR;
 		return 1;
 	}
 	return 0;
 }
 
-static void gdbstub_report_exception(frame_context *frame,s32 thread)
+static void gdbstub_report_exception(Context_Control *frame,s32 thread)
 {
 	s32 sigval;
 	char *ptr;
@@ -427,13 +427,13 @@ static void gdbstub_report_exception(frame_context *frame,s32 thread)
 }
 
 
-void c_debug_handler(frame_context *frame)
+void c_debug_handler(Context_Control *frame)
 {
 	char *ptr;
 	s32 addr,len;
 	s32 thread,current_thread;
 	s32 host_has_detached;
-	frame_context *regptr;
+	Context_Control *regptr;
 
 	thread = gdbstub_getcurrentthread();
 	current_thread = thread;
@@ -621,7 +621,7 @@ void DEBUG_Init(s32 device_type,s32 channel_port)
 
 	UIP_LOG("DEBUG_Init()\n");
 
-	__lwp_thread_dispatchdisable();
+	_Thread_Disable_dispatch();
 
 	bp_init();
 
@@ -636,16 +636,16 @@ void DEBUG_Init(s32 device_type,s32 channel_port)
 	}
 
 	if(current_device!=NULL) {
-		_CPU_ISR_Disable(level);
+		_ISR_Disable(level);
 		__exception_sethandler(EX_DSI,dbg_exceptionhandler);
 		__exception_sethandler(EX_PRG,dbg_exceptionhandler);
 		__exception_sethandler(EX_TRACE,dbg_exceptionhandler);
 		__exception_sethandler(EX_IABR,dbg_exceptionhandler);
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 
 		dbg_initialized = 1;
 		
 	}
-	__lwp_thread_dispatchenable();
+	_Thread_Enable_dispatch();
 }
 

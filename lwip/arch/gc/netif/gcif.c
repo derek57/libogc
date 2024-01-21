@@ -432,12 +432,12 @@ static __inline__ void __bba_exi_stop(struct bba_priv *priv)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	while(EXI_Lock(EXI_CHANNEL_0,EXI_DEVICE_2,__bba_exi_unlockcb)==0) {
 		LWIP_DEBUGF(NETIF_DEBUG|1,("__bba_exi_wait(exi locked)\n"));
 		LWP_ThreadSleep(wait_exi_queue);
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 static __inline__ void __bba_exi_wake(struct bba_priv *priv)
@@ -449,25 +449,25 @@ static __inline__ void __bba_tx_stop(struct bba_priv *priv)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	while(priv->state==ERR_TXPENDING) {
 		LWIP_DEBUGF(NETIF_DEBUG,("__bba_tx_stop(pending tx)\n"));
 		LWP_ThreadSleep(priv->tq_xmit);
 	}
 	priv->state = ERR_TXPENDING;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 static __inline__ void __bba_tx_wake(struct bba_priv *priv)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(priv->state==ERR_TXPENDING) {
 		priv->state = ERR_OK;
 		LWP_ThreadBroadcast(priv->tq_xmit);
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 static __inline__ u8 __linkstate(struct bba_priv *priv)

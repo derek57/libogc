@@ -125,7 +125,7 @@ pbuf_init(void)
 #if !SYS_LIGHTWEIGHT_PROT
   pbuf_pool_alloc_lock = 0;
   pbuf_pool_free_lock = 0;
-  LWP_SemInit(&pbuf_pool_free_sem,1,1);
+  sem_init(&pbuf_pool_free_sem,1,1);
 #endif
 }
 
@@ -364,9 +364,9 @@ pbuf_alloc(pbuf_layer l, u16_t length, pbuf_flag flag)
                                } while (0)
 #else /* SYS_LIGHTWEIGHT_PROT */
 #define PBUF_POOL_FREE(p)  do {                                         \
-                             LWP_SemWait(pbuf_pool_free_sem);          \
+                             sem_wait(pbuf_pool_free_sem);          \
                              PBUF_POOL_FAST_FREE(p);                    \
-                             LWP_SemPost(pbuf_pool_free_sem);        \
+                             sem_post(pbuf_pool_free_sem);        \
                            } while (0)
 #endif /* SYS_LIGHTWEIGHT_PROT */
 

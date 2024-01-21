@@ -6,10 +6,10 @@
 #include "thread.h"
 #include "debug_supp.h"
 
-extern lwp_objinfo _lwp_cond_objects;
-extern lwp_objinfo _lwp_thr_objects;
-extern lwp_objinfo _lwp_tqueue_objects;
-extern lwp_objinfo _lwp_mqbox_objects;
+extern Objects_Information _POSIX_Condition_variables_Information;
+extern Objects_Information _lwp_thr_objects;
+extern Objects_Information _lwp_tqueue_objects;
+extern Objects_Information _POSIX_Message_queue_Information;
 extern Objects_Information _POSIX_Mutex_Information;
 extern Objects_Information _POSIX_Semaphore_Information;
 
@@ -223,30 +223,30 @@ s32 gdbstub_idtoindex(s32 objid)
 	s32 min_id,max_id;
 	s32 first_id;
 
-	if(_thr_executing==_thr_idle) return 1;
+	if(_Thread_Executing==_Thread_Idle) return 1;
 
 	first_id = 1;
-	min_id = _lwp_thr_objects.min_id;
-	max_id = _lwp_thr_objects.max_id;
+	min_id = _lwp_thr_objects.minimum_id;
+	max_id = _lwp_thr_objects.maximum_id;
 	if(objid>=min_id && objid<max_id) return first_id + (objid - min_id);
 
 	return 1;
 }
 
-lwp_cntrl* gdbstub_indextoid(s32 thread)
+Thread_Control* gdbstub_indextoid(s32 thread)
 {
 	s32 min_id,max_id,first_id;
-	lwp_cntrl *th;
+	Thread_Control *th;
 
 	if(thread<=0) return NULL;
 
-	if(thread==1) return _thr_idle;
+	if(thread==1) return _Thread_Idle;
 
 	first_id = 1;
-	min_id = _lwp_thr_objects.min_id;
-	max_id = _lwp_thr_objects.max_id;
+	min_id = _lwp_thr_objects.minimum_id;
+	max_id = _lwp_thr_objects.maximum_id;
 	if(thread<(first_id + (max_id - min_id))) {
-		th = (lwp_cntrl*)_lwp_thr_objects.local_table[thread - first_id];
+		th = (Thread_Control*)_lwp_thr_objects.local_table[thread - first_id];
 		return th;
 	}
 	return NULL;
@@ -254,7 +254,7 @@ lwp_cntrl* gdbstub_indextoid(s32 thread)
 
 s32 gdbstub_getcurrentthread()
 {
-	return gdbstub_idtoindex(_thr_executing->object.id);
+	return gdbstub_idtoindex(_Thread_Executing->Object.id);
 }
 
 s32 gdbstub_getnextthread(s32 athread)
@@ -265,8 +265,8 @@ s32 gdbstub_getnextthread(s32 athread)
 	if(athread<1) return 1;
 
 	first_id = 1;
-	min_id = _lwp_thr_objects.min_id;
-	max_id = _lwp_thr_objects.max_id;
+	min_id = _lwp_thr_objects.minimum_id;
+	max_id = _lwp_thr_objects.maximum_id;
 	lim = first_id + max_id - min_id;
 	if(athread<lim) {
 		if(athread<first_id) 
@@ -293,7 +293,7 @@ s32 gdbstub_getoffsets(char **textaddr,char **dataaddr,char **bssaddr)
 s32 gdbstub_getthreadinfo(s32 thread,struct gdbstub_threadinfo *info)
 {
 	s32 first_id,min_id,max_id;
-	lwp_cntrl *th;
+	Thread_Control *th;
 	char tmp_buf[20];
 
 	if(thread<=0) return 0;
@@ -306,10 +306,10 @@ s32 gdbstub_getthreadinfo(s32 thread,struct gdbstub_threadinfo *info)
 	}
 
 	first_id = 1;
-	min_id = _lwp_thr_objects.min_id;
-	max_id = _lwp_thr_objects.max_id;
+	min_id = _lwp_thr_objects.minimum_id;
+	max_id = _lwp_thr_objects.maximum_id;
 	if(thread<=(first_id + (max_id - min_id))){
-		th = (lwp_cntrl*)_lwp_thr_objects.local_table[thread - first_id];
+		th = (Thread_Control*)_lwp_thr_objects.local_table[thread - first_id];
 		if(th==NULL) return 0;
 
 		strcpy(info->display,"libogc task:   control at: 0x");

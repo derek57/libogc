@@ -126,7 +126,7 @@ mem_init(void)
   ram_end->next = MEM_SIZE;
   ram_end->prev = MEM_SIZE;
 
-  LWP_SemInit(&mem_sem,1,1);
+  sem_init(&mem_sem,1,1);
 
   lfree = (struct mem *)ram;
 
@@ -144,7 +144,7 @@ mem_free(void *rmem)
     return;
   }
   
-  LWP_SemWait(mem_sem);
+  sem_wait(mem_sem);
 
   LWIP_ASSERT("mem_free: legal memory", (u8_t *)rmem >= (u8_t *)ram &&
     (u8_t *)rmem < (u8_t *)ram_end);
@@ -154,7 +154,7 @@ mem_free(void *rmem)
 #if MEM_STATS
     ++lwip_stats.mem.err;
 #endif /* MEM_STATS */
-    LWP_SemPost(mem_sem);
+    sem_post(mem_sem);
     return;
   }
   mem = (struct mem *)((u8_t *)rmem - SIZEOF_STRUCT_MEM);
@@ -172,7 +172,7 @@ mem_free(void *rmem)
   
 #endif /* MEM_STATS */
   plug_holes(mem);
-  LWP_SemPost(mem_sem);
+  sem_post(mem_sem);
 }
 void *
 mem_reallocm(void *rmem, mem_size_t newsize)
@@ -204,7 +204,7 @@ mem_realloc(void *rmem, mem_size_t newsize)
     return NULL;
   }
   
-  LWP_SemWait(mem_sem);
+  sem_wait(mem_sem);
   
   LWIP_ASSERT("mem_realloc: legal memory", (u8_t *)rmem >= (u8_t *)ram &&
    (u8_t *)rmem < (u8_t *)ram_end);
@@ -235,7 +235,7 @@ mem_realloc(void *rmem, mem_size_t newsize)
 
     plug_holes(mem2);
   }
-  LWP_SemPost(mem_sem);
+  sem_post(mem_sem);
   return rmem;
 }
 void *
@@ -258,7 +258,7 @@ mem_malloc(mem_size_t size)
     return NULL;
   }
   
-  LWP_SemWait(mem_sem);
+  sem_wait(mem_sem);
 
   for (ptr = (u8_t *)lfree - ram; ptr < MEM_SIZE; ptr = ((struct mem *)&ram[ptr])->next) {
     mem = (struct mem *)&ram[ptr];
@@ -293,7 +293,7 @@ mem_malloc(mem_size_t size)
         }
         LWIP_ASSERT("mem_malloc: !lfree->used", !lfree->used);
       }
-      LWP_SemPost(mem_sem);
+      sem_post(mem_sem);
       LWIP_ASSERT("mem_malloc: allocated memory not above ram_end.",
        (mem_ptr_t)mem + SIZEOF_STRUCT_MEM + size <= (mem_ptr_t)ram_end);
       LWIP_ASSERT("mem_malloc: allocated memory properly aligned.",
@@ -305,6 +305,6 @@ mem_malloc(mem_size_t size)
 #if MEM_STATS
   ++lwip_stats.mem.err;
 #endif /* MEM_STATS */  
-  LWP_SemPost(mem_sem);
+  sem_post(mem_sem);
   return NULL;
 }

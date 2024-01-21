@@ -39,7 +39,7 @@ static __inline__ void __wiiuse_push_command(struct wiimote_t *wm,struct cmd_blk
 	cmd->next = NULL;
 	cmd->state = CMD_READY;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(wm->cmd_head==NULL) {
 		wm->cmd_head = wm->cmd_tail = cmd;
 		wiiuse_send_next_command(wm);
@@ -47,7 +47,7 @@ static __inline__ void __wiiuse_push_command(struct wiimote_t *wm,struct cmd_blk
 		wm->cmd_tail->next = cmd;
 		wm->cmd_tail = cmd;
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 #ifndef GEKKO

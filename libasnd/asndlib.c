@@ -357,7 +357,7 @@ void ASND_Init()
 	AUDIO_StopDMA(); // in case audio was previously inited and a DMA callback set
 	AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ);
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(!asnd_inited) {
 		asnd_inited = 1;
 		global_pause = 1;
@@ -391,7 +391,7 @@ void ASND_Init()
 	AUDIO_InitDMA((u32)audio_buf[curr_audio_buf],SND_BUFFERSIZE);
 	AUDIO_StartDMA();
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -448,7 +448,7 @@ s32 ASND_SetVoice(s32 voice, s32 format, s32 pitch,s32 delay, void *snd, s32 siz
 
 	format|= flag_h | VOICE_UPDATE;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	sound_data[voice].left=0;
 	sound_data[voice].right=0;
@@ -474,7 +474,7 @@ s32 ASND_SetVoice(s32 voice, s32 format, s32 pitch,s32 delay, void *snd, s32 siz
 	sound_data[voice].tick_counter=0;
 
 	sound_data[voice].cb = callback;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return SND_OK;
 }
@@ -515,7 +515,7 @@ s32 ASND_SetInfiniteVoice(s32 voice, s32 format, s32 pitch,s32 delay, void *snd,
 
 	format|= flag_h | VOICE_UPDATE | VOICE_SETLOOP;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	sound_data[voice].left=0;
 	sound_data[voice].right=0;
@@ -541,7 +541,7 @@ s32 ASND_SetInfiniteVoice(s32 voice, s32 format, s32 pitch,s32 delay, void *snd,
 	sound_data[voice].tick_counter=0;
 
 	sound_data[voice].cb=NULL;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return SND_OK;
 }
@@ -560,7 +560,7 @@ s32 ASND_AddVoice(s32 voice, void *snd, s32 size_snd)
 	if((sound_data[voice].flags & (VOICE_UPDATE | VOICE_UPDATEADD)) || !(sound_data[voice].flags>>16)) return SND_INVALID; // busy or unused voice
 
 	DCFlushRange(snd, size_snd);
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	if(sound_data[voice].start_addr2==0)
 	{
@@ -572,7 +572,7 @@ s32 ASND_AddVoice(s32 voice, void *snd, s32 size_snd)
 		sound_data[voice].flags|=VOICE_UPDATEADD;
 	} else ret=SND_BUSY;
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return ret;
 }
@@ -597,13 +597,13 @@ s32 ASND_TestPointer(s32 voice, void *pointer)
 
 	if(voice<0 || voice>=MAX_SND_VOICES) return SND_INVALID; // invalid voice
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	if(sound_data[voice].backup_addr==addr2 /*&& sound_data[voice].end_addr>(addr2)*/) ret=SND_BUSY;
 	else
 		if(sound_data[voice].start_addr2==addr2 /*&& sound_data[voice].end_addr2>(addr2)*/) ret=SND_BUSY;
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return ret;
 }
@@ -626,13 +626,13 @@ s32 ASND_StopVoice(s32 voice)
 
 	if(voice<0 || voice>=MAX_SND_VOICES) return SND_INVALID; // invalid voice
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 
 	sound_data[voice].backup_addr=sound_data[voice].start_addr=sound_data[voice].start_addr2=0;
 	sound_data[voice].end_addr=sound_data[voice].end_addr2=0;
 	sound_data[voice].flags=0;
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return SND_OK;
 }
@@ -646,10 +646,10 @@ s32 ASND_StatusVoice(s32 voice)
 
 	if(voice<0 || voice>=MAX_SND_VOICES) return SND_INVALID; // invalid voice
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(!(sound_data[voice].flags>>16)) status=SND_UNUSED;
 	if(sound_data[voice].flags & VOICE_PAUSE) status=SND_WAITING;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return status;
 }
@@ -665,11 +665,11 @@ s32 ASND_ChangeVolumeVoice(s32 voice, s32 volume_l, s32 volume_r)
 	volume_l &=255;
 	volume_r &=255;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	sound_data[voice].flags |=VOICE_VOLUPDATE;
 	sound_data[voice].volume_l= sound_data[voice].volume2_l= volume_l;
 	sound_data[voice].volume_r= sound_data[voice].volume2_r= volume_r;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return SND_OK;
 }
@@ -776,9 +776,9 @@ s32 ASND_ChangePitchVoice(s32 voice, s32 pitch)
 	if(pitch<1) pitch=1;
 	if(pitch>144000) pitch=144000;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	sound_data[voice].freq= pitch;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return SND_OK;
 }
@@ -794,9 +794,9 @@ u32 ASND_GetDSP_ProcessTime()
 {
 	u32 level,ret;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	ret = time_of_process;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return ticks_to_nanosecs(ret);
 }

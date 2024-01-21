@@ -444,14 +444,14 @@ extern struct hci_link_key *hci_tmp_key;
 
 #define HCI_REG(links, nlink) do { \
 							u32 level; \
-							_CPU_ISR_Disable(level); \
+							_ISR_Disable(level); \
                             nlink->next = *links; \
                             *links = nlink; \
-							_CPU_ISR_Restore(level); \
+							_ISR_Enable(level); \
                             } while(0)
 #define HCI_RMV(links, nlink) do { \
 							u32 level; \
-							_CPU_ISR_Disable(level);\
+							_ISR_Disable(level);\
                             if(*links == nlink) { \
                                *links = (*links)->next; \
                             } else for(hci_tmp_link = *links; hci_tmp_link != NULL; hci_tmp_link = hci_tmp_link->next) { \
@@ -461,7 +461,7 @@ extern struct hci_link_key *hci_tmp_key;
                                } \
                             } \
                             nlink->next = NULL; \
-							_CPU_ISR_Restore(level); \
+							_ISR_Enable(level); \
                             } while(0)
 
 #endif

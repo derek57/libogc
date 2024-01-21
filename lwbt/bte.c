@@ -144,11 +144,11 @@ static inline s32 __bte_waitcmdfinish(struct bt_state *state)
 
 	if(!state) return ERR_VAL;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	while(!state->hci_cmddone)
 		LWP_ThreadSleep(state->hci_cmdq);
 	ret = state->last_err;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return ret;
 }
@@ -159,14 +159,14 @@ static inline s32 __bte_cmdfinish(struct bt_state *state,err_t err)
 
 	if(!state) return ERR_VAL;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	state->last_err = err;
 	state->hci_cmddone = 1;
 	if(state->cb!=NULL)
 		state->cb(err,state->usrdata);
 	else
 		LWP_ThreadSignal(state->hci_cmdq);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return err;
 }
@@ -178,14 +178,14 @@ static inline s32 __bte_waitrequest(struct ctrl_req_t *req)
 
 	if(!req || !req->pcb) return ERR_VAL;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	while(req->state!=STATE_SENT
 		&& req->state!=STATE_FAILED)
 	{
 		LWP_ThreadSleep(req->pcb->cmdq);
 	}
 	err = req->err;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return err;
 }
@@ -247,7 +247,7 @@ static s32 __bte_send_request(struct ctrl_req_t *req)
 	req->err = ERR_VAL;
 	req->state = STATE_READY;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(req->pcb->ctrl_req_head==NULL) {
 		req->pcb->ctrl_req_head = req->pcb->ctrl_req_tail = req;
 		err = __bte_send_pending_request(req->pcb);
@@ -256,7 +256,7 @@ static s32 __bte_send_request(struct ctrl_req_t *req)
 		req->pcb->ctrl_req_tail = req;
 		err = ERR_OK;
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return err;
 }	
@@ -379,7 +379,7 @@ void BTE_Init()
 	LWP_InitQueue(&btstate.hci_cmdq);
 	SYS_CreateAlarm(&btstate.timer_svc);
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	bte_reset_all();
 	hci_reset_all();
 	l2cap_reset_all();
@@ -387,7 +387,7 @@ void BTE_Init()
 
 	hci_wlp_complete(acl_wlp_completed);
 	hci_connection_complete(acl_conn_complete);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	tb.tv_sec = 1;
 	tb.tv_nsec = 0;
@@ -402,7 +402,7 @@ void BTE_Shutdown()
 
 	LOG("BTE_Shutdown()\n");
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	SYS_RemoveAlarm(btstate.timer_svc);
 	btstate.cb = NULL;
 	btstate.usrdata = NULL;
@@ -411,7 +411,7 @@ void BTE_Shutdown()
 	hci_cmd_complete(__bte_shutdown_finished);
 	hci_reset();
 	__bte_waitcmdfinish(&btstate);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	physbusif_shutdown();
 }
@@ -420,14 +420,14 @@ s32 BTE_InitCore(btecallback cb)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	btstate.cb = cb;
 	btstate.usrdata = NULL;
 	btstate.hci_cmddone = 0;
 	hci_arg(&btstate);
 	hci_cmd_complete(bte_hci_initcore_complete);
 	hci_reset();
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return ERR_OK;
 }
@@ -437,14 +437,14 @@ s32 BTE_ApplyPatch(btecallback cb)
 	u32 level;
 	u8 kick = 0;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	btstate.cb = cb;
 	btstate.usrdata = NULL;
 	btstate.hci_cmddone = 0;
 	hci_arg(&btstate);
 	hci_cmd_complete(bte_hci_apply_patch_complete);
 	hci_vendor_specific_command(HCI_VENDOR_PATCH_START_OCF,HCI_VENDOR_OGF,&kick,1);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return ERR_OK;
 }
@@ -453,14 +453,14 @@ s32 BTE_InitSub(btecallback cb)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	btstate.cb = cb;
 	btstate.usrdata = NULL;
 	btstate.hci_cmddone = 0;
 	hci_arg(&btstate);
 	hci_cmd_complete(bte_hci_initsub_complete);
 	hci_write_inquiry_mode(0x01);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return ERR_OK;
 }
@@ -469,7 +469,7 @@ s32 BTE_ReadStoredLinkKey(struct linkkey_info *keys,u8 max_cnt,btecallback cb)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	btstate.cb = cb;
 	btstate.usrdata = keys;
 	btstate.num_maxdevs = max_cnt;
@@ -477,7 +477,7 @@ s32 BTE_ReadStoredLinkKey(struct linkkey_info *keys,u8 max_cnt,btecallback cb)
 	hci_arg(&btstate);
 	hci_cmd_complete(bte_read_stored_link_key_complete);
 	hci_read_stored_link_key();
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return ERR_OK;
 }
@@ -486,14 +486,14 @@ s32 BTE_ReadBdAddr(struct bd_addr *bdaddr, btecallback cb)
 {    
     u32 level;
 
-    _CPU_ISR_Disable(level);
+    _ISR_Disable(level);
     btstate.cb = cb;
     btstate.usrdata = bdaddr;
     btstate.hci_cmddone = 0;
     hci_arg(&btstate);
     hci_cmd_complete(bte_read_bd_addr_complete);
     hci_read_bd_addr();
-    _CPU_ISR_Restore(level);
+    _ISR_Enable(level);
 
     return ERR_OK;
 }
@@ -524,7 +524,7 @@ s32 bte_registerdeviceasync(struct bte_pcb *pcb,struct bd_addr *bdaddr,s32 (*con
 	struct l2cap_pcb *l2capcb = NULL;
 
 	//printf("bte_registerdeviceasync()\n");
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	pcb->err = ERR_USE;
 	pcb->data_pcb = NULL;
 	pcb->ctl_pcb = NULL;
@@ -558,7 +558,7 @@ s32 bte_registerdeviceasync(struct bte_pcb *pcb,struct bd_addr *bdaddr,s32 (*con
 	}
 
 error:
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	//printf("bte_registerdeviceasync(%02x)\n",err);
 	return err;
 }
@@ -572,7 +572,7 @@ s32 bte_inquiry(struct inquiry_info *info,u8 max_cnt,u8 flush)
 
 	last_err = ERR_OK;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(btstate.num_founddevs==0 || flush==1) {
 		btstate.hci_cmddone = 0;
 		btstate.num_maxdevs = max_cnt;
@@ -581,7 +581,7 @@ s32 bte_inquiry(struct inquiry_info *info,u8 max_cnt,u8 flush)
 	}
 	fnd = btstate.num_founddevs;
 	pinfo = btstate.info;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	if(last_err==ERR_OK) {
 		for(i=0;i<fnd && i<max_cnt;i++) {
@@ -601,7 +601,7 @@ s32 bte_inquiry_ex(struct inquiry_info_ex *info,u8 max_cnt,u8 flush)
 
 	last_err = ERR_OK;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(btstate.num_founddevs==0 || flush==1) {
 		btstate.hci_cmddone = 0;
 		btstate.num_maxdevs = max_cnt;
@@ -610,7 +610,7 @@ s32 bte_inquiry_ex(struct inquiry_info_ex *info,u8 max_cnt,u8 flush)
 	}
 	fnd = btstate.num_founddevs;
 	pinfo = btstate.info;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	if(last_err==ERR_OK) {
 		for(i=0;i<fnd && i<max_cnt;i++) {
@@ -631,13 +631,13 @@ s32 bte_disconnect(struct bte_pcb *pcb)
 
 	if(pcb==NULL) return ERR_VAL;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	pcb->state = (u32)STATE_DISCONNECTING;
 	if(pcb->data_pcb!=NULL )
 		err = l2ca_disconnect_req(pcb->data_pcb,l2cap_disconnect_cfm);
 	else if(pcb->ctl_pcb!=NULL)
 		err = l2ca_disconnect_req(pcb->ctl_pcb,l2cap_disconnect_cfm);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return err;
 }
@@ -656,7 +656,7 @@ s32 bte_connect(struct bte_pcb *pcb,struct bd_addr *bdaddr,u8 psm,s32 (*recv)(vo
 	pcb->recv = recv;
 	bd_addr_set(&(pcb->bdaddr),bdaddr);
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	pcb->err = ERR_CONN;
 	l2cap_arg(pcb->l2capcb,pcb);
 	err = l2ca_connect_req(pcb->l2capcb,bdaddr,psm,HCI_ALLOW_ROLE_SWITCH,l2cap_connected);
@@ -664,7 +664,7 @@ s32 bte_connect(struct bte_pcb *pcb,struct bd_addr *bdaddr,u8 psm,s32 (*recv)(vo
 		LWP_ThreadSleep(pcb->cmdq);
 		err = pcb->err;
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return err;
 }
@@ -692,13 +692,13 @@ s32 bte_listen(struct bte_pcb *pcb,struct bd_addr *bdaddr,u8 psm)
 	pcb->recv = NULL;
 	bd_addr_set(&(pcb->bdaddr),bdaddr);
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	pcb->err = ERR_CONN;
 	l2cap_arg(l2capcb,pcb);
 	err = l2cap_connect_ind(l2capcb,psm,l2cap_accepted);
 	if(err!=ERR_OK) l2cap_close(l2capcb);
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return err;
 }
 
@@ -709,12 +709,12 @@ s32 bte_accept(struct bte_pcb *pcb,s32 (*recv)(void *arg,void *buffer,u16 len))
 
 	if(pcb==NULL) return ERR_VAL;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	pcb->recv = recv;
 	while(pcb->l2capcb==NULL)
 		LWP_ThreadSleep(pcb->cmdq);
 	err = pcb->err;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return err;
 }
@@ -810,25 +810,25 @@ s32 bte_sendmessage(struct bte_pcb *pcb,void *message,u16 len)
 void bte_arg(struct bte_pcb *pcb,void *arg)
 {
 	u32 level;
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	pcb->cbarg = arg;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void bte_received(struct bte_pcb *pcb, s32 (*recv)(void *arg,void *buffer,u16 len))
 {
 	u32 level;
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	pcb->recv = recv;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void bte_disconnected(struct bte_pcb *pcb,s32 (disconn_cfm)(void *arg,struct bte_pcb *pcb,u8 err))
 {
 	u32 level;
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	pcb->disconn_cfm = disconn_cfm;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 err_t acl_wlp_completed(void *arg,struct bd_addr *bdaddr)

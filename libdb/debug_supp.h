@@ -17,7 +17,7 @@ char* int2vhstr(char *buf,s32 val);
 char* mem2hstr(char *buf,const char *mem,s32 count);
 char* thread2vhstr(char *buf,s32 thread);
 const char* vhstr2thread(const char *buf,s32 *thread);
-lwp_cntrl* gdbstub_indextoid(s32 thread);
+Thread_Control* gdbstub_indextoid(s32 thread);
 s32 gdbstub_getoffsets(char **textaddr,char **dataaddr,char **bssaddr);
 s32 parsezbreak(const char *in,int *type,char **addr,int *len);
 s32 gdbstub_getthreadinfo(s32 thread,struct gdbstub_threadinfo *info);

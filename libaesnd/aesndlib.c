@@ -428,7 +428,7 @@ void AESND_Init()
 	AUDIO_StopDMA();
 	AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ);
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(!__aesndinit) {
 		__aesndinit = 1;
 		__aesndcurrab = 0;
@@ -458,14 +458,14 @@ void AESND_Init()
 	AUDIO_InitDMA((u32)audio_buffer[__aesndcurrab],SND_BUFFERSIZE);
 	AUDIO_StartDMA();
 
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void AESND_Reset()
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(__aesndinit) {
 		AUDIO_StopDMA();
 		AUDIO_RegisterDMACallback(NULL);
@@ -474,21 +474,21 @@ void AESND_Reset()
 		while(DSP_CheckMailTo());
 		
 		do {
-			_CPU_ISR_Flash(level);
+			_ISR_Flash(level);
 		} while(__aesnddspinit);
 
 		__aesndinit = 0;
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void AESND_Pause(bool pause)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	__aesndglobalpause = pause;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 u32 AESND_GetDSPProcessTime()
@@ -496,9 +496,9 @@ u32 AESND_GetDSPProcessTime()
 	u32 level;
 	u32 time = 0;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	time = ticks_to_microsecs(__aesnddspprocesstime);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	
 	return time;
 }
@@ -508,9 +508,9 @@ f32 AESND_GetDSPProcessUsage()
 	u32 level;
 	f32 usage = 0.0f;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	usage = (ticks_to_microsecs(__aesnddspprocesstime)*100)/2000.0f;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	
 	return usage;
 }
@@ -520,10 +520,10 @@ AESNDAudioCallback AESND_RegisterAudioCallback(AESNDAudioCallback cb)
 	u32 level;
 	AESNDAudioCallback aCB;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	aCB = __aesndcommand.audioCB;
 	__aesndcommand.audioCB = cb;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return aCB;
 }
@@ -533,7 +533,7 @@ AESNDPB* AESND_AllocateVoice(AESNDVoiceCallback cb)
 	u32 i,level;
 	AESNDPB *pb = NULL;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	for(i=0;i<MAX_VOICES;i++) {
 		pb = &__aesndvoicepb[i];
 		if(!(pb->flags&VOICE_USED)) {
@@ -552,7 +552,7 @@ AESNDPB* AESND_AllocateVoice(AESNDVoiceCallback cb)
 			break;
 		}
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return pb;
 }
@@ -562,9 +562,9 @@ void AESND_FreeVoice(AESNDPB *pb)
 	u32 level;
 	if(pb==NULL) return;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	snd_set0w((int*)pb,sizeof(struct aesndpb_t)>>2);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void AESND_PlayVoice(AESNDPB *pb,u32 format,const void *buffer,u32 len,u32 freq,u32 delay,bool looped)
@@ -572,7 +572,7 @@ void AESND_PlayVoice(AESNDPB *pb,u32 format,const void *buffer,u32 len,u32 freq,
 	u32 level;
 	void *ptr = (void*)buffer;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	__aesndsetvoiceformat(pb,format);
 	__aesndsetvoicefreq(pb,freq);
 	__aesndsetvoicebuffer(pb,ptr,len);
@@ -587,7 +587,7 @@ void AESND_PlayVoice(AESNDPB *pb,u32 format,const void *buffer,u32 len,u32 freq,
 	pb->delay = (delay*48);
 	pb->pds = pb->yn1 = pb->yn2 = 0;
 	pb->counter = 0;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void AESND_SetVoiceBuffer(AESNDPB *pb,const void *buffer,u32 len)
@@ -595,85 +595,85 @@ void AESND_SetVoiceBuffer(AESNDPB *pb,const void *buffer,u32 len)
 	u32 level;
 	void *ptr = (void*)buffer;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	__aesndsetvoicebuffer(pb,ptr,len);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void AESND_SetVoiceFormat(AESNDPB *pb,u32 format)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	__aesndsetvoiceformat(pb,format);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void AESND_SetVoiceVolume(AESNDPB *pb,u16 volume_l,u16 volume_r)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	pb->volume_l = volume_l;
 	pb->volume_r = volume_r;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void AESND_SetVoiceFrequency(AESNDPB *pb,u32 freq)
 {
 	u32 level;
 	
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	__aesndsetvoicefreq(pb,freq);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void AESND_SetVoiceStream(AESNDPB *pb,bool stream)
 {
 	u32 level;
 	
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(stream==true)
 		pb->flags |= VOICE_STREAM;
 	else
 		pb->flags &= ~VOICE_STREAM;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void AESND_SetVoiceLoop(AESNDPB *pb,bool loop)
 {
 	u32 level;
 	
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(loop==true)
 		pb->flags |= VOICE_LOOP;
 	else
 		pb->flags &= ~VOICE_LOOP;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void AESND_SetVoiceMute(AESNDPB *pb,bool mute)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(mute==true)
 		pb->flags |= VOICE_PAUSE;
 	else
 		pb->flags &= ~VOICE_PAUSE;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 void AESND_SetVoiceStop(AESNDPB *pb,bool stop)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	if(stop==true)
 		pb->flags |= VOICE_STOPPED;
 	else
 		pb->flags &= ~VOICE_STOPPED;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 AESNDVoiceCallback AESND_RegisterVoiceCallback(AESNDPB *pb,AESNDVoiceCallback cb)
@@ -681,10 +681,10 @@ AESNDVoiceCallback AESND_RegisterVoiceCallback(AESNDPB *pb,AESNDVoiceCallback cb
 	u32 level;
 	AESNDVoiceCallback rcb = NULL;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	rcb = pb->cb;
 	pb->cb = cb;
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 
 	return rcb;
 }

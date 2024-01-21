@@ -96,7 +96,7 @@ typedef struct
 	smb_cache_page *SMBReadAheadCache;
 	int SMB_RA_pages;
 
-	mutex_t _SMB_mutex;
+	pthread_mutex_t _SMB_mutex;
 } smb_env;
 
 static smb_env SMBEnv[MAX_SMB_MOUNTED];

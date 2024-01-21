@@ -95,8 +95,8 @@ ifeq ($(PLATFORM),cube)
 MACHDEP		+=	-DHW_DOL
 endif
 
-CFLAGS		:= -DLIBOGC_INTERNAL -g -Os -mregnames -Wall $(MACHDEP)  -fno-strict-aliasing $(INCLUDES)
-ASFLAGS		:=	$(MACHDEP) -mregnames -D_LANGUAGE_ASSEMBLY $(INCLUDES)
+CFLAGS		:= -D__RTEMS_APPLICATION__ -g -Os -mregnames -Wall $(MACHDEP)  -fno-strict-aliasing $(INCLUDES)
+ASFLAGS		:=	$(MACHDEP) -mregnames -DASM $(INCLUDES)
 
 #---------------------------------------------------------------------------------
 VPATH :=	$(LWIPDIR)				\

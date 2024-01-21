@@ -51,7 +51,7 @@
 #define LOOP_TIMER_ID			0x00070045
 
 static u64 loopif_ticks;
-static wd_cntrl loopif_tmr_cntrl;
+static Watchdog_Control loopif_tmr_cntrl;
 
 extern unsigned int timespec_to_interval(const struct timespec *);
 
@@ -102,8 +102,8 @@ loopif_output(struct netif *netif, struct pbuf *p,
 	 * 
 	 * TODO: Is there still a race condition here? Leon
 	 */
-	__lwp_wd_initialize(&loopif_tmr_cntrl,loopif_input,LOOP_TIMER_ID,arg);
-	__lwp_wd_insert_ticks(&loopif_tmr_cntrl,loopif_ticks);
+	_Watchdog_Initialize(&loopif_tmr_cntrl,loopif_input,LOOP_TIMER_ID,arg);
+	_Watchdog_Insert_ticks(&loopif_tmr_cntrl,loopif_ticks);
 	
     return ERR_OK;    
   }
@@ -124,7 +124,7 @@ loopif_init(struct netif *netif)
 
  tb.tv_sec = 0;
  tb.tv_nsec = 10*TB_NSPERMS;
- loopif_ticks = __lwp_wd_calc_ticks(&tb);
+ loopif_ticks = _POSIX_Timespec_to_interval(&tb);
 
  return ERR_OK;
 }

@@ -177,7 +177,7 @@ memp_init(void)
   }
 
 #if !SYS_LIGHTWEIGHT_PROT
-  LWP_SemInit(&mutex,1,1);
+  sem_init(&mutex,1,1);
 #endif
 
   
@@ -197,7 +197,7 @@ memp_malloc(memp_t type)
 #if SYS_LIGHTWEIGHT_PROT
   SYS_ARCH_PROTECT(old_level);
 #else /* SYS_LIGHTWEIGHT_PROT */  
-  LWP_SemWait(mutex);
+  sem_wait(mutex);
 #endif /* SYS_LIGHTWEIGHT_PROT */  
 
   memp = memp_tab[type];
@@ -213,7 +213,7 @@ memp_malloc(memp_t type)
 #if SYS_LIGHTWEIGHT_PROT
     SYS_ARCH_UNPROTECT(old_level);
 #else /* SYS_LIGHTWEIGHT_PROT */
-    LWP_SemPost(mutex);
+    sem_post(mutex);
 #endif /* SYS_LIGHTWEIGHT_PROT */  
     LWIP_ASSERT("memp_malloc: memp properly aligned",
      ((mem_ptr_t)MEM_ALIGN((u8_t *)memp + sizeof(struct memp)) % MEM_ALIGNMENT) == 0);
@@ -228,7 +228,7 @@ memp_malloc(memp_t type)
 #if SYS_LIGHTWEIGHT_PROT
   SYS_ARCH_UNPROTECT(old_level);
 #else /* SYS_LIGHTWEIGHT_PROT */
-    LWP_SemPost(mutex);
+    sem_post(mutex);
 #endif /* SYS_LIGHTWEIGHT_PROT */  
     return NULL;
   }
@@ -250,7 +250,7 @@ memp_free(memp_t type, void *mem)
 #if SYS_LIGHTWEIGHT_PROT
     SYS_ARCH_PROTECT(old_level);
 #else /* SYS_LIGHTWEIGHT_PROT */  
-  LWP_SemWait(mutex);
+  sem_wait(mutex);
 #endif /* SYS_LIGHTWEIGHT_PROT */  
 
 #if MEMP_STATS
@@ -267,7 +267,7 @@ memp_free(memp_t type, void *mem)
 #if SYS_LIGHTWEIGHT_PROT
   SYS_ARCH_UNPROTECT(old_level);
 #else /* SYS_LIGHTWEIGHT_PROT */
-    LWP_SemPost(mutex);
+    sem_post(mutex);
 #endif /* SYS_LIGHTWEIGHT_PROT */  
 }
 

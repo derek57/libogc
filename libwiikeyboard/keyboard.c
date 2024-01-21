@@ -97,7 +97,7 @@ typedef struct {
 static _keyheld _held[MAXHELD];
 
 typedef struct {
-	lwp_node node;
+	Chain_Node node;
 	keyboard_event event;
 } _node;
 
@@ -154,7 +154,7 @@ static s32 _kbd_addEvent(const keyboard_event *event) {
 	_node *n = malloc(sizeof(_node));
 	n->event = *event;
 
-	_Chain_Append(&_queue, (lwp_node*) n);
+	_Chain_Append(&_queue, (Chain_Node*) n);
 
 	return 1;
 }

@@ -19,18 +19,18 @@ void* btmemb_alloc(struct memb_blks *blk)
 	u32 level;
 	void *p;
 	
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	ptr = (u32*)blk->mem;
 	for(i=0;i<blk->num;i++) {
 		if(*ptr==0) {
 			++(*ptr);
 			p = (ptr+1);
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return p;
 		}
 		ptr = (u32*)((u8*)ptr+(MEM_ALIGN_SIZE(blk->size)+sizeof(u32)));
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return NULL;
 }
 
@@ -41,18 +41,18 @@ u8 btmemb_free(struct memb_blks *blk,void *ptr)
 	u32 level;
 	u32 *ptr2,*ptr1;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	ptr1 = ptr;
 	ptr2 = (u32*)blk->mem;
 	for(i=0;i<blk->num;i++) {
 		if(ptr2==(ptr1 - 1)) {
 			ref = --(*ptr2);
-			_CPU_ISR_Restore(level);
+			_ISR_Enable(level);
 			return ref;
 		}
 		ptr2 = (u32*)((u8*)ptr2+(MEM_ALIGN_SIZE(blk->size)+sizeof(u32)));
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return -1;
 }
 
@@ -62,9 +62,9 @@ u8 btmemb_ref(struct memb_blks *blk,void *ptr)
 	u32 *pref;
 	u32 level;
 	
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	pref = ptr-sizeof(u32);
 	ref = ++(*pref);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return ref;
 }

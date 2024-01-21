@@ -154,7 +154,7 @@
 #define SMB_OBJTYPE_HANDLE			7
 #define SMB_CHECK_HANDLE(hndl)		\
 {									\
-	if(((hndl)==SMB_HANDLE_NULL) || (LWP_OBJTYPE(hndl)!=SMB_OBJTYPE_HANDLE))	\
+	if(((hndl)==SMB_HANDLE_NULL) || (_Objects_Get_node(hndl)!=SMB_OBJTYPE_HANDLE))	\
 		return NULL;				\
 }
 
@@ -170,7 +170,7 @@
 
 struct _smbfile
 {
-	lwp_node node;
+	Chain_Node node;
 	u16 sfid;
 	SMBCONN conn;
 };
@@ -211,7 +211,7 @@ typedef struct _smbsession
 
 typedef struct _smbhandle
 {
-	lwp_obj object;
+	Objects_Control object;
 	char *user;
 	char *pwd;
 	char *share_name;
@@ -226,7 +226,7 @@ typedef struct _smbhandle
 
 static u32 smb_dialectcnt = 1;
 static bool smb_inited = false;
-static lwp_objinfo smb_handle_objects;
+static Objects_Information smb_handle_objects;
 static Chain_Control smb_filehandle_queue;
 static struct _smbfile smb_filehandles[SMB_FILEHANDLES_MAX];
 static const char *smb_dialects[] = {"NT LM 0.12",NULL};
@@ -379,9 +379,9 @@ static __inline__ SMBHANDLE* __smb_handle_open(SMBCONN smbhndl)
 
 	SMB_CHECK_HANDLE(smbhndl);
 
-	_CPU_ISR_Disable(level);
-	handle = (SMBHANDLE*)_Objects_Get_no_protection(&smb_handle_objects,LWP_OBJMASKID(smbhndl));
-	_CPU_ISR_Restore(level);
+	_ISR_Disable(level);
+	handle = (SMBHANDLE*)_Objects_Get_no_protection(&smb_handle_objects,_Objects_Get_index(smbhndl));
+	_ISR_Enable(level);
 	return handle;
 }
 
@@ -390,10 +390,10 @@ static __inline__ void __smb_handle_free(SMBHANDLE *handle)
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	_Objects_Close(&smb_handle_objects,&handle->object);
 	_Objects_Free(&smb_handle_objects,&handle->object);
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 }
 
 static void __smb_init()
@@ -408,7 +408,7 @@ static SMBHANDLE* __smb_allocate_handle()
 	u32 level;
 	SMBHANDLE *handle;
 
-	_CPU_ISR_Disable(level);
+	_ISR_Disable(level);
 	handle = (SMBHANDLE*)_Objects_Allocate(&smb_handle_objects);
 	if(handle) {
 		handle->user = NULL;
@@ -419,7 +419,7 @@ static SMBHANDLE* __smb_allocate_handle()
 		handle->conn_valid = false;
 		_Objects_Open(&smb_handle_objects,&handle->object);
 	}
-	_CPU_ISR_Restore(level);
+	_ISR_Enable(level);
 	return handle;
 }
 
@@ -1223,9 +1223,9 @@ s32 SMB_Connect(SMBCONN *smbhndl, const char *user, const char *password, const 
 	if(!smb_inited)
 	{
 		u32 level;
-		_CPU_ISR_Disable(level);
+		_ISR_Disable(level);
 		__smb_init();
-		_CPU_ISR_Restore(level);
+		_ISR_Enable(level);
 	}
 
 	handle = __smb_allocate_handle();
@@ -1257,7 +1257,7 @@ s32 SMB_Connect(SMBCONN *smbhndl, const char *user, const char *password, const 
 #endif
 	}
 
-	*smbhndl =(SMBCONN)(LWP_OBJMASKTYPE(SMB_OBJTYPE_HANDLE)|LWP_OBJMASKID(handle->object.id));
+	*smbhndl =(SMBCONN)_Objects_Build_id(SMB_OBJTYPE_HANDLE, _Objects_Get_index(handle->object.id));
 
 	if(ret==0)
 	{

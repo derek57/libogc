@@ -41,13 +41,13 @@
 #include <semaphore.h>
 
 #define SYS_MBOX_NULL		MQ_BOX_NULL
-#define SYS_SEM_NULL		LWP_SEM_NULL
+#define SYS_SEM_NULL		SEM_FAILED
 
 typedef sem_t sys_sem;
 typedef sem_t *sys_sem_t;
 
-typedef mqbox_t sys_mbox;
-typedef mqbox_t *sys_mbox_t;
+typedef mqd_t sys_mbox;
+typedef mqd_t *sys_mbox_t;
 
 typedef lwp_t sys_thread;
 typedef lwp_t* sys_thread_t;
