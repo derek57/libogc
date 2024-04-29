@@ -11,6 +11,7 @@ hadn't chosen to rename and / or remove:
   - preprocessor definitions
   - original source code file headers
   - file names
+  - whitespace
 
 This repository (branch) basically is "libOGC" as of v1.8.12 without all those changes mentioned above and
 the file headers restored as well after some Google search turned out that there are code similarities
