@@ -668,7 +668,7 @@ static u8_t recv_raw(void *arg,struct raw_pcb *pcb,struct pbuf *p,struct ip_addr
 		conn->recvavail += p->tot_len;
 		if(conn->callback)
 			(*conn->callback)(conn,NETCONN_EVTRCVPLUS,p->tot_len);
-		mq_send(conn->recvmbox,(char *)&buf,MQ_MSG_BLOCK);
+		mq_send(conn->recvmbox,buf,MQ_MSG_BLOCK);
 	}
 	return 0;
 }
@@ -698,7 +698,7 @@ static void recv_udp(void *arg,struct udp_pcb *pcb,struct pbuf *p,struct ip_addr
 		if(conn->callback)
 			(*conn->callback)(conn,NETCONN_EVTRCVPLUS,p->tot_len);
 		
-		mq_send(conn->recvmbox,(char *)&buf,MQ_MSG_BLOCK);
+		mq_send(conn->recvmbox,buf,MQ_MSG_BLOCK);
 	}
 }
 
@@ -724,7 +724,7 @@ static err_t recv_tcp(void *arg,struct tcp_pcb *pcb,struct pbuf *p,err_t err)
 		if(conn->callback)
 			(*conn->callback)(conn,NETCONN_EVTRCVPLUS,len);
 
-		mq_send(conn->recvmbox,(char *)&p,MQ_MSG_BLOCK);
+		mq_send(conn->recvmbox,p,MQ_MSG_BLOCK);
 	}
 	return ERR_OK;
 }
@@ -835,7 +835,7 @@ static err_t accept_func(void *arg,struct tcp_pcb *newpcb,err_t err)
 	newconn->socket = -1;
 	newconn->recvavail = 0;
 
-	mq_send(mbox,(char *)&newconn,MQ_MSG_BLOCK);
+	mq_send(mbox,newconn,MQ_MSG_BLOCK);
 	return ERR_OK;
 }
 
@@ -1261,7 +1261,7 @@ static err_t net_input(struct pbuf *p,struct netif *inp)
 	msg->type = NETMSG_INPUT;
 	msg->msg.inp.p = p;
 	msg->msg.inp.net = inp;
-	mq_send(netthread_mbox,(char *)&msg,MQ_MSG_BLOCK);
+	mq_send(netthread_mbox,msg,MQ_MSG_BLOCK);
 	return ERR_OK;
 }
 
@@ -1278,7 +1278,7 @@ static void net_apimsg(struct api_msg *apimsg)
 
 	msg->type = NETMSG_API;
 	msg->msg.apimsg = apimsg;
-	mq_send(netthread_mbox,(char *)&msg,MQ_MSG_BLOCK);
+	mq_send(netthread_mbox,msg,MQ_MSG_BLOCK);
 }
 
 static err_t net_callback(void (*f)(void *),void *ctx)
@@ -1295,7 +1295,7 @@ static err_t net_callback(void (*f)(void *),void *ctx)
 	msg->type = NETMSG_CALLBACK;
 	msg->msg.cb.f = f;
 	msg->msg.cb.ctx = ctx;
-	mq_send(netthread_mbox,(char *)&msg,MQ_MSG_BLOCK);
+	mq_send(netthread_mbox,msg,MQ_MSG_BLOCK);
 	return ERR_OK;
 }
 
